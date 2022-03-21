@@ -1,0 +1,6 @@
+./cpuid.go
+./detect_arm64.go
+./featureid_string.go
+./os_linux_arm64.go
+./os_unsafe_linux_arm64.go
+./cpuid_arm64.s

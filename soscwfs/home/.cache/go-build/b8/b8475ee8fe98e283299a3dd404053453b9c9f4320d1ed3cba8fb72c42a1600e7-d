@@ -1,0 +1,5 @@
+./copy.go
+./equal.go
+./path_value.go
+./prettify.go
+./string_value.go

@@ -1,0 +1,6 @@
+./client.go
+./header.go
+./newline.go
+./reader.go
+./status.go
+./writer.go

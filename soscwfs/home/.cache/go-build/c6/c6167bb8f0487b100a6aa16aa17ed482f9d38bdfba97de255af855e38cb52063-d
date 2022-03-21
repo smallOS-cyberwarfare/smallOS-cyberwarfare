@@ -1,0 +1,4 @@
+./murmur.go
+./murmur128.go
+./murmur32.go
+./murmur64.go

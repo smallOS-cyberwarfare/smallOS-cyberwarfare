@@ -1,0 +1,7 @@
+./banner.go
+./doc.go
+./options.go
+./proxy.go
+./runner.go
+./templates.go
+./update.go

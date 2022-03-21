@@ -1,0 +1,9 @@
+./config.go
+./flags.go
+./generate_dictionary.go
+./output.go
+./result_diff.go
+./result_view.go
+./root.go
+./scan.go
+./version.go

@@ -1,0 +1,3 @@
+./disk_cache.go
+./memory_cache.go
+./registry_cache.go

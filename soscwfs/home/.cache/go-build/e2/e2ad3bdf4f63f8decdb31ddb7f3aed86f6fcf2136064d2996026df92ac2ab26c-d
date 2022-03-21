@@ -1,0 +1,9 @@
+./arc.go
+./cache.go
+./clock.go
+./lfu.go
+./lru.go
+./simple.go
+./singleflight.go
+./stats.go
+./utils.go

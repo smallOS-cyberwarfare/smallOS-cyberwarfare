@@ -1,0 +1,5 @@
+./cache.go
+./doc.go
+./item.go
+./janitor.go
+./keyvalue.go

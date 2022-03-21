@@ -1,0 +1,4 @@
+./doc.go
+./terminal_size.go
+./writer.go
+./writer_posix.go

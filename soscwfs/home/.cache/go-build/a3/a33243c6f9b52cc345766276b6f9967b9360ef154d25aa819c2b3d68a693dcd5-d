@@ -1,0 +1,17 @@
+./bucket.go
+./compaction.go
+./datalog.go
+./db.go
+./doc.go
+./errors.go
+./file.go
+./gobfile.go
+./header.go
+./index.go
+./iterator.go
+./lock.go
+./logger.go
+./metrics.go
+./options.go
+./recovery.go
+./segment.go

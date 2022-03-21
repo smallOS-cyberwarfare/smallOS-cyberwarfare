@@ -1,0 +1,8 @@
+./build.go
+./cache.go
+./func.go
+./func_go110.go
+./operator.go
+./parse.go
+./query.go
+./xpath.go

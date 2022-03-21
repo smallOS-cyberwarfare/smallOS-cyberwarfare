@@ -1,0 +1,8 @@
+./attack_types.go
+./env.go
+./generators.go
+./load.go
+./maps.go
+./options.go
+./slice.go
+./validate.go

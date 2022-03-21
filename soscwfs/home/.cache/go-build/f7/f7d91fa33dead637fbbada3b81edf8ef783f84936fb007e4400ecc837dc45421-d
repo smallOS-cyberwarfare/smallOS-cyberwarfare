@@ -1,0 +1,13 @@
+./auth.go
+./cmd.go
+./context.go
+./data_socket.go
+./doc.go
+./driver.go
+./file_info.go
+./list_formatter.go
+./logger.go
+./notifier.go
+./perm.go
+./server.go
+./session.go
