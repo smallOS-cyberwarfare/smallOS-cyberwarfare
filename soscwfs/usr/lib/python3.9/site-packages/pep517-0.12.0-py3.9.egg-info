@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: pep517
+Version: 0.12.0
+Summary: Wrappers to build Python packages using PEP 517 hooks
+Home-page: https://github.com/pypa/pep517
+Author: Thomas Kluyver
+Author-email: thomas@kluyver.me.uk
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN

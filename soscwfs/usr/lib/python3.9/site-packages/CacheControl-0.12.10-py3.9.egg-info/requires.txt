@@ -1,0 +1,8 @@
+requests
+msgpack>=0.5.2
+
+[filecache]
+lockfile>=0.9
+
+[redis]
+redis>=2.10.5

@@ -1,0 +1,11 @@
+README.md
+pyproject.toml
+tomli/__init__.py
+tomli/_parser.py
+tomli/_re.py
+tomli/_types.py
+tomli/py.typed
+tomli.egg-info/PKG-INFO
+tomli.egg-info/SOURCES.txt
+tomli.egg-info/dependency_links.txt
+tomli.egg-info/top_level.txt
