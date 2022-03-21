@@ -20,7 +20,7 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 - tgbot (telegram remote administration tool)  
 - turbolist3r (subdomain finder)  
 - webservicesfinder (detect webservices in indicated ports)
-- webvulnsscanner (xss/openredirect brtueforce scanner)
+- webvulnsscanner (xss/openredirect bruteforce scanner)
 
 ### Dictionaries  
 - https://raw.githubusercontent.com/daviddias/node-dirbuster/master/lists/directory-list-2.3-small.txt [dirstalk]
@@ -65,6 +65,7 @@ Download Size: **700 Megabytes**
 Installing size: **2.2 Gigabytes**
 Installed Size: **2.2 Gigabytes**  
 Arch: **Aarch64**  
+System: **Termux**  
   
 Notice: This program only works in Aarch64. If you enter the command "uname -m" and aarch64 is not displayed, you can't use any of this software. 
 
