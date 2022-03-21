@@ -71,7 +71,7 @@ proot-distro install soscw > /dev/null;
 
 yes | rm /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/soscw -r
 
-mv soscwfs /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/soscw -r;
+mv soscwfs /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/soscw ;
 
 # SMALL_COMMAND IS CHECKED INSIDE SHELL TO DECIDE IF TO PRINT MOTD OR NOT 
 echo '#!/usr/bin/env bash

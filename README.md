@@ -61,9 +61,9 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 
 ##### Requeriments
 
-Download Size: **650 Megabytes**  
-Installing size: **2 Gigabytes + 650 Megabytes**
-Installed Size: **2 Gigabytes**  
+Download Size: **700 Megabytes**  
+Installing size: **2.2 Gigabytes**
+Installed Size: **2.2 Gigabytes**  
 Arch: **Aarch64**  
   
 Notice: This program only works in Aarch64. If you enter the command "uname -m" and aarch64 is not displayed, you can't use any of this software. 
