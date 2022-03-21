@@ -1,0 +1,306 @@
+package jsonschema
+
+import (
+	"encoding/json"
+	"github.com/iancoleman/orderedmap"
+	"io/ioutil"
+	"net"
+	"net/url"
+	"path/filepath"
+	"reflect"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/require"
+)
+
+type GrandfatherType struct {
+	FamilyName string `json:"family_name" jsonschema:"required"`
+}
+
+type SomeBaseType struct {
+	SomeBaseProperty     int `json:"some_base_property"`
+	SomeBasePropertyYaml int `yaml:"some_base_property_yaml"`
+	// The jsonschema required tag is nonsensical for private and ignored properties.
+	// Their presence here tests that the fields *will not* be required in the output
+	// schema, even if they are tagged required.
+	somePrivateBaseProperty   string          `jsonschema:"required"`
+	SomeIgnoredBaseProperty   string          `json:"-" jsonschema:"required"`
+	SomeSchemaIgnoredProperty string          `jsonschema:"-,required"`
+	Grandfather               GrandfatherType `json:"grand"`
+
+	SomeUntaggedBaseProperty           bool `jsonschema:"required"`
+	someUnexportedUntaggedBaseProperty bool
+}
+
+type MapType map[string]interface{}
+
+type nonExported struct {
+	PublicNonExported  int
+	privateNonExported int
+}
+
+type ProtoEnum int32
+
+func (ProtoEnum) EnumDescriptor() ([]byte, []int) { return []byte(nil), []int{0} }
+
+const (
+	Unset ProtoEnum = iota
+	Great
+)
+
+type TestUser struct {
+	SomeBaseType
+	nonExported
+	MapType
+
+	ID      int                    `json:"id" jsonschema:"required"`
+	Name    string                 `json:"name" jsonschema:"required,minLength=1,maxLength=20,pattern=.*,description=this is a property,title=the name,example=joe,example=lucy,default=alex"`
+	Friends []int                  `json:"friends,omitempty" jsonschema_description:"list of IDs, omitted when empty"`
+	Tags    map[string]interface{} `json:"tags,omitempty"`
+
+	TestFlag       bool
+	IgnoredCounter int `json:"-"`
+
+	// Tests for RFC draft-wright-json-schema-validation-00, section 7.3
+	BirthDate time.Time `json:"birth_date,omitempty"`
+	Website   url.URL   `json:"website,omitempty"`
+	IPAddress net.IP    `json:"network_address,omitempty"`
+
+	// Tests for RFC draft-wright-json-schema-hyperschema-00, section 4
+	Photo  []byte `json:"photo,omitempty" jsonschema:"required"`
+	Photo2 Bytes  `json:"photo2,omitempty" jsonschema:"required"`
+
+	// Tests for jsonpb enum support
+	Feeling ProtoEnum `json:"feeling,omitempty"`
+	Age     int       `json:"age" jsonschema:"minimum=18,maximum=120,exclusiveMaximum=true,exclusiveMinimum=true"`
+	Email   string    `json:"email" jsonschema:"format=email"`
+
+	// Test for "extras" support
+	Baz string `jsonschema_extras:"foo=bar,hello=world,foo=bar1"`
+
+	// Tests for simple enum tags
+	Color      string  `json:"color" jsonschema:"enum=red,enum=green,enum=blue"`
+	Rank       int     `json:"rank,omitempty" jsonschema:"enum=1,enum=2,enum=3"`
+	Multiplier float64 `json:"mult,omitempty" jsonschema:"enum=1.0,enum=1.5,enum=2.0"`
+
+	// Tests for enum tags on slices
+	Roles      []string  `json:"roles" jsonschema:"enum=admin,enum=moderator,enum=user"`
+	Priorities []int     `json:"priorities,omitempty" jsonschema:"enum=-1,enum=0,enum=1,enun=2"`
+	Offsets    []float64 `json:"offsets,omitempty" jsonschema:"enum=1.570796,enum=3.141592,enum=6.283185"`
+
+	// Test for raw JSON
+	Raw json.RawMessage `json:"raw"`
+}
+
+type CustomTime time.Time
+
+type CustomTypeField struct {
+	CreatedAt CustomTime
+}
+
+type RootOneOf struct {
+	Field1 string      `json:"field1" jsonschema:"oneof_required=group1"`
+	Field2 string      `json:"field2" jsonschema:"oneof_required=group2"`
+	Field3 interface{} `json:"field3" jsonschema:"oneof_type=string;array"`
+	Field4 string      `json:"field4" jsonschema:"oneof_required=group1"`
+	Field5 ChildOneOf  `json:"child"`
+}
+
+type ChildOneOf struct {
+	Child1 string      `json:"child1" jsonschema:"oneof_required=group1"`
+	Child2 string      `json:"child2" jsonschema:"oneof_required=group2"`
+	Child3 interface{} `json:"child3" jsonschema:"oneof_required=group2,oneof_type=string;array"`
+	Child4 string      `json:"child4" jsonschema:"oneof_required=group1"`
+}
+
+type Outer struct {
+	Inner
+}
+
+type Inner struct {
+	Foo string `yaml:"foo"`
+}
+
+type MinValue struct {
+	Value int `json:"value4" jsonschema_extras:"minimum=0"`
+}
+type Bytes []byte
+
+type TestNullable struct {
+	Child1 string `json:"child1" jsonschema:"nullable"`
+}
+
+type TestYamlInline struct {
+	Inlined Inner `yaml:",inline"`
+}
+
+type TestYamlAndJson struct {
+	FirstName  string `json:"FirstName" yaml:"first_name"`
+	LastName   string `json:"LastName"`
+	Age        uint   `yaml:"age"`
+	MiddleName string `yaml:"middle_name,omitempty" json:"MiddleName,omitempty"`
+}
+
+type CompactDate struct {
+	Year  int
+	Month int
+}
+
+func (CompactDate) JSONSchemaType() *Type {
+	return &Type{
+		Type:        "string",
+		Title:       "Compact Date",
+		Description: "Short date that only includes year and month",
+		Pattern:     "^[0-9]{4}-[0-1][0-9]$",
+	}
+}
+
+type TestYamlAndJson2 struct {
+	FirstName  string `json:"FirstName" yaml:"first_name"`
+	LastName   string `json:"LastName"`
+	Age        uint   `yaml:"age"`
+	MiddleName string `yaml:"middle_name,omitempty" json:"MiddleName,omitempty"`
+}
+
+func (TestYamlAndJson2) GetFieldDocString(fieldName string) string {
+	switch fieldName {
+	case "FirstName":
+		return "test2"
+	case "LastName":
+		return "test3"
+	case "Age":
+		return "test4"
+	case "MiddleName":
+		return "test5"
+	default:
+		return ""
+	}
+}
+
+type CustomSliceOuter struct {
+	Slice CustomSliceType `json:"slice"`
+}
+
+type CustomSliceType []string
+
+func (CustomSliceType) JSONSchemaType() *Type {
+	return &Type{
+		OneOf: []*Type{{
+			Type: "string",
+		}, {
+			Type: "array",
+			Items: &Type{
+				Type: "string",
+			},
+		}},
+	}
+}
+
+type CustomMapType map[string]string
+
+func (CustomMapType) JSONSchemaType() *Type {
+	properties := orderedmap.New()
+	properties.Set("key", &Type{
+		Type: "string",
+	})
+	properties.Set("value", &Type{
+		Type: "string",
+	})
+	return &Type{
+		Type: "array",
+		Items: &Type{
+			Type:       "object",
+			Properties: properties,
+			Required:   []string{"key", "value"},
+		},
+	}
+}
+
+type CustomMapOuter struct {
+	MyMap CustomMapType `json:"my_map"`
+}
+
+func TestSchemaGeneration(t *testing.T) {
+	tests := []struct {
+		typ       interface{}
+		reflector *Reflector
+		fixture   string
+	}{
+		{&RootOneOf{}, &Reflector{RequiredFromJSONSchemaTags: true}, "fixtures/oneof.json"},
+		{&TestUser{}, &Reflector{}, "fixtures/defaults.json"},
+		{&TestUser{}, &Reflector{AllowAdditionalProperties: true}, "fixtures/allow_additional_props.json"},
+		{&TestUser{}, &Reflector{RequiredFromJSONSchemaTags: true}, "fixtures/required_from_jsontags.json"},
+		{&TestUser{}, &Reflector{ExpandedStruct: true}, "fixtures/defaults_expanded_toplevel.json"},
+		{&TestUser{}, &Reflector{IgnoredTypes: []interface{}{GrandfatherType{}}}, "fixtures/ignore_type.json"},
+		{&TestUser{}, &Reflector{DoNotReference: true}, "fixtures/no_reference.json"},
+		{&TestUser{}, &Reflector{FullyQualifyTypeNames: true}, "fixtures/fully_qualified.json"},
+		{&TestUser{}, &Reflector{DoNotReference: true, FullyQualifyTypeNames: true}, "fixtures/no_ref_qual_types.json"},
+		{&CustomTypeField{}, &Reflector{
+			TypeMapper: func(i reflect.Type) *Type {
+				if i == reflect.TypeOf(CustomTime{}) {
+					return &Type{
+						Type:   "string",
+						Format: "date-time",
+					}
+				}
+				return nil
+			},
+		}, "fixtures/custom_type.json"},
+		{&TestUser{}, &Reflector{DoNotReference: true, FullyQualifyTypeNames: true}, "fixtures/no_ref_qual_types.json"},
+		{&Outer{}, &Reflector{ExpandedStruct: true, DoNotReference: true, YAMLEmbeddedStructs: true}, "fixtures/disable_inlining_embedded.json"},
+		{&MinValue{}, &Reflector{}, "fixtures/schema_with_minimum.json"},
+		{&TestNullable{}, &Reflector{}, "fixtures/nullable.json"},
+		{&TestYamlInline{}, &Reflector{YAMLEmbeddedStructs: true}, "fixtures/yaml_inline_embed.json"},
+		{&TestYamlInline{}, &Reflector{}, "fixtures/yaml_inline_embed.json"},
+		{&GrandfatherType{}, &Reflector{
+			AdditionalFields: func(r reflect.Type) []reflect.StructField {
+				return []reflect.StructField{
+					{
+						Name:      "Addr",
+						Type:      reflect.TypeOf((*net.IP)(nil)).Elem(),
+						Tag:       "json:\"ip_addr\"",
+						Anonymous: false,
+					},
+				}
+			},
+		}, "fixtures/custom_additional.json"},
+		{&TestYamlAndJson{}, &Reflector{PreferYAMLSchema: true}, "fixtures/test_yaml_and_json_prefer_yaml.json"},
+		{&TestYamlAndJson{}, &Reflector{}, "fixtures/test_yaml_and_json.json"},
+		// {&TestYamlAndJson2{}, &Reflector{}, "fixtures/test_yaml_and_json2.json"},
+		{&CompactDate{}, &Reflector{}, "fixtures/compact_date.json"},
+		{&CustomSliceOuter{}, &Reflector{}, "fixtures/custom_slice_type.json"},
+		{&CustomMapOuter{}, &Reflector{}, "fixtures/custom_map_type.json"},
+	}
+
+	for _, tt := range tests {
+		name := strings.TrimSuffix(filepath.Base(tt.fixture), ".json")
+		t.Run(name, func(t *testing.T) {
+			f, err := ioutil.ReadFile(tt.fixture)
+			require.NoError(t, err)
+
+			actualSchema := tt.reflector.Reflect(tt.typ)
+			expectedSchema := &Schema{}
+
+			err = json.Unmarshal(f, expectedSchema)
+			require.NoError(t, err)
+
+			expectedJSON, _ := json.MarshalIndent(expectedSchema, "", "  ")
+			actualJSON, _ := json.MarshalIndent(actualSchema, "", "  ")
+			require.Equal(t, string(expectedJSON), string(actualJSON))
+		})
+	}
+}
+
+func TestBaselineUnmarshal(t *testing.T) {
+	expectedJSON, err := ioutil.ReadFile("fixtures/defaults.json")
+	require.NoError(t, err)
+
+	reflector := &Reflector{}
+	actualSchema := reflector.Reflect(&TestUser{})
+
+	actualJSON, _ := json.MarshalIndent(actualSchema, "", "  ")
+
+	require.Equal(t, strings.ReplaceAll(string(expectedJSON), `\/`, "/"), string(actualJSON))
+}

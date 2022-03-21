@@ -1,0 +1,11 @@
+vendor/
+node_modules/
+tmp/
+
+.git
+.dockerignore
+*.out
+rod.test
+.golangci.yml
+package-lock.json
+package.json
