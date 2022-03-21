@@ -1,0 +1,1 @@
+Replace this line by your telegram bot_api token. You can get it from here https://t.me/BotFather or by searching BotFather in telegram.
