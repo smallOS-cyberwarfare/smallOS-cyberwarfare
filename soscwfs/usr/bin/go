@@ -1,0 +1,1 @@
+/usr/lib/go/bin/go
