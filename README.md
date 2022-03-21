@@ -73,8 +73,7 @@ Notice: This program only works in Aarch64. If you enter the command "uname -m" 
 ```bash
 git clone https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare
 cd smallOS-cyberwarfare
-pkg install proot-distro 7z
-7z x soscwfs.7z
+pkg install proot-distro
 ./install_in_proot_distro.sh
 ```
 
@@ -110,11 +109,3 @@ Yes, you can. It's my main system too.
   
 - Can i add more packages?  
 Yes, you can use apk, git or curl to install new packages   
-   
-- Any hash to check integrity?  
-$ sha1sum soscwfs.7z  
-> e7ccc6e1396fd9e1cb24b8c16d7a063b57bda2c7  soscwfs.7z  
-  
-- How can i save some storage?    
-Delete the soscwfs.7z file to save 650 Megabytes after the system has been installed.  
-
