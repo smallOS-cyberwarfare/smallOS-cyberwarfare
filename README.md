@@ -67,15 +67,22 @@ Installed Size: **2.2 Gigabytes**
 Arch: **Aarch64**  
 System: **Termux**  
   
-Notice: This program only works in Aarch64. If you enter the command "uname -m" and aarch64 is not displayed, you can't use any of this software. 
+Notice: This program only works in Aarch64. If you enter the command "uname -m" and aarch64 is not displayed, you will be unable to use this software. 
 
 ##### Full Install on Termux
 
 ```bash
-git clone https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare
-cd smallOS-cyberwarfare
-pkg install proot-distro
-./install_in_proot_distro.sh
+# Download:  
+git clone https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare  
+    
+# Change Directory:  
+cd smallOS-cyberwarfare  
+  
+# Install Dependency  
+pkg install proot-distro  
+  
+# Install The System:  
+./install_in_proot_distro.sh  
 ```
 
 ##### Usage
