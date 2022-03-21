@@ -1,0 +1,33 @@
+ap () {
+  case ":$PATH:" in
+    *:"$1":*)
+      ;;
+        *)
+      PATH="${PATH:+$PATH:}$1"
+      ;;
+  esac
+}
+
+ap "/usr/local/sbin"
+ap "/usr/local/bin"
+ap "/usr/sbin"
+ap "/usr/bin"
+ap "/sbin"
+ap "/bin"
+unset -f append_path
+export PATH
+export PAGER=less
+umask 022
+: "${HOSTNAME:=$(hostname)}"
+PS1='${HOSTNAME%%.*}:$PWD'
+[ "$(id -u)" = "0" ] && PS1="${PS1}# "
+[ "$(id -u)" = "0" ] || PS1="${PS1}\$ "
+[ -n "$BASH_VERSION" -o "$BB_ASH_VERSION" ] && PS1='\h:\w\$ '
+[ -n "$ZSH_VERSION" ] && PS1='%m:%~%# '
+export PS1
+for script in /etc/profile.d/*.sh ; do
+  if [ -r "$script" ] ; then
+    . "$script"
+  fi
+done
+unset script
