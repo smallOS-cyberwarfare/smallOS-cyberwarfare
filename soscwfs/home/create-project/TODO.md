@@ -1,0 +1,17 @@
+- Upload to npm
+- Update argument
+- Config file
+  - Dest folder
+  - Default template replacements (using mustache sintax?)
+  - Autoupdate on execution
+  - Colored Output
+  - Select other compresion algorithm
+  - No compresion
+- Backups (Use tar before 7z to keep group/ownership)
+- Exports
+- Imports
+- Docu comand
+- Documentation to all templates available on repo or into command
+- Build command
+- Include script execution on extraction to allow custom templates per user
+- Remove "rm: cannot remove './create-project': No such file or directory" from output on install

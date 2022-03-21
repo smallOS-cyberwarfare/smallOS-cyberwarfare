@@ -1,0 +1,2 @@
+X-HTTP-Request:XMLHttpRequest
+Referrer:https://example.com
