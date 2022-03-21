@@ -1,0 +1,1 @@
+/home/1337/web-vulns-scanner/web-vulns-scanner.mjs

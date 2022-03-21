@@ -1,0 +1,1 @@
+/home/1337/dom-sink-finder/dom-sink-finder.js

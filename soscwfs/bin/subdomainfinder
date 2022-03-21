@@ -1,0 +1,1 @@
+/home/1337/subdomains-finder/subdomain-finder.js
