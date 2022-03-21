@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-yes | rm /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/small -r
+yes | rm /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/soscw -r
 
 echo '##
-## Plug-in for installing small
+## Plug-in for installing soscw
 ##
 
-DISTRO_NAME="small https://github.com/stringmanolo/small"
+DISTRO_NAME="soscw https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare"
 
 # You can override a CPU architecture to let distribution
 # be executed by QEMU (user-mode).
@@ -63,33 +63,33 @@ distro_setup() {
         :
 }
 
-' > /data/data/com.termux/files/usr/etc/proot-distro/small.sh
+' > /data/data/com.termux/files/usr/etc/proot-distro/soscw.sh
 
-proot-distro remove small;
+proot-distro remove soscw > /dev/null;
 
-proot-distro install small;
+proot-distro install soscw > /dev/null;
 
-yes | rm /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/small -r
+yes | rm /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/soscw -r
 
-cp smallFileSystem /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/small -r;
+7z x soscwfs.7z -o/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/ -r;
 
 # SMALL_COMMAND IS CHECKED INSIDE SHELL TO DECIDE IF TO PRINT MOTD OR NOT 
 echo '#!/usr/bin/env bash
 
 if [[ "$1" ]]; then
- touch /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/small/tmp/.small_command_1;
- proot-distro login small --isolated --fix-low-ports -- /bin/"$@"
- rm /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/small/tmp/.small_command_1;
+ touch /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/soscw/tmp/.small_command_1;
+ proot-distro login soscw --isolated --fix-low-ports -- /bin/"$@"
+ rm /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/soscw/tmp/.small_command_1;
 else
   clear;
-  proot-distro login small --isolated --fix-low-ports
+  proot-distro login soscw --isolated --fix-low-ports
 fi
-' > "$HOME"/../usr/bin/small;
+' > "$HOME"/../usr/bin/soscw;
 
-chmod +775 "$HOME"/../usr/bin/small;
+chmod +775 "$HOME"/../usr/bin/soscw;
 
 echo 'System Ready:
 
-$ small
+$ soscw
 ' 
 

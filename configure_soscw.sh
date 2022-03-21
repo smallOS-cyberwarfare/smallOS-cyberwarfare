@@ -2,11 +2,9 @@
 
 # This script should only be runned once.
 
-fileSystemPath='./smallFileSystem';
+fileSystemPath='./soscwfs';
 
 echo '
-# Created by ./configureAlpine.sh
-
 echo -e "nameserver 1.1.1.1\nnameserver 1.0.0.1" > /etc/resolv.conf
 rm /etc/profile.d/setup.sh
 
@@ -52,7 +50,7 @@ unset -f addPath
 yellow=$'"'"'\e[1;33m'"'"';
 green=$'"'"'\e[1;32m'"'"';
 reset=$'"'"'\e[0m'"'"';
-PS1='"'"'\n\n${yellow}SMALL${green} $(pwd)${reset}\n> '"'"';
+PS1='"'"'\n\n${yellow}soscw${green} $(pwd)${reset}\n> '"'"';
 PS2='"'"'${yellow}.${reset}  '"'"';
 # ENV #
 
@@ -79,7 +77,7 @@ alias egrep='"'"'egrep --color=auto'"'"';
 
 alias l='"'"'ls'"'"';
 alias la='"'"'ls -a'"'"';
-alias v='"'"'vi'"'"';
+alias v='"'"'vim'"'"';
 alias c='"'"'clear'"'"';
 alias cl='"'"'clear && ls'"'"';
 alias ..='"'"'cd ..'"'"';
@@ -102,18 +100,28 @@ fi
 echo -e '\e[1;33m' > ./"$fileSystemPath"/etc/motd;
 echo '
 
-                               #####  #     #    #    #       #
-                              #     # ##   ##   # #   #       #
-                              #       # # # #  #   #  #       #
-                               #####  #  #  # #     # #       #
-                                    # #     # ####### #       #
-                              #     # #     # #     # #       #
-                               #####  #     # #     # ####### #######
 
+                                                     #######  #####
+                   ####  #    #   ##   #      #      #     # #     #
+                  #      ##  ##  #  #  #      #      #     # #
+                   ####  # ## # #    # #      #      #     #  #####
+                       # #    # ###### #      #      #     #       #
+                  #    # #    # #    # #      #      #     # #     #
+                   ####  #    # #    # ###### ###### #######  #####
+
+' >> ./"$fileSystemPath"/etc/motd;
+
+echo -e '\e[1;32m' >> ./"$fileSystemPath"/etc/motd;
+
+echo '
+   ####  #   # #####  ###### #####  #    #   ##   #####  ######   ##   #####  ######
+  #    #  # #  #    # #      #    # #    #  #  #  #    # #       #  #  #    # #
+  #        #   #####  #####  #    # #    # #    # #    # #####  #    # #    # #####
+  #        #   #    # #      #####  # ## # ###### #####  #      ###### #####  #
+  #    #   #   #    # #      #   #  ##  ## #    # #   #  #      #    # #   #  #
+   ####    #   #####  ###### #    # #    # #    # #    # #      #    # #    # ######
 
 ' >> ./"$fileSystemPath"/etc/motd
 echo -e '\e[0m' >> ./"$fileSystemPath"/etc/motd;
-
-# ./proot -0 -r ./alpineFileSystem -w /root --kill-on-exit /bin/sh /home/config.sh
 
 echo "DONE."
