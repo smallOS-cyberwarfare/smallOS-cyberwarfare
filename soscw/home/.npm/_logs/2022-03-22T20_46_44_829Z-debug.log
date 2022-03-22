@@ -1,0 +1,41 @@
+0 verbose cli [ '/usr/bin/node', '/usr/bin/npm', 'start' ]
+1 info using npm@8.1.3
+2 info using node@v17.7.2
+3 timing npm:load:whichnode Completed in 3ms
+4 timing config:load:defaults Completed in 18ms
+5 timing config:load:file:/usr/lib/node_modules/npm/npmrc Completed in 33ms
+6 timing config:load:builtin Completed in 36ms
+7 timing config:load:cli Completed in 9ms
+8 timing config:load:env Completed in 1ms
+9 timing config:load:project Completed in 28ms
+10 timing config:load:file:/home/.npmrc Completed in 2ms
+11 timing config:load:user Completed in 3ms
+12 timing config:load:file:/etc/npmrc Completed in 1ms
+13 timing config:load:global Completed in 2ms
+14 timing config:load:validate Completed in 1ms
+15 timing config:load:credentials Completed in 7ms
+16 timing config:load:setEnvs Completed in 6ms
+17 timing config:load Completed in 114ms
+18 timing npm:load:configload Completed in 115ms
+19 timing npm:load:setTitle Completed in 1ms
+20 timing npm:load:setupLog Completed in 4ms
+21 timing config:load:flatten Completed in 17ms
+22 timing npm:load:cleanupLog Completed in 10ms
+23 timing npm:load:configScope Completed in 0ms
+24 timing npm:load:projectScope Completed in 2ms
+25 timing npm:load Completed in 162ms
+26 timing command:run-script Completed in 8ms
+27 timing command:start Completed in 49ms
+28 verbose stack Error: ENOENT: no such file or directory, open '/home/package.json'
+29 verbose cwd /home
+30 verbose Linux 5.4.0-faked
+31 verbose argv "/usr/bin/node" "/usr/bin/npm" "start"
+32 verbose node v17.7.2
+33 verbose npm  v8.1.3
+34 error code ENOENT
+35 error syscall open
+36 error path /home/package.json
+37 error errno -2
+38 error enoent ENOENT: no such file or directory, open '/home/package.json'
+39 error enoent This is related to npm not being able to find a file.
+40 verbose exit -2

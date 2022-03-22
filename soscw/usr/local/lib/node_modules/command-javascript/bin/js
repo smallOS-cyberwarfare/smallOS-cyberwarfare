@@ -1,0 +1,85 @@
+#!/usr/bin/env node
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __importDefault(require("fs"));
+const child_process_1 = __importDefault(require("child_process"));
+const readline_1 = __importDefault(require("readline"));
+const run = (args) => {
+    let res = child_process_1.default.execSync(args).toString();
+    return res;
+};
+const open = (filename, mode) => {
+    const fd = {};
+    try {
+        fd.internalFd = fs_1.default.openSync(filename, mode);
+        fd.read = (buffer, position, len) => fs_1.default.readSync(fd.internalFd, buffer, position, len, null);
+        fd.puts = (str) => fs_1.default.writeSync(fd.internalFd, str);
+        fd.close = () => fs_1.default.closeSync(fd.internalFd);
+        return fd;
+    }
+    catch (err) {
+        console.log("open " + err);
+        return fd;
+    }
+};
+const javascriptFunctions = `const fs = require("fs");
+const exec = require("child_process");
+
+const run = (args) => {
+  let res = exec.execSync(args).toString()
+  return res;
+};
+
+const loadFile = (filename) => {
+  let retValue;
+  try {
+    retValue = fs.readFileSync(filename, { encoding: "utf-8" })
+  } catch(e) {
+    retValue = null;
+  }
+  return retValue;
+};
+
+
+
+`;
+// this function is necesary since the input is written directly into a literal string declaration
+const encodePipedInput = (input) => Buffer.from(input).toString("base64");
+// TODO: Use in memory file, not disk
+let result = "";
+try {
+    if (!process.stdin.isTTY) {
+        const rl = readline_1.default.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+            terminal: false
+        });
+        rl.on("line", line => {
+            //console.log("THE LINE IS: " + line);
+            //console.log("The arguments are: " + process.argv.join(" ") );
+            const fd = open(".internalJsEvaling.js", "w+");
+            fd.puts(`${javascriptFunctions}
+      const pipedStdin = Buffer.from("${encodePipedInput(line)}", "base64").toString("ascii");
+      ${process.argv.splice(2, 1)}`);
+            fd.close();
+            result = run("node .internalJsEvaling.js 2>&1");
+            run("rm .internalJsEvaling.js");
+            console.log(result);
+        });
+    }
+    else {
+        const fd = open(".internalJsEvaling.js", "w+");
+        fd.puts(`${javascriptFunctions}${process.argv.splice(2, 1)}`);
+        fd.close();
+        result = run("node .internalJsEvaling.js 2>&1");
+        run("rm .internalJsEvaling.js");
+        console.log(result);
+    }
+}
+catch (err) {
+    result = `Error running the code: ${err}`;
+    console.log(result);
+}
