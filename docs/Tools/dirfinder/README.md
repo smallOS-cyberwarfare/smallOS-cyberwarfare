@@ -15,7 +15,7 @@ https://github.com/StringManolo/1337/tree/master/directory-finder via git clone 
 ### Examples
 ##### Search Google Diectories returning 200 ok  
 ```bash
-/run dirfinder -f /home/1337/directory-finder/common.txt -u https://www.google.com
+dirfinder -f /home/1337/directory-finder/common.txt -u https://www.google.com
 ```
 
 
