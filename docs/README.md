@@ -4,5 +4,12 @@ Official Documentation of SmallOS-CyberWarfare Distro
 
 ### Tools
 - [dig](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/dig/README.md)  
+Domain Information Groper is a flexible tool for interrogating DNS name servers  
+  
 - [dirfinder](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/dirfinder/README.md)  
-- [dirstalk](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/dirstalk/README.md)
+Find files and directories. Multiple options like use random user agents, change methods  
+  
+- [dirstalk](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/dirstalk/README.md)  
+Find files and directories. Multi threaded application designed to brute force paths on web servers  
+  
+
