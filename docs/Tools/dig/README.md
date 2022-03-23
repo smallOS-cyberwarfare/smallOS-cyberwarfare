@@ -9,44 +9,54 @@ Domain Information Groper is a flexible tool for interrogating DNS name servers.
 > dig [global-queryopt...] [query...]  
 
 ### Examples   
+##### Resolve google.com domain (you get the ip of the domain)  
 ```bash
-# Resolve google.com domain (you get the ip of the domain)  
-dig google.com +short    
+dig google.com +short
+```
 
 
-# Dig from cloudflare servers the google.com domain txt records, short output.  
+##### Dig from cloudflare servers the google.com domain txt records, short output.  
+```bash
 dig @1.1.1.1 google.com TXT +short  
+```
 
-
-# Get list of domains pointing to mail exchange servers  
+##### Get list of domains pointing to mail exchange servers  
+```bash
 dig pastebin.com MX +short 
+```
 
-
-# List of name servers (name servers hold all the records for the domain, A, AAAA, MX, TXT, CNAME, NS, PTR, SOA...)
+##### List of name servers (name servers hold all the records for the domain, A, AAAA, MX, TXT, CNAME, NS, PTR, SOA...)
+```bash
 dig example.com NS +short
+```
 
-
-# List all the records available for the domain
+##### List all the records available for the domain
+```bash
 dig google.com -t ANY
+```
 
-
-# Reverse lookup (view domains resolving to this ip)  
+##### Reverse lookup (view domains resolving to this ip)  
+```bash
 dig -x 149.154.167.91  
+```
 
-
-# Use domains or ips from a file
+##### Use domains or ips from a file  
+```bash
 echo -e 'google.com\nexample.com' > listOfDomains.txt;
 dig -f listOfDomains.txt +short
+```
 
-
-# Multiple queries in same command
+##### Multiple queries in same command  
+```bash
 dig google.com A  example.com TXT  -x 140.82.121.4  google.es CNMAE  +short
+```
 
-
-# Trace the hops (like a traceroute, but for DNS queries)
+##### Trace the hops (like a traceroute, but for DNS queries)  
+```bash
 dig example.com +trace +short
+```
 
-
-# List of name servers for a TLD (.com, .net, .org, .eu, ...)
+##### List of name servers for a TLD (.com, .net, .org, .eu, ...)  
+```bash
 dig NS eu +short
 ```
