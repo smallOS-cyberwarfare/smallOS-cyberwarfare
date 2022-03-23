@@ -12,4 +12,6 @@ Find files and directories. Multiple options like use random user agents, change
 - [dirstalk](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/dirstalk/README.md)  
 Find files and directories. Multi threaded application designed to brute force paths on web servers  
   
+- [domsinkfinder](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/dirstalk/README.md)  
+Find DOM sinks in source code by url. Helps to manually find DOM XSS  
 
