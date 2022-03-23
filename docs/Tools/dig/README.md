@@ -1,6 +1,9 @@
 # Dig  
 Domain Information Groper is a flexible tool for interrogating DNS name servers.  
-  
+
+### Download
+https://pkgs.alpinelinux.org/package/edge/main/aarch64/bind via apk add bind-tools
+
 ### Usage  
 > dig [@server] [-b address] [-c class] [-f filename] [-k filename] [-m] [-p port#] [-q name] [-t type] [-x addr] [-y [hmac:]name:key] [-4] [-6] [name] [type] [class] [queryopt...]  
   
