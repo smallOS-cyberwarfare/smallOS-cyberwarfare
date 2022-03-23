@@ -1,11 +1,11 @@
-# Dig
-
-### Description  
+# Dig  
 Domain Information Groper is a flexible tool for interrogating DNS name servers.  
   
 ### Usage  
 > dig [@server] [-b address] [-c class] [-f filename] [-k filename] [-m] [-p port#] [-q name] [-t type] [-x addr] [-y [hmac:]name:key] [-4] [-6] [name] [type] [class] [queryopt...]  
+  
 > dig [-h]  
+  
 > dig [global-queryopt...] [query...]  
 
 ### Examples   
