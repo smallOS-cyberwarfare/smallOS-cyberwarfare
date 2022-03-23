@@ -13,8 +13,7 @@ https://github.com/stefanoj3/dirstalk via git clone https://github.com/stefanoj3
 ### Examples
 ##### Search Google Diectories 
 ```bash
-dirstalk scan https://www.google.com -d https://raw.githubusercontent.com/daviddias/no
-de-dirbuster/master/lists/directory-list-2.3-small.txt
+dirstalk scan https://www.google.com -d https://raw.githubusercontent.com/daviddias/node-dirbuster/master/lists/directory-list-2.3-small.txt
 ```
 
 
