@@ -62,9 +62,9 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 
 ##### Requeriments
 
-Download Size: **700 Megabytes**  
-Installing size: **2.2 Gigabytes**  
-Installed Size: **2.2 Gigabytes**  
+Download Size: **342-1700 Megabytes**  
+Installing size: **1.7 Gigabytes**  
+Installed Size: **1.7 Gigabytes**  
 Arch: **Aarch64**  
 System: **Termux**  
   
@@ -103,6 +103,9 @@ soscw ls -a
 q
 ```
 
+##### Documentation  
+[Available Tools](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/tree/master/docs#documentation)  
+  
 ##### FAQ
 - What is soscw?  
 Is a fork of smallOS, a Linux Userland Distribution based on a fork of Alpine Linux Mini Root Filsystem. I removed all not necesary files, compiled dinamically to musl some packages and stripped all debug information to reduce the size of the binaries. Removed comentaries and spaces from files, etc. I configured all the tools and modified the system configuration files so the system is ready for usage.
