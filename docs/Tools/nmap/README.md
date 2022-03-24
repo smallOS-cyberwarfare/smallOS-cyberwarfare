@@ -1,29 +1,27 @@
-# name
+# nmap
 desc
 
 ### Download
 package link via download method
 
 ### Usage  
-> name [args]
+> nmap [Scan Type(s)] [Options] {target specification}
   
-> name [other args] [other args]   
-  
-> name [--help]  
+> nmap [--help]  
   
 ### Examples   
-##### Desc  
+##### Scan most popular 1000 ports
 ```bash
-name 
+nmap example.com
+```
+
+##### Scan all TCP and UDP ports
+```bash
+nmap -nPNsT -p- example.com
 ```
 
 ##### Desc  
 ```bash
-name
-```
-
-##### Desc  
-```bash
-name
+nmap
 ```
 
