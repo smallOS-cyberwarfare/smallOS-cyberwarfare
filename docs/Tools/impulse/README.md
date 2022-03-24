@@ -10,9 +10,8 @@ https://github.com/LimerBoy/Impulse via git clone https://github.com/LimerBoy/Im
 > impulse [--help]
   
 ### Examples
-##### Search Google Diectories 
+##### Send multiple sms from password recovery supporting services like telegram, google, ...
 ```bash
-# Send multiple sms from password recovering services
 impulse --method SMS --time 20 --threads 16 --target +7999999999
 ```
 

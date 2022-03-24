@@ -18,5 +18,5 @@ Find DOM sinks in source code by url. Helps to manually find DOM XSS
 - [impulse](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/impulse/README.md)  
 Denial Of Service (DOS) ToolKit  
   
-
-
+- [ncat](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/ncat/README.md)
+Read and Write to machines across networks
