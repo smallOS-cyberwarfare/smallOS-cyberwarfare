@@ -22,11 +22,11 @@ Denial Of Service (DOS) ToolKit
 Read and Write to machines across network
 
 - [nmap](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/nmap/README.md)
-Port scanner
-
+Multipurpouse Network Scanning Tool  
+  
 - [nuclei](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/nuclei/README.md)  
-Vulnerability Scanner  
-
+Fast and customizable vulnerability scanner based on simple YAML based DSL  
+  
 - [searchsploit](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/searchsploit/README.md)  
 Search Exploits  
 

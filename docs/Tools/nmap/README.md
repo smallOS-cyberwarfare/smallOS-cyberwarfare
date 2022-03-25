@@ -1,8 +1,8 @@
 # nmap
-desc
+Multipurpouse Network Scanning Tool
 
 ### Download
-package link via download method
+https://nmap.org/download via apk add nmap
 
 ### Usage  
 > nmap [Scan Type(s)] [Options] {target specification}
@@ -96,7 +96,7 @@ nmap scanme.nmap.org -sV --version-intensity 9
 nmap -Pn --script vuln scanme.nmap.org
 ```
 
-##### DOS attack  
+##### DOS slowloris attack  
 ```bash
 nmap 127.0.0.1 --max-parallelism 800 -Pn --script http-slowloris --script-args http-slowloris.runforever=true
 ```

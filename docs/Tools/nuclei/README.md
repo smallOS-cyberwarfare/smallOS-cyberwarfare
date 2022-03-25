@@ -1,29 +1,35 @@
-# name
-desc
+# Nuclei
+Fast and customizable vulnerability scanner based on simple YAML based DSL.  
 
 ### Download
-package link via download method
+https://github.com/projectdiscovery/nuclei via go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest  
 
 ### Usage  
-> name [args]
+> nuclei [args]
   
-> name [other args] [other args]   
-  
-> name [--help]  
+> nuclei [--help]  
   
 ### Examples   
-##### Desc  
+##### Scan a target
 ```bash
-name 
+nuclei -u scanme.nmap.org
 ```
 
-##### Desc  
+##### Specify the severity of the templates
 ```bash
-name
+nuclei -u scanme.nmap.org -s info,low,medium,high,critical,unknown # This is the default scan
 ```
 
-##### Desc  
+##### Scan a list of targets
 ```bash
-name
+echo 'scanme.nmap.org
+https://example.com' > myListOfUrlsOrHosts.txt
+nuclei -l myListOfUrlsOrHosts.txt
+```
+
+##### Output results to a file 
+```bash
+nuclei scanme.nmap.org -o results.txt
+# Do not edit the file while the scan is running
 ```
 
