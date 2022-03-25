@@ -1,0 +1,2 @@
+echi djdjd
+exit
