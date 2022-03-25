@@ -1,2 +1,0 @@
-echi djdjd
-exit
