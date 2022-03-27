@@ -1,19 +1,28 @@
-# Tor state file last generated on 2022-03-21 10:01:56 local time
+# Tor state file last generated on 2022-03-27 12:39:35 local time
 # Other times below are in UTC
 # You *do not* need to edit this file.
 
 CircuitBuildTimeBin 545 1
 CircuitBuildTimeBin 595 1
 CircuitBuildTimeBin 625 2
+CircuitBuildTimeBin 665 1
 CircuitBuildTimeBin 685 2
+CircuitBuildTimeBin 735 2
+CircuitBuildTimeBin 765 1
+CircuitBuildTimeBin 815 1
+CircuitBuildTimeBin 845 1
+CircuitBuildTimeBin 865 1
 CircuitBuildTimeBin 875 1
+CircuitBuildTimeBin 995 1
+CircuitBuildTimeBin 1125 2
 CircuitBuildTimeBin 1165 1
+CircuitBuildTimeBin 1295 1
 Dormant 0
-Guard in=default rsa_id=AEC32E6F5A0CF431B59BB3EA189D0882BF75EA3E nickname=Mustang sampled_on=2022-03-15T10:56:01 sampled_idx=0 sampled_by=0.4.6.9 listed=1 confirmed_on=2022-03-16T05:00:14 confirmed_idx=1 pb_use_attempts=1.000000 pb_use_successes=1.000000 pb_circ_attempts=8.000000 pb_circ_successes=8.000000 pb_successful_circuits_closed=8.000000
+Guard in=default rsa_id=AEC32E6F5A0CF431B59BB3EA189D0882BF75EA3E nickname=Mustang sampled_on=2022-03-15T10:56:01 sampled_idx=0 sampled_by=0.4.6.9 listed=1 confirmed_on=2022-03-16T05:00:14 confirmed_idx=1 pb_use_attempts=2.000000 pb_use_successes=2.000000 pb_circ_attempts=19.000000 pb_circ_successes=19.000000 pb_successful_circuits_closed=19.000000
 Guard in=default rsa_id=6D100EE20A83025E4005C655973FF59DF20D9218 nickname=as212520 sampled_on=2022-03-21T05:48:08 sampled_idx=1 sampled_by=0.4.6.9 listed=1 confirmed_on=2022-03-10T14:44:22 confirmed_idx=0
 Guard in=default rsa_id=77A56CB237740E24AEA2D61C8C8936232AFC1BD8 nickname=TheEpTicZeus sampled_on=2022-03-15T08:15:25 sampled_idx=2 sampled_by=0.4.6.9 listed=1 confirmed_on=2022-03-16T02:07:08 confirmed_idx=2
 Guard in=default rsa_id=58A7199712C0E52B3C5F2F8E8B27B5A62BE58BC8 nickname=serpico sampled_on=2022-03-13T08:58:53 sampled_idx=3 sampled_by=0.4.6.9 listed=1
-Guard in=default rsa_id=38F21DEE29E40DCDF9460A80662B7723562CA008 nickname=trabajando sampled_on=2022-03-19T01:16:49 sampled_idx=4 sampled_by=0.4.6.9 listed=1
+Guard in=default rsa_id=38F21DEE29E40DCDF9460A80662B7723562CA008 nickname=trabajando sampled_on=2022-03-19T01:16:49 sampled_idx=4 sampled_by=0.4.6.9 unlisted_since=2022-03-26T03:24:07 listed=0
 Guard in=default rsa_id=A28F0CEE4A5A9EA75A3A81192FADB61A74875727 nickname=IOT sampled_on=2022-03-11T21:31:14 sampled_idx=5 sampled_by=0.4.6.9 listed=1
 Guard in=default rsa_id=DD896BE221737C60E977609014985A90D18DA31A nickname=myVeryNiceRelay sampled_on=2022-03-17T03:15:14 sampled_idx=6 sampled_by=0.4.6.9 listed=1
 Guard in=default rsa_id=F8D27B163B9247B232A2EEE68DD8B698695C28DE nickname=fluxe3 sampled_on=2022-03-10T01:48:30 sampled_idx=7 sampled_by=0.4.6.9 listed=1
@@ -29,6 +38,7 @@ Guard in=default rsa_id=AE337CE945D069964FD78A94E1D32AA94CD7DAC9 nickname=south 
 Guard in=default rsa_id=039A383F8CE5B98D1A84D2838D24930657E472E0 nickname=BoomStick sampled_on=2022-03-17T07:42:52 sampled_idx=17 sampled_by=0.4.6.9 listed=1
 Guard in=default rsa_id=41A9D43FBA6860C5CFBD847A051DB8A8E480786A nickname=babarNetwork sampled_on=2022-03-09T22:30:18 sampled_idx=18 sampled_by=0.4.6.9 listed=1
 Guard in=default rsa_id=3DC748C2DFF1F8E9DA5626BB3CBAAFF31D706C10 nickname=plembi sampled_on=2022-03-20T00:27:16 sampled_idx=19 sampled_by=0.4.6.9 listed=1
-LastWritten 2022-03-21 10:01:56
+LastWritten 2022-03-27 12:39:35
+MinutesSinceUserActivity 1
 TorVersion Tor 0.4.6.9
-TotalBuildTimes 8
+TotalBuildTimes 19
