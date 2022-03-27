@@ -9,6 +9,8 @@ if [[ -d soscwfs  ]]; then
   rm soscwfs/root/.bash_history
   rm soscwfs/root/.viminfo
   rm soscwfs/root/.config/shodan/api_key
+  yes | rm soscwfs/home/.local/share/sqlmap/output/* -r
+  yes | rm soscwfs/home/.tor/* -r
 
   git add --all && git commit -m "$1" && git push
 else

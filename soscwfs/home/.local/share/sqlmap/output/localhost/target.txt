@@ -1,1 +1,0 @@
-http://localhost:65412/login?username=admin&password='/*&password=*/OR/*&password=*/'1'/*&password=*/LIKE/*&password=*/'1 (GET)  # /bin/sqlmap -u http://localhost:65412/ --crawl=1

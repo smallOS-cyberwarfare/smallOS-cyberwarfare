@@ -7,6 +7,10 @@ packages/awall
 soscwfs.7z
 soscw.7z
 soscw
+tmp
 # move_to_push.sh
 # move_to_install.sh
 # push.sh
+
+
+# MORE FILES ARE DELETED VIA push.sh SCRIPT
