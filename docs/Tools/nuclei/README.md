@@ -33,3 +33,12 @@ nuclei scanme.nmap.org -o results.txt
 # Do not edit the file while the scan is running
 ```
 
+##### Output in json format
+```bash
+nuclei -u scanme.nmap.org -json -silent
+```
+
+##### Output in markdown format
+```bash
+nuclei -u scanme.nmap.org -me ./results/
+```

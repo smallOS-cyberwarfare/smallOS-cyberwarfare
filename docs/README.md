@@ -28,10 +28,10 @@ Multipurpouse Network Scanning Tool
 Fast and customizable vulnerability scanner based on simple YAML based DSL  
   
 - [searchsploit](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/searchsploit/README.md)  
-Search Exploits  
+Command line search tool for Exploit-DB 
 
 - [shodan](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/shodan/README.md)  
-Search Machines  
+Search engine for devices 
   
 - [sqlmap](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/sqlmap/README.md)  
 Automated SQL Inyections  

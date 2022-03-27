@@ -1,29 +1,36 @@
-# name
-desc
+# Searchsploit
+Command line search tool for Exploit-DB
 
 ### Download
-package link via download method
+https://github.com/offensive-security/exploitdb via git clone https://github.com/offensive-security/exploitdb
 
 ### Usage  
-> name [args]
+> searchsploit [options] term1 [term2] ... [termN]
   
-> name [other args] [other args]   
-  
-> name [--help]  
+> searchsploit [--help]  
   
 ### Examples   
-##### Desc  
+##### Show list of available exploits for Chrome
 ```bash
-name 
+searchsploit chrome
 ```
 
-##### Desc  
+##### Open an exploit in text editor
 ```bash
-name
+searchsploit -x 49745
 ```
 
-##### Desc  
+##### Save an exploit in current working directory
 ```bash
-name
+searchsploit -m 49745
 ```
 
+##### Show the url of the exploit
+```bash
+searchsploit -w 49745
+```
+
+##### Show results as json
+```bash
+searchsploit -j chrome
+```
