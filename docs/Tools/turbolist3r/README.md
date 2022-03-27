@@ -1,29 +1,36 @@
-# name
+# Turbolist3r
 desc
 
 ### Download
 package link via download method
 
 ### Usage  
-> name [args]
+> turbolist3r [args]
   
-> name [other args] [other args]   
-  
-> name [--help]  
+> turbolist3r [--help]  
   
 ### Examples   
-##### Desc  
+##### Scan a domain from public places
 ```bash
-name 
+turbolist3r -d example.com
 ```
 
-##### Desc  
+##### Use multiple threads
 ```bash
-name
+turbolist3r -d example.com -t 8  
 ```
 
-##### Desc  
+##### Save domains to a file 
 ```bash
-name
+turbolist3r -d example.com -o example_domains.txt
 ```
 
+##### Reverse DNS analysis (get dns records to aid in subdomain takeover)
+```bash
+turbolist3r -d example.com -a
+```
+
+##### Save DNS records in a file
+```bash
+turbolist3r -d example.com -a --saverdns example_records.txt
+```

@@ -1,29 +1,39 @@
-# name
-desc
+# Subdomainfinder
+Search subdomains of a domain.
 
 ### Download
-package link via download method
+https://github.com/StringManolo/1337/tree/master/subdomains-finder via git clone https://github.com/StringManolo/1337
 
 ### Usage  
-> name [args]
+> subdomainfinder -d [domain] 
   
-> name [other args] [other args]   
+> subdomainfinder -d [domain] [--format] [-o filename.ext]
   
-> name [--help]  
+> subdomainfinder [--help]  
   
 ### Examples   
-##### Desc  
+##### Get subdomains for example.com
 ```bash
-name 
+subdomainfinder -d example.com
 ```
 
-##### Desc  
+##### Get subdomains for example.com in csv format
 ```bash
-name
+subdomainfinder -d example.com --csv
 ```
 
-##### Desc  
+##### Get subdomains for example.com in json format
 ```bash
-name
+subdomainfinder -d example.com --json
 ```
 
+##### Get subdomains for example.com and save them in domains_example_com.txt
+```bash
+subdomainfinder -d example.com -o domains_example_com.txt
+```
+
+##### Get subdomains for google.com and google.es, save them and append them to same file
+```bash
+subdomainfinder -d google.com -o domains_google.txt
+subdomainfinder -d google.es --append -o domain_google.txt
+```

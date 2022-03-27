@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+!/usr/bin/env bash
 
 if [[ -d soscwfs  ]]; then
   rm soscwfs/home/.ash_history 
@@ -9,8 +9,11 @@ if [[ -d soscwfs  ]]; then
   rm soscwfs/root/.bash_history
   rm soscwfs/root/.viminfo
   rm soscwfs/root/.config/shodan/api_key
-  yes | rm soscwfs/home/.local/share/sqlmap/output/* -r
-  yes | rm soscwfs/home/.tor/* -r
+  # Some files are .gitignored
+  # yes | rm soscwfs/home/.local/share/sqlmap/output/* -r
+  # yes | rm soscwfs/home/.tor/* -r
+  echo 'Your telegram bot api token goes here. Get if from https://t.me/BotFather' > soscwfs/home/nbmxbsf/token.txt;
+  echo 'THIS_IS_YOUR_TELEGRAM_BOT_LOGIN_PASSWORD_REPLACE_ALL_THIS_LINE_BY_NEW_ONE' > soscwfs/home/nbmxbsf/password.txt;
 
   git add --all && git commit -m "$1" && git push
 else

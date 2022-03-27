@@ -20,6 +20,7 @@ import socket
 import time
 from collections import Counter
 
+from subbrute import subbrute
 # external modules
 try:
     from subbrute import subbrute
@@ -129,7 +130,7 @@ def parse_args():
     parser.error = parser_error
     parser._optionals.title = "OPTIONS"
     parser.add_argument('-d', '--domain', help="Domain name to enumerate it's subdomains", required=True)
-    parser.add_argument('-b', '--bruteforce', help='Enable the subbrute bruteforce module', nargs='?', default=False)
+    parser.add_argument('-b', '--bruteforce', help='NOT WORKING', nargs='?', default=False)
     parser.add_argument('-p', '--ports', help='Scan the found subdomains against specified tcp ports')
     parser.add_argument('-v', '--verbose', help='Enable Verbosity and display results in realtime', nargs='?',
                         default=False)
