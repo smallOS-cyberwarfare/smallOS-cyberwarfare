@@ -18,8 +18,9 @@
     "url": "https://github.com/stringmanolo/nbmxbsf/issues"
   },
   "homepage": "https://github.com/stringmanolo/nbmxbsf#readme",
-  "dependencies": { 
+  "dependencies": {
     "@types/node": "^16.11.10",
+    "fdir": "^5.2.0",
     "typescript": "^4.5.2"
   }
 }

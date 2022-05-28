@@ -1,4 +1,4 @@
-id: airflow-panel
+id: airflow-admin-login-panel
 
 info:
   name: Apache Airflow Admin Login Panel
@@ -7,14 +7,13 @@ info:
   description: An Apache Airflow admin login panel was discovered.
   reference:
     - https://airflow.apache.org/docs/apache-airflow/stable/security/webserver.html
-  tags: panel,apache,airflow
-  metadata:
-    shodan-query: title:"Sign In - Airflow"
   classification:
     cvss-metrics: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L
     cvss-score: 8.3
-    cve-id:
     cwe-id: CWE-522
+  metadata:
+    shodan-query: title:"Sign In - Airflow"
+  tags: panel,apache,airflow,admin
 
 requests:
   - method: GET
@@ -35,4 +34,4 @@ requests:
         status:
           - 200
 
-# Enhanced by mp on 2022/03/16
+# Enhanced by mp on 2022/03/21

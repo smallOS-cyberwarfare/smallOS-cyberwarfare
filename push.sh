@@ -1,4 +1,4 @@
-!/usr/bin/env bash
+#!/usr/bin/env bash
 
 if [[ -d soscwfs  ]]; then
   rm soscwfs/home/.ash_history 
