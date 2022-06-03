@@ -12,6 +12,6 @@ const defaultGOPPC64 = `power8`
 const defaultGOEXPERIMENT = ``
 const defaultGO_EXTLINK_ENABLED = ``
 const defaultGO_LDSO = `/lib/ld-musl-aarch64.so.1`
-const version = `go1.17.4`
+const version = `go1.17.10`
 const defaultGOOS = runtime.GOOS
 const defaultGOARCH = runtime.GOARCH
