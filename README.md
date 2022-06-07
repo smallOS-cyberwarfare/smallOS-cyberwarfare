@@ -10,6 +10,7 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 - dirstalk (folders scanner)  
 - domsinkfinder (XSS-DOM sinks highlighter)
 - impulse (ddos tools)  
+- ngrok (open source client)
 - ncat (empowered netcat)
 - nmap (network scanner)
 - nuclei (vuln scanner)  
@@ -32,10 +33,13 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 - js (run javascript commands directly in your terminal)  
 - lynx (http client, in shell/cli browser)  
 - npm (manage node packages)  
+- ssh (openssh client to connect to remote servers)
+- sshd (openssh server)
 - tgbot (telegram remote administration tool)  
 - tmux (manage multiple sessions)
 - tor (start tor service)  
 - torsocks (run a command trought tor network)  
+- tree (pretty print all subdirectories and files)
 - vim (text editor, includes configuration and emmet plugin)   
   
 ### Programming  

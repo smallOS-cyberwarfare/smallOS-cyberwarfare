@@ -23,10 +23,12 @@ Read and Write to machines across network
 
 - [nmap](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/nmap/README.md)
 Multipurpouse Network Scanning Tool  
+   
+- [ngrok-opensource](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/ngrok/README.md)  
   
 - [nuclei](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/nuclei/README.md)  
 Fast and customizable vulnerability scanner based on simple YAML based DSL  
-  
+
 - [searchsploit](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/searchsploit/README.md)  
 Command line search tool for Exploit-DB 
 

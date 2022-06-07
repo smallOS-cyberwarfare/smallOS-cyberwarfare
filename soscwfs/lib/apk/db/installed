@@ -30411,3 +30411,216 @@ Z:Q1rwkXYrskrTftaOJXmdczduLmfwE=
 R:xcmdsrv_client.c
 Z:Q1DVXJjiDA9g3SZnk7GZH1pA5Z61o=
 
+C:Q1Srmjd59YEQWd7Y/idgA6JrloQ18=
+P:openssh-keygen
+V:8.8_p1-r1
+A:aarch64
+S:194324
+I:466944
+T:ssh helper program for generating keys
+U:https://www.openssh.com/portable.html
+L:BSD
+o:openssh
+m:Natanael Copa <ncopa@alpinelinux.org>
+t:1637050956
+c:b5e3d52e5a95ff8a73c23908201474bb15048a11
+D:so:libc.musl-aarch64.so.1 so:libcrypto.so.1.1
+p:cmd:ssh-keygen=8.8_p1-r1
+F:usr
+F:usr/bin
+R:ssh-keygen
+a:0:0:755
+Z:Q1eXH4Z6pOOxxMdXng57qA52MbAhE=
+
+C:Q1pFOSMk3piUhYPThRNVmUTheMwYQ=
+P:libedit
+V:20210910.3.1-r0
+A:aarch64
+S:80039
+I:212992
+T:BSD line editing library
+U:https://www.thrysoee.dk/editline
+L:BSD-3-Clause
+o:libedit
+m:Drew DeVault <sir@cmpwn.com>
+t:1631403774
+c:d8a5ac7439a1911967a21a99c88b0e6552c6dc57
+D:so:libc.musl-aarch64.so.1 so:libncursesw.so.6
+p:so:libedit.so.0=0.0.68
+F:usr
+F:usr/lib
+R:libedit.so.0
+a:0:0:777
+Z:Q1kavxlyJ9L+cdAW9My2ixbJybJ2g=
+R:libedit.so.0.0.68
+a:0:0:755
+Z:Q1K5AYeQROWk2QUIxu8S3StrTQBy8=
+
+C:Q1IWF4a44L/6mqcpiPZQhhHMOaGpg=
+P:openssh-client-common
+V:8.8_p1-r1
+A:aarch64
+S:783374
+I:2437120
+T:OpenBSD's SSH client common files
+U:https://www.openssh.com/portable.html
+L:BSD
+o:openssh
+m:Natanael Copa <ncopa@alpinelinux.org>
+t:1637050956
+c:b5e3d52e5a95ff8a73c23908201474bb15048a11
+D:so:libc.musl-aarch64.so.1 so:libcrypto.so.1.1 so:libedit.so.0 so:libz.so.1
+p:cmd:findssl.sh=8.8_p1-r1 cmd:scp=8.8_p1-r1 cmd:sftp=8.8_p1-r1 cmd:ssh-add=8.8_p1-r1 cmd:ssh-agent=8.8_p1-r1 cmd:ssh-copy-id=8.8_p1-r1 cmd:ssh-keyscan=8.8_p1-r1 cmd:ssh-pkcs11-helper=8.8_p1-r1
+F:etc
+F:etc/ssh
+R:moduli
+Z:Q1+QfzoOccgxQkf6ekkwvsTufsZp8=
+R:ssh_config
+Z:Q1KdbCFdt+M0nPGBDMezqiU5wIXQw=
+F:usr
+F:usr/bin
+R:findssl.sh
+a:0:0:755
+Z:Q118AJVSk4PVi6+adyZ8y8zWFVB/k=
+R:scp
+a:0:0:755
+Z:Q1gRkJAX2xU37MGyx/Rov1RTUq3XY=
+R:sftp
+a:0:0:755
+Z:Q1HCu2N7XZjJ1GgSnnPBIBpU5f/Fc=
+R:ssh-add
+a:0:0:755
+Z:Q1FBd0s1/5ZKPV1UK4YsprBoppq1Q=
+R:ssh-agent
+a:0:0:755
+Z:Q1jHpuZQo1DHHaOOhNImsWdMjchcM=
+R:ssh-copy-id
+a:0:0:755
+Z:Q1vQyo9X+1LjFHziLPbolUYkgRF9o=
+R:ssh-keyscan
+a:0:0:755
+Z:Q1fyr4w0mF3sigWZN0d1UkSuRCrIk=
+R:ssh-pkcs11-helper
+a:0:0:755
+Z:Q1ewJvgBHFRLGfy7zkncwqj83blCo=
+F:usr/lib
+F:usr/lib/ssh
+F:var
+F:var/empty
+
+C:Q1WjxZuY/WeQa4w1qnMUWzsB/dMtc=
+P:openssh-client-default
+V:8.8_p1-r1
+A:aarch64
+S:332131
+I:757760
+T:OpenBSD's SSH client
+U:https://www.openssh.com/portable.html
+L:BSD
+o:openssh
+m:Natanael Copa <ncopa@alpinelinux.org>
+t:1637050956
+c:b5e3d52e5a95ff8a73c23908201474bb15048a11
+k:1
+D:openssh-keygen=8.8_p1-r1 openssh-client-common=8.8_p1-r1 !openssh-client-krb5 so:libc.musl-aarch64.so.1 so:libcrypto.so.1.1 so:libz.so.1
+p:openssh-client=8.8_p1-r1 cmd:ssh=8.8_p1-r1
+F:usr
+F:usr/bin
+R:ssh
+a:0:0:755
+Z:Q1POsWxxar3JnN0klWBfIKfZoqNh0=
+
+C:Q187U3Jr6Q6+OhvNC9j4DLIE7pmoY=
+P:openssh-sftp-server
+V:8.8_p1-r1
+A:aarch64
+S:58073
+I:147456
+T:ssh sftp server module
+U:https://www.openssh.com/portable.html
+L:BSD
+o:openssh
+m:Natanael Copa <ncopa@alpinelinux.org>
+t:1637050956
+c:b5e3d52e5a95ff8a73c23908201474bb15048a11
+D:so:libc.musl-aarch64.so.1 so:libcrypto.so.1.1
+F:usr
+F:usr/lib
+F:usr/lib/ssh
+R:sftp-server
+a:0:0:755
+Z:Q1TH6lDmjJDIeGb42i/F+bwQ/0e5w=
+
+C:Q1UNsbSBw9hZbG+CqZF8zIQV/jwtM=
+P:openssh-server-common
+V:8.8_p1-r1
+A:aarch64
+S:5097
+I:32768
+T:OpenSSH server configuration files
+U:https://www.openssh.com/portable.html
+L:BSD
+o:openssh
+m:Natanael Copa <ncopa@alpinelinux.org>
+t:1637050956
+c:b5e3d52e5a95ff8a73c23908201474bb15048a11
+F:etc
+F:etc/conf.d
+R:sshd
+Z:Q1CS24ITvci5OknxRmS6wEnR8GdhU=
+F:etc/init.d
+R:sshd
+a:0:0:755
+Z:Q1nXFNjSTFgVRmijcYh7m4Wwzm8jw=
+F:etc/ssh
+R:sshd_config
+Z:Q1nQP0ngJ2gzT082pY0jeUUHlsqtE=
+
+C:Q1u39iRznukdfgb6NlE6LaWj7Q684=
+P:openssh-server
+V:8.8_p1-r1
+A:aarch64
+S:348015
+I:794624
+T:OpenSSH server
+U:https://www.openssh.com/portable.html
+L:BSD
+o:openssh
+m:Natanael Copa <ncopa@alpinelinux.org>
+t:1637050956
+c:b5e3d52e5a95ff8a73c23908201474bb15048a11
+D:openssh-keygen=8.8_p1-r1 openssh-server-common=8.8_p1-r1 so:libc.musl-aarch64.so.1 so:libcrypto.so.1.1 so:libz.so.1
+p:cmd:sshd=8.8_p1-r1
+F:usr
+F:usr/sbin
+R:sshd
+a:0:0:755
+Z:Q1DtCW3vNXfZ/1zCrNWEKHTsTo4Vs=
+
+C:Q1EpmGePgk/9cg7UvuC5UC8VAkDqY=
+P:openssh
+V:8.8_p1-r1
+A:aarch64
+S:256748
+I:667648
+T:Port of OpenBSD's free SSH release
+U:https://www.openssh.com/portable.html
+L:BSD
+o:openssh
+m:Natanael Copa <ncopa@alpinelinux.org>
+t:1637050956
+c:b5e3d52e5a95ff8a73c23908201474bb15048a11
+D:openssh-client openssh-sftp-server openssh-server so:libc.musl-aarch64.so.1 so:libcrypto.so.1.1
+F:usr
+F:usr/lib
+F:usr/lib/ssh
+R:ssh-pkcs11-helper
+a:0:0:755
+Z:Q1ewJvgBHFRLGfy7zkncwqj83blCo=
+R:ssh-sk-helper
+a:0:0:755
+Z:Q1r0wMGZmNrQB52ccy2WmNE2iYABQ=
+F:usr/sbin
+F:var
+F:var/empty
+

@@ -9,6 +9,9 @@ if [[ -d soscwfs  ]]; then
   rm soscwfs/root/.bash_history
   rm soscwfs/root/.viminfo
   rm soscwfs/root/.config/shodan/api_key
+  rm soscwfs/root/.ssh/id_ecdsa
+  rm soscwfs/root/.ssh/id_ecdsa.pub
+  yes | rm soscwfs/tmp/* -r
   # Some files are .gitignored
   # yes | rm soscwfs/home/.local/share/sqlmap/output/* -r
   # yes | rm soscwfs/home/.tor/* -r

@@ -14,6 +14,7 @@ nmap
 nmap-ncat
 nmap-scripts
 npm
+openssh
 p7zip
 py3-pip
 python3
