@@ -7,39 +7,28 @@ const rpj = require('read-package-json-fast')
 const libexec = require('libnpmexec')
 const mapWorkspaces = require('@npmcli/map-workspaces')
 const PackageJson = require('@npmcli/package-json')
+const log = require('../utils/log-shim.js')
 
 const getLocationMsg = require('../exec/get-workspace-location-msg.js')
 const BaseCommand = require('../base-command.js')
 
 class Init extends BaseCommand {
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get description () {
-    return 'Create a package.json file'
-  }
+  static description = 'Create a package.json file'
+  static params = ['yes', 'force', 'workspace', 'workspaces', 'include-workspace-root']
+  static name = 'init'
+  static usage = [
+    '[--force|-f|--yes|-y|--scope]',
+    '<@scope> (same as `npx <@scope>/create`)',
+    '[<@scope>/]<name> (same as `npx [<@scope>/]create-<name>`)',
+  ]
 
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get params () {
-    return ['yes', 'force', 'workspace', 'workspaces', 'include-workspace-root']
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get name () {
-    return 'init'
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get usage () {
-    return [
-      '[--force|-f|--yes|-y|--scope]',
-      '<@scope> (same as `npx <@scope>/create`)',
-      '[<@scope>/]<name> (same as `npx [<@scope>/]create-<name>`)',
-    ]
-  }
+  static ignoreImplicitWorkspace = false
 
   async exec (args) {
     // npm exec style
-    if (args.length)
+    if (args.length) {
       return (await this.execCreate({ args, path: process.cwd() }))
+    }
 
     // no args, uses classic init-package-json boilerplate
     await this.template()
@@ -47,8 +36,9 @@ class Init extends BaseCommand {
 
   async execWorkspaces (args, filters) {
     // if the root package is uninitiated, take care of it first
-    if (this.npm.flatOptions.includeWorkspaceRoot)
+    if (this.npm.flatOptions.includeWorkspaceRoot) {
       await this.exec(args)
+    }
 
     // reads package.json for the top-level folder first, by doing this we
     // ensure the command throw if no package.json is found before trying
@@ -80,9 +70,9 @@ class Init extends BaseCommand {
     const [initerName, ...otherArgs] = args
     let packageName = initerName
 
-    if (/^@[^/]+$/.test(initerName))
+    if (/^@[^/]+$/.test(initerName)) {
       packageName = initerName + '/create'
-    else {
+    } else {
       const req = npa(initerName)
       if (req.type === 'git' && req.hosted) {
         const { user, project } = req.hosted
@@ -90,8 +80,9 @@ class Init extends BaseCommand {
           .replace(user + '/' + project, user + '/create-' + project)
       } else if (req.registry) {
         packageName = req.name.replace(/^(@[^/]+\/)?/, '$1create-')
-        if (req.rawSpec)
+        if (req.rawSpec) {
           packageName += '@' + req.rawSpec
+        }
       } else {
         throw Object.assign(new Error(
           'Unrecognized initializer: ' + initerName +
@@ -106,7 +97,6 @@ class Init extends BaseCommand {
     const {
       flatOptions,
       localBin,
-      log,
       globalBin,
     } = this.npm
     // this function is definitely called.  But because of coverage map stuff
@@ -126,7 +116,6 @@ class Init extends BaseCommand {
       color,
       localBin,
       locationMsg,
-      log,
       globalBin,
       output,
       path,
@@ -137,8 +126,8 @@ class Init extends BaseCommand {
   }
 
   async template (path = process.cwd()) {
-    this.npm.log.pause()
-    this.npm.log.disableProgress()
+    log.pause()
+    log.disableProgress()
 
     const initFile = this.npm.config.get('init-module')
     if (!this.npm.config.get('yes') && !this.npm.config.get('force')) {
@@ -159,17 +148,17 @@ class Init extends BaseCommand {
     // XXX promisify init-package-json
     await new Promise((res, rej) => {
       initJson(path, initFile, this.npm.config, (er, data) => {
-        this.npm.log.resume()
-        this.npm.log.enableProgress()
-        this.npm.log.silly('package data', data)
+        log.resume()
+        log.enableProgress()
+        log.silly('package data', data)
         if (er && er.message === 'canceled') {
-          this.npm.log.warn('init', 'canceled')
+          log.warn('init', 'canceled')
           return res()
         }
-        if (er)
+        if (er) {
           rej(er)
-        else {
-          this.npm.log.info('init', 'written successfully')
+        } else {
+          log.info('init', 'written successfully')
           res(data)
         }
       })
@@ -181,8 +170,9 @@ class Init extends BaseCommand {
 
     // skip setting workspace if current package.json glob already satisfies it
     for (const wPath of workspaces.values()) {
-      if (wPath === workspacePath)
+      if (wPath === workspacePath) {
         return
+      }
     }
 
     // if a create-pkg didn't generate a package.json at the workspace

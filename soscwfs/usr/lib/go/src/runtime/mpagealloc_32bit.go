@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build 386 || arm || mips || mipsle || wasm
-// +build 386 arm mips mipsle wasm
 
 // wasm is a treated as a 32-bit architecture for the purposes of the page
 // allocator, even though it has 64-bit pointers. This is because any wasm

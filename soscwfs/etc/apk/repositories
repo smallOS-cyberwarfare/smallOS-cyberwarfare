@@ -1,5 +1,7 @@
-https://dl-cdn.alpinelinux.org/alpine/v3.15/main
-https://dl-cdn.alpinelinux.org/alpine/v3.15/community
+https://dl-cdn.alpinelinux.org/alpine/latest-stable/main
+https://dl-cdn.alpinelinux.org/alpine/latest-stable/community
+# https://dl-cdn.alpinelinux.org/alpine/v3.15/main
+# https://dl-cdn.alpinelinux.org/alpine/v3.15/community
 @edge https://nl.alpinelinux.org/alpine/edge/community
 @edge https://nl.alpinelinux.org/alpine/edge/main
 @testing https://nl.alpinelinux.org/alpine/edge/testing

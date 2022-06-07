@@ -1,5 +1,5 @@
 const util = require('util')
-const log = require('npmlog')
+const log = require('../utils/log-shim.js')
 const semver = require('semver')
 const pack = require('libnpmpack')
 const libpub = require('libnpmpublish').publish
@@ -7,7 +7,6 @@ const runScript = require('@npmcli/run-script')
 const pacote = require('pacote')
 const npa = require('npm-package-arg')
 const npmFetch = require('npm-registry-fetch')
-const chalk = require('chalk')
 const replaceInfo = require('../utils/replace-info.js')
 
 const otplease = require('../utils/otplease.js')
@@ -26,40 +25,28 @@ const readJson = util.promisify(require('read-package-json'))
 
 const BaseCommand = require('../base-command.js')
 class Publish extends BaseCommand {
-  static get description () {
-    return 'Publish a package'
-  }
+  static description = 'Publish a package'
+  static name = 'publish'
+  static params = [
+    'tag',
+    'access',
+    'dry-run',
+    'otp',
+    'workspace',
+    'workspaces',
+    'include-workspace-root',
+  ]
 
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get name () {
-    return 'publish'
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get params () {
-    return [
-      'tag',
-      'access',
-      'dry-run',
-      'otp',
-      'workspace',
-      'workspaces',
-      'include-workspace-root',
-    ]
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get usage () {
-    return [
-      '[<folder>]',
-    ]
-  }
+  static usage = ['[<folder>]']
+  static ignoreImplicitWorkspace = false
 
   async exec (args) {
-    if (args.length === 0)
+    if (args.length === 0) {
       args = ['.']
-    if (args.length !== 1)
+    }
+    if (args.length !== 1) {
       throw this.usageError()
+    }
 
     log.verbose('publish', replaceInfo(args))
 
@@ -68,10 +55,11 @@ class Publish extends BaseCommand {
     const json = this.npm.config.get('json')
     const defaultTag = this.npm.config.get('tag')
     const ignoreScripts = this.npm.config.get('ignore-scripts')
-    const silent = log.level === 'silent'
+    const { silent } = this.npm
 
-    if (semver.validRange(defaultTag))
+    if (semver.validRange(defaultTag)) {
       throw new Error('Tag name must not be a valid SemVer range: ' + defaultTag.trim())
+    }
 
     const opts = { ...this.npm.flatOptions }
 
@@ -79,9 +67,6 @@ class Publish extends BaseCommand {
     // even though the default is the 'file:.' cwd.
     const spec = npa(args[0])
     let manifest = await this.getManifest(spec, opts)
-
-    if (manifest.publishConfig)
-      flatten(manifest.publishConfig, opts)
 
     // only run scripts for directory type publishes
     if (spec.type === 'directory' && !ignoreScripts) {
@@ -94,30 +79,38 @@ class Publish extends BaseCommand {
       })
     }
 
-    const tarballData = await pack(spec, opts)
+    // we pass dryRun: true to libnpmpack so it doesn't write the file to disk
+    const tarballData = await pack(spec, { ...opts, dryRun: true })
     const pkgContents = await getContents(manifest, tarballData)
 
     // The purpose of re-reading the manifest is in case it changed,
     // so that we send the latest and greatest thing to the registry
     // note that publishConfig might have changed as well!
     manifest = await this.getManifest(spec, opts)
-    if (manifest.publishConfig)
-      flatten(manifest.publishConfig, opts)
 
-    // note that logTar calls npmlog.notice(), so if we ARE in silent mode,
-    // this will do nothing, but we still want it in the debuglog if it fails.
-    if (!json)
-      logTar(pkgContents, { log, unicode })
+    // JSON already has the package contents
+    if (!json) {
+      logTar(pkgContents, { unicode })
+    }
+
+    const resolved = npa.resolve(manifest.name, manifest.version)
+    const registry = npmFetch.pickRegistry(resolved, opts)
+    const creds = this.npm.config.getCredentialsByURI(registry)
+    const noCreds = !creds.token && !creds.username
+    const outputRegistry = replaceInfo(registry)
+
+    if (noCreds) {
+      const msg = `This command requires you to be logged in to ${outputRegistry}`
+      if (dryRun) {
+        log.warn('', `${msg} (dry-run)`)
+      } else {
+        throw Object.assign(new Error(msg), { code: 'ENEEDAUTH' })
+      }
+    }
+
+    log.notice('', `Publishing to ${outputRegistry}${dryRun ? ' (dry-run)' : ''}`)
 
     if (!dryRun) {
-      const resolved = npa.resolve(manifest.name, manifest.version)
-      const registry = npmFetch.pickRegistry(resolved, opts)
-      const creds = this.npm.config.getCredentialsByURI(registry)
-      if (!creds.token && !creds.username) {
-        throw Object.assign(new Error('This command requires you to be logged in.'), {
-          code: 'ENEEDAUTH',
-        })
-      }
       await otplease(opts, opts => libpub(manifest, tarballData, opts))
     }
 
@@ -140,10 +133,11 @@ class Publish extends BaseCommand {
     }
 
     if (!this.suppressOutput) {
-      if (!silent && json)
+      if (!silent && json) {
         this.npm.output(JSON.stringify(pkgContents, null, 2))
-      else if (!silent)
+      } else if (!silent) {
         this.npm.output(`+ ${pkgContents.id}`)
+      }
     }
 
     return pkgContents
@@ -155,9 +149,7 @@ class Publish extends BaseCommand {
 
     const results = {}
     const json = this.npm.config.get('json')
-    const silent = log.level === 'silent'
-    const noop = a => a
-    const color = this.npm.color ? chalk : { green: noop, bold: noop }
+    const { silent } = this.npm
     await this.setWorkspaces(filters)
 
     for (const [name, workspace] of this.workspaces.entries()) {
@@ -169,9 +161,9 @@ class Publish extends BaseCommand {
           log.warn(
             'publish',
             `Skipping workspace ${
-              color.green(name)
+              this.npm.chalk.green(name)
             }, marked as ${
-              color.bold('private')
+              this.npm.chalk.bold('private')
             }`
           )
           continue
@@ -180,22 +172,36 @@ class Publish extends BaseCommand {
       }
       // This needs to be in-line w/ the rest of the output that non-JSON
       // publish generates
-      if (!silent && !json)
+      if (!silent && !json) {
         this.npm.output(`+ ${pkgContents.id}`)
-      else
+      } else {
         results[name] = pkgContents
+      }
     }
 
-    if (!silent && json)
+    if (!silent && json) {
       this.npm.output(JSON.stringify(results, null, 2))
+    }
   }
 
   // if it's a directory, read it from the file system
   // otherwise, get the full metadata from whatever it is
-  getManifest (spec, opts) {
-    if (spec.type === 'directory')
-      return readJson(`${spec.fetchSpec}/package.json`)
-    return pacote.manifest(spec, { ...opts, fullMetadata: true })
+  // XXX can't pacote read the manifest from a directory?
+  async getManifest (spec, opts) {
+    let manifest
+    if (spec.type === 'directory') {
+      manifest = await readJson(`${spec.fetchSpec}/package.json`)
+    } else {
+      manifest = await pacote.manifest(spec, {
+        ...opts,
+        fullmetadata: true,
+        fullReadJson: true,
+      })
+    }
+    if (manifest.publishConfig) {
+      flatten(manifest.publishConfig, opts)
+    }
+    return manifest
   }
 }
 module.exports = Publish

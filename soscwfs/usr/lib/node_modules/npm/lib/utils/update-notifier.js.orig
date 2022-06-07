@@ -11,6 +11,8 @@ const stat = promisify(require('fs').stat)
 const writeFile = promisify(require('fs').writeFile)
 const { resolve } = require('path')
 
+const SKIP = Symbol('SKIP')
+
 const isGlobalNpmUpdate = npm => {
   return npm.flatOptions.global &&
     ['install', 'update'].includes(npm.command) &&
@@ -37,8 +39,9 @@ const updateNotifier = async (npm, spec = 'latest') => {
   // never check for updates in CI, when updating npm already, or opted out
   if (!npm.config.get('update-notifier') ||
       isGlobalNpmUpdate(npm) ||
-      ciDetect())
-    return null
+      ciDetect()) {
+    return SKIP
+  }
 
   // if we're on a prerelease train, then updates are coming fast
   // check for a new one daily.  otherwise, weekly.
@@ -46,19 +49,21 @@ const updateNotifier = async (npm, spec = 'latest') => {
   const current = semver.parse(version)
 
   // if we're on a beta train, always get the next beta
-  if (current.prerelease.length)
+  if (current.prerelease.length) {
     spec = `^${version}`
+  }
 
   // while on a beta train, get updates daily
   const duration = spec !== 'latest' ? DAILY : WEEKLY
 
   // if we've already checked within the specified duration, don't check again
-  if (!(await checkTimeout(npm, duration)))
+  if (!(await checkTimeout(npm, duration))) {
     return null
+  }
 
   // if they're currently using a prerelease, nudge to the next prerelease
   // otherwise, nudge to latest.
-  const useColor = npm.log.useColor()
+  const useColor = npm.logColor
 
   const mani = await pacote.manifest(`npm@${spec}`, {
     // always prefer latest, even if doing --tag=whatever on the cmd
@@ -67,8 +72,9 @@ const updateNotifier = async (npm, spec = 'latest') => {
   }).catch(() => null)
 
   // if pacote failed, give up
-  if (!mani)
+  if (!mani) {
     return null
+  }
 
   const latest = mani.version
 
@@ -76,12 +82,14 @@ const updateNotifier = async (npm, spec = 'latest') => {
   // and should get the updates from that release train.
   // Note that this isn't another http request over the network, because
   // the packument will be cached by pacote from previous request.
-  if (semver.gt(version, latest) && spec === 'latest')
+  if (semver.gt(version, latest) && spec === 'latest') {
     return updateNotifier(npm, `^${version}`)
+  }
 
   // if we already have something >= the desired spec, then we're done
-  if (semver.gte(version, latest))
+  if (semver.gte(version, latest)) {
     return null
+  }
 
   // ok!  notify the user about this update they should get.
   // The message is saved for printing at process exit so it will not get
@@ -112,9 +120,15 @@ const updateNotifier = async (npm, spec = 'latest') => {
 // only update the notification timeout if we actually finished checking
 module.exports = async npm => {
   const notification = await updateNotifier(npm)
+
+  // dont write the file if we skipped checking altogether
+  if (notification === SKIP) {
+    return null
+  }
+
   // intentional.  do not await this.  it's a best-effort update.  if this
   // fails, it's ok.  might be using /dev/null as the cache or something weird
   // like that.
   writeFile(lastCheckedFile(npm), '').catch(() => {})
-  npm.updateNotification = notification
+  return notification
 }

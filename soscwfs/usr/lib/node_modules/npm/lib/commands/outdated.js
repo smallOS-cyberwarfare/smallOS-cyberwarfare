@@ -2,8 +2,7 @@ const os = require('os')
 const path = require('path')
 const pacote = require('pacote')
 const table = require('text-table')
-const color = require('chalk')
-const styles = require('ansistyles')
+const chalk = require('chalk')
 const npa = require('npm-package-arg')
 const pickManifest = require('npm-pick-manifest')
 const localeCompare = require('@isaacs/string-locale-compare')('en')
@@ -14,32 +13,17 @@ const ansiTrim = require('../utils/ansi-trim.js')
 const ArboristWorkspaceCmd = require('../arborist-cmd.js')
 
 class Outdated extends ArboristWorkspaceCmd {
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get description () {
-    return 'Check for outdated packages'
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get name () {
-    return 'outdated'
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get usage () {
-    return ['[[<@scope>/]<pkg> ...]']
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get params () {
-    return [
-      'all',
-      'json',
-      'long',
-      'parseable',
-      'global',
-      'workspace',
-    ]
-  }
+  static description = 'Check for outdated packages'
+  static name = 'outdated'
+  static usage = ['[[<@scope>/]<pkg> ...]']
+  static params = [
+    'all',
+    'json',
+    'long',
+    'parseable',
+    'global',
+    'workspace',
+  ]
 
   async exec (args) {
     const global = path.resolve(this.npm.globalDir, '..')
@@ -91,19 +75,21 @@ class Outdated extends ArboristWorkspaceCmd {
     // sorts list alphabetically
     const outdated = this.list.sort((a, b) => localeCompare(a.name, b.name))
 
-    if (outdated.length > 0)
+    if (outdated.length > 0) {
       process.exitCode = 1
+    }
 
     // return if no outdated packages
-    if (outdated.length === 0 && !this.npm.config.get('json'))
+    if (outdated.length === 0 && !this.npm.config.get('json')) {
       return
+    }
 
     // display results
-    if (this.npm.config.get('json'))
+    if (this.npm.config.get('json')) {
       this.npm.output(this.makeJSON(outdated))
-    else if (this.npm.config.get('parseable'))
+    } else if (this.npm.config.get('parseable')) {
       this.npm.output(this.makeParseable(outdated))
-    else {
+    } else {
       const outList = outdated.map(x => this.makePretty(x))
       const outHead = ['Package',
         'Current',
@@ -113,12 +99,14 @@ class Outdated extends ArboristWorkspaceCmd {
         'Depended by',
       ]
 
-      if (this.npm.config.get('long'))
+      if (this.npm.config.get('long')) {
         outHead.push('Package Type', 'Homepage')
+      }
       const outTable = [outHead].concat(outList)
 
-      if (this.npm.color)
-        outTable[0] = outTable[0].map(heading => styles.underline(heading))
+      if (this.npm.color) {
+        outTable[0] = outTable[0].map(heading => chalk.underline(heading))
+      }
 
       const tableOpts = {
         align: ['l', 'r', 'r', 'r', 'l'],
@@ -145,18 +133,21 @@ class Outdated extends ArboristWorkspaceCmd {
   }
 
   getEdgesIn (node) {
-    for (const edge of node.edgesIn)
+    for (const edge of node.edgesIn) {
       this.trackEdge(edge)
+    }
   }
 
   getEdgesOut (node) {
     // TODO: normalize usage of edges and avoid looping through nodes here
     if (this.npm.config.get('global')) {
-      for (const child of node.children.values())
+      for (const child of node.children.values()) {
         this.trackEdge(child)
+      }
     } else {
-      for (const edge of node.edgesOut.values())
+      for (const edge of node.edgesOut.values()) {
         this.trackEdge(edge)
+      }
     }
   }
 
@@ -167,15 +158,17 @@ class Outdated extends ArboristWorkspaceCmd {
         && this.filterSet.size > 0
         && !this.filterSet.has(edge.from.target)
 
-    if (filteredOut)
+    if (filteredOut) {
       return
+    }
 
     this.edges.add(edge)
   }
 
   getWorkspacesEdges (node) {
-    if (this.npm.config.get('global'))
+    if (this.npm.config.get('global')) {
       return
+    }
 
     for (const edge of this.tree.edgesOut.values()) {
       const workspace = edge
@@ -183,8 +176,9 @@ class Outdated extends ArboristWorkspaceCmd {
         && edge.to.target
         && edge.to.target.isWorkspace
 
-      if (workspace)
+      if (workspace) {
         this.getEdgesOut(edge.to.target)
+      }
     }
   }
 
@@ -198,7 +192,12 @@ class Outdated extends ArboristWorkspaceCmd {
   }
 
   async getOutdatedInfo (edge) {
-    const spec = npa(edge.name)
+    let alias = false
+    try {
+      alias = npa(edge.spec).subSpec
+    } catch (err) {
+    }
+    const spec = npa(alias ? alias.name : edge.name)
     const node = edge.to || edge
     const { path, location } = node
     const { version: current } = node.package || {}
@@ -208,23 +207,26 @@ class Outdated extends ArboristWorkspaceCmd {
       : edge.dev ? 'devDependencies'
       : 'dependencies'
 
-    for (const omitType of this.npm.config.get('omit')) {
-      if (node[omitType])
+    for (const omitType of this.npm.flatOptions.omit) {
+      if (node[omitType]) {
         return
+      }
     }
 
     // deps different from prod not currently
     // on disk are not included in the output
-    if (edge.error === 'MISSING' && type !== 'dependencies')
+    if (edge.error === 'MISSING' && type !== 'dependencies') {
       return
+    }
 
     try {
       const packument = await this.getPackument(spec)
-      const expected = edge.spec
+      const expected = alias ? alias.fetchSpec : edge.spec
       // if it's not a range, version, or tag, skip it
       try {
-        if (!npa(`${edge.name}@${edge.spec}`).registry)
+        if (!npa(`${edge.name}@${edge.spec}`).registry) {
           return null
+        }
       } catch (err) {
         return null
       }
@@ -241,7 +243,7 @@ class Outdated extends ArboristWorkspaceCmd {
           : 'global'
 
         this.list.push({
-          name: edge.name,
+          name: alias ? edge.spec.replace('npm', edge.name) : edge.name,
           path,
           type,
           current,
@@ -259,14 +261,16 @@ class Outdated extends ArboristWorkspaceCmd {
         err.code === 'ETARGET' ||
         err.code === 'E403' ||
         err.code === 'E404')
-      )
+      ) {
         throw err
+      }
     }
   }
 
   maybeWorkspaceName (node) {
-    if (!node.isWorkspace)
+    if (!node.isWorkspace) {
       return node.name
+    }
 
     const humanOutput =
       !this.npm.config.get('json') && !this.npm.config.get('parseable')
@@ -277,7 +281,7 @@ class Outdated extends ArboristWorkspaceCmd {
         : node.name
 
     return this.npm.color && humanOutput
-      ? color.green(workspaceName)
+      ? chalk.green(workspaceName)
       : workspaceName
   }
 
@@ -302,9 +306,9 @@ class Outdated extends ArboristWorkspaceCmd {
     }
 
     if (this.npm.color) {
-      columns[0] = color[current === wanted ? 'yellow' : 'red'](columns[0]) // current
-      columns[2] = color.green(columns[2]) // wanted
-      columns[3] = color.magenta(columns[3]) // latest
+      columns[0] = chalk[current === wanted ? 'yellow' : 'red'](columns[0]) // current
+      columns[2] = chalk.green(columns[2]) // wanted
+      columns[3] = chalk.magenta(columns[3]) // latest
     }
 
     return columns
@@ -331,8 +335,9 @@ class Outdated extends ArboristWorkspaceCmd {
         name + '@' + latest,
         dependent,
       ]
-      if (this.npm.config.get('long'))
+      if (this.npm.config.get('long')) {
         out.push(type, homepage)
+      }
 
       return out.join(':')
     }).join(os.EOL)

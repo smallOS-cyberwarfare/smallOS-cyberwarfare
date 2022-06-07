@@ -1,27 +1,17 @@
-const log = require('npmlog')
+const log = require('../utils/log-shim')
 const pingUtil = require('../utils/ping.js')
 const BaseCommand = require('../base-command.js')
 
 class Ping extends BaseCommand {
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get description () {
-    return 'Ping npm registry'
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get params () {
-    return ['registry']
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get name () {
-    return 'ping'
-  }
+  static description = 'Ping npm registry'
+  static params = ['registry']
+  static name = 'ping'
+  static ignoreImplicitWorkspace = true
 
   async exec (args) {
     log.notice('PING', this.npm.config.get('registry'))
     const start = Date.now()
-    const details = await pingUtil(this.npm.flatOptions)
+    const details = await pingUtil({ ...this.npm.flatOptions })
     const time = Date.now() - start
     log.notice('PONG', `${time}ms`)
     if (this.npm.config.get('json')) {
@@ -30,8 +20,9 @@ class Ping extends BaseCommand {
         time,
         details,
       }, null, 2))
-    } else if (Object.keys(details).length)
+    } else if (Object.keys(details).length) {
       log.notice('PONG', `${JSON.stringify(details, null, 2)}`)
+    }
   }
 }
 module.exports = Ping

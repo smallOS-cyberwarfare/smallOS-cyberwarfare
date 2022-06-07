@@ -1,47 +1,37 @@
 const path = require('path')
 
 const Arborist = require('@npmcli/arborist')
-const log = require('npmlog')
+const log = require('../utils/log-shim.js')
 
 const reifyFinish = require('../utils/reify-finish.js')
 const completion = require('../utils/completion/installed-deep.js')
 
 const ArboristWorkspaceCmd = require('../arborist-cmd.js')
 class Update extends ArboristWorkspaceCmd {
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get description () {
-    return 'Update packages'
-  }
+  static description = 'Update packages'
+  static name = 'update'
 
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get name () {
-    return 'update'
-  }
+  static params = [
+    'save',
+    'global',
+    'global-style',
+    'legacy-bundling',
+    'omit',
+    'strict-peer-deps',
+    'package-lock',
+    'foreground-scripts',
+    'ignore-scripts',
+    'audit',
+    'bin-links',
+    'fund',
+    'dry-run',
+    ...super.params,
+  ]
 
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get params () {
-    return [
-      'global',
-      'global-style',
-      'legacy-bundling',
-      'strict-peer-deps',
-      'package-lock',
-      'omit',
-      'ignore-scripts',
-      'audit',
-      'bin-links',
-      'fund',
-      'dry-run',
-      ...super.params,
-    ]
-  }
+  static usage = ['[<pkg>...]']
 
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get usage () {
-    return ['[<pkg>...]']
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
+  // TODO
+  /* istanbul ignore next */
   async completion (opts) {
     return completion(this.npm, opts)
   }
@@ -53,19 +43,26 @@ class Update extends ArboristWorkspaceCmd {
       ? global
       : this.npm.prefix
 
+    // In the context of `npm update` the save
+    // config value should default to `false`
+    const save = this.npm.config.isDefault('save')
+      ? false
+      : this.npm.config.get('save')
+
     if (this.npm.config.get('depth')) {
       log.warn('update', 'The --depth option no longer has any effect. See RFC0019.\n' +
         'https://github.com/npm/rfcs/blob/latest/implemented/0019-remove-update-depth-option.md')
     }
 
-    const arb = new Arborist({
+    const opts = {
       ...this.npm.flatOptions,
-      log: this.npm.log,
       path: where,
+      save,
       workspaces: this.workspaceNames,
-    })
+    }
+    const arb = new Arborist(opts)
 
-    await arb.reify({ update })
+    await arb.reify({ ...opts, update })
     await reifyFinish(this.npm, arb)
   }
 }

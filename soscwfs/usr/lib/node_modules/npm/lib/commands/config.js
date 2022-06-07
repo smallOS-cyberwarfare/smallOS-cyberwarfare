@@ -2,7 +2,7 @@
 const configDefs = require('../utils/config/index.js')
 
 const mkdirp = require('mkdirp-infer-owner')
-const { dirname } = require('path')
+const { dirname, resolve } = require('path')
 const { promisify } = require('util')
 const fs = require('fs')
 const readFile = promisify(fs.readFile)
@@ -11,6 +11,8 @@ const { spawn } = require('child_process')
 const { EOL } = require('os')
 const ini = require('ini')
 const localeCompare = require('@isaacs/string-locale-compare')('en')
+const rpj = require('read-package-json-fast')
+const log = require('../utils/log-shim.js')
 
 // take an array of `[key, value, k2=v2, k3, v3, ...]` and turn into
 // { key: value, k2: v2, k3: v3 }
@@ -27,50 +29,51 @@ const keyValues = args => {
   return kv
 }
 
-const publicVar = k => !/^(\/\/[^:]+:)?_/.test(k)
+const publicVar = k => {
+  // _password
+  if (k.startsWith('_')) {
+    return false
+  }
+  // //localhost:8080/:_password
+  if (k.startsWith('//') && k.includes(':_')) {
+    return false
+  }
+  return true
+}
 
 const BaseCommand = require('../base-command.js')
 class Config extends BaseCommand {
-  static get description () {
-    return 'Manage the npm configuration files'
-  }
+  static description = 'Manage the npm configuration files'
+  static name = 'config'
+  static usage = [
+    'set <key>=<value> [<key>=<value> ...]',
+    'get [<key> [<key> ...]]',
+    'delete <key> [<key> ...]',
+    'list [--json]',
+    'edit',
+  ]
 
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get name () {
-    return 'config'
-  }
+  static params = [
+    'json',
+    'global',
+    'editor',
+    'location',
+    'long',
+  ]
 
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get usage () {
-    return [
-      'set <key>=<value> [<key>=<value> ...]',
-      'get [<key> [<key> ...]]',
-      'delete <key> [<key> ...]',
-      'list [--json]',
-      'edit',
-    ]
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get params () {
-    return [
-      'json',
-      'global',
-      'editor',
-      'location',
-      'long',
-    ]
-  }
+  static ignoreImplicitWorkspace = false
 
   async completion (opts) {
     const argv = opts.conf.argv.remain
-    if (argv[1] !== 'config')
+    if (argv[1] !== 'config') {
       argv.unshift('config')
+    }
 
     if (argv.length === 2) {
       const cmds = ['get', 'set', 'delete', 'ls', 'rm', 'edit']
-      if (opts.partialWord !== 'l')
+      if (opts.partialWord !== 'l') {
         cmds.push('list')
+      }
 
       return cmds
     }
@@ -79,8 +82,9 @@ class Config extends BaseCommand {
     switch (action) {
       case 'set':
         // todo: complete with valid values, if possible.
-        if (argv.length > 3)
+        if (argv.length > 3) {
           return []
+        }
 
         // fallthrough
         /* eslint no-fallthrough:0 */
@@ -97,12 +101,12 @@ class Config extends BaseCommand {
   }
 
   async execWorkspaces (args, filters) {
-    this.npm.log.warn('config', 'This command does not support workspaces.')
+    log.warn('config', 'This command does not support workspaces.')
     return this.exec(args)
   }
 
   async exec ([action, ...args]) {
-    this.npm.log.disableProgress()
+    log.disableProgress()
     try {
       switch (action) {
         case 'set':
@@ -127,33 +131,37 @@ class Config extends BaseCommand {
           throw this.usageError()
       }
     } finally {
-      this.npm.log.enableProgress()
+      log.enableProgress()
     }
   }
 
   async set (args) {
-    if (!args.length)
+    if (!args.length) {
       throw this.usageError()
+    }
 
     const where = this.npm.flatOptions.location
     for (const [key, val] of Object.entries(keyValues(args))) {
-      this.npm.log.info('config', 'set %j %j', key, val)
+      log.info('config', 'set %j %j', key, val)
       this.npm.config.set(key, val || '', where)
-      if (!this.npm.config.validate(where))
-        this.npm.log.warn('config', 'omitting invalid config values')
+      if (!this.npm.config.validate(where)) {
+        log.warn('config', 'omitting invalid config values')
+      }
     }
 
     await this.npm.config.save(where)
   }
 
   async get (keys) {
-    if (!keys.length)
+    if (!keys.length) {
       return this.list()
+    }
 
     const out = []
     for (const key of keys) {
-      if (!publicVar(key))
-        throw `The ${key} option is protected, and cannot be retrieved in this way`
+      if (!publicVar(key)) {
+        throw new Error(`The ${key} option is protected, and cannot be retrieved in this way`)
+      }
 
       const pref = keys.length > 1 ? `${key}=` : ''
       out.push(pref + this.npm.config.get(key))
@@ -162,12 +170,14 @@ class Config extends BaseCommand {
   }
 
   async del (keys) {
-    if (!keys.length)
+    if (!keys.length) {
       throw this.usageError()
+    }
 
     const where = this.npm.flatOptions.location
-    for (const key of keys)
+    for (const key of keys) {
       this.npm.config.delete(key, where)
+    }
     await this.npm.config.save(where)
   }
 
@@ -220,8 +230,9 @@ ${defData}
       const [bin, ...args] = e.split(/\s+/)
       const editor = spawn(bin, [...args, file], { stdio: 'inherit' })
       editor.on('exit', (code) => {
-        if (code)
+        if (code) {
           return reject(new Error(`editor process exited with code: ${code}`))
+        }
         return resolve()
       })
     })
@@ -232,12 +243,14 @@ ${defData}
     // long does not have a flattener
     const long = this.npm.config.get('long')
     for (const [where, { data, source }] of this.npm.config.data.entries()) {
-      if (where === 'default' && !long)
+      if (where === 'default' && !long) {
         continue
+      }
 
       const keys = Object.keys(data).sort(localeCompare)
-      if (!keys.length)
+      if (!keys.length) {
         continue
+      }
 
       msg.push(`; "${where}" config from ${source}`, '')
       for (const k of keys) {
@@ -253,10 +266,30 @@ ${defData}
     if (!long) {
       msg.push(
         `; node bin location = ${process.execPath}`,
+        `; node version = ${process.version}`,
+        `; npm local prefix = ${this.npm.localPrefix}`,
+        `; npm version = ${this.npm.version}`,
         `; cwd = ${process.cwd()}`,
         `; HOME = ${process.env.HOME}`,
         '; Run `npm config ls -l` to show all defaults.'
       )
+      msg.push('')
+    }
+
+    if (!this.npm.config.get('global')) {
+      const pkgPath = resolve(this.npm.prefix, 'package.json')
+      const pkg = await rpj(pkgPath).catch(() => ({}))
+
+      if (pkg.publishConfig) {
+        msg.push(`; "publishConfig" from ${pkgPath}`)
+        msg.push('; This set of config values will be used at publish-time.', '')
+        const pkgKeys = Object.keys(pkg.publishConfig).sort(localeCompare)
+        for (const k of pkgKeys) {
+          const v = publicVar(k) ? JSON.stringify(pkg.publishConfig[k]) : '(protected)'
+          msg.push(`${k} = ${v}`)
+        }
+        msg.push('')
+      }
     }
 
     this.npm.output(msg.join('\n').trim())
@@ -265,8 +298,9 @@ ${defData}
   async listJson () {
     const publicConf = {}
     for (const key in this.npm.config.list[0]) {
-      if (!publicVar(key))
+      if (!publicVar(key)) {
         continue
+      }
 
       publicConf[key] = this.npm.config.get(key)
     }

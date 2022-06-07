@@ -1,26 +1,17 @@
-const log = require('npmlog')
-const getAuth = require('npm-registry-fetch/auth.js')
+const getAuth = require('npm-registry-fetch/lib/auth.js')
 const npmFetch = require('npm-registry-fetch')
+const log = require('../utils/log-shim')
 const BaseCommand = require('../base-command.js')
 
 class Logout extends BaseCommand {
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get description () {
-    return 'Log out of the registry'
-  }
+  static description = 'Log out of the registry'
+  static name = 'logout'
+  static params = [
+    'registry',
+    'scope',
+  ]
 
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get name () {
-    return 'logout'
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get params () {
-    return [
-      'registry',
-      'scope',
-    ]
-  }
+  static ignoreImplicitWorkspace = true
 
   async exec (args) {
     const registry = this.npm.config.get('registry')
@@ -37,15 +28,16 @@ class Logout extends BaseCommand {
         method: 'DELETE',
         ignoreBody: true,
       })
-    } else if (auth.isBasicAuth)
+    } else if (auth.isBasicAuth) {
       log.verbose('logout', `clearing user credentials for ${reg}`)
-    else {
+    } else {
       const msg = `not logged in to ${reg}, so can't log out!`
       throw Object.assign(new Error(msg), { code: 'ENEEDAUTH' })
     }
 
-    if (scope)
+    if (scope) {
       this.npm.config.delete(regRef, 'user')
+    }
 
     this.npm.config.clearCredentialsByURI(reg)
 

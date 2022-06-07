@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build aix || darwin || dragonfly || freebsd || (js && wasm) || linux || netbsd || openbsd || solaris || windows
-// +build aix darwin dragonfly freebsd js,wasm linux netbsd openbsd solaris windows
 
 package runtime
 
@@ -89,12 +88,12 @@ type pollDesc struct {
 	// atomicInfo also holds the eventErr bit,
 	// recording whether a poll event on the fd got an error;
 	// atomicInfo is the only source of truth for that bit.
-	atomicInfo uint32 // atomic pollInfo
+	atomicInfo atomic.Uint32 // atomic pollInfo
 
 	// rg, wg are accessed atomically and hold g pointers.
 	// (Using atomic.Uintptr here is similar to using guintptr elsewhere.)
-	rg uintptr // pdReady, pdWait, G waiting for read or nil
-	wg uintptr // pdReady, pdWait, G waiting for write or nil
+	rg atomic.Uintptr // pdReady, pdWait, G waiting for read or nil
+	wg atomic.Uintptr // pdReady, pdWait, G waiting for write or nil
 
 	lock    mutex // protects the following fields
 	closing bool
@@ -128,7 +127,7 @@ func (i pollInfo) expiredWriteDeadline() bool { return i&pollExpiredWriteDeadlin
 
 // info returns the pollInfo corresponding to pd.
 func (pd *pollDesc) info() pollInfo {
-	return pollInfo(atomic.Load(&pd.atomicInfo))
+	return pollInfo(pd.atomicInfo.Load())
 }
 
 // publishInfo updates pd.atomicInfo (returned by pd.info)
@@ -151,17 +150,17 @@ func (pd *pollDesc) publishInfo() {
 	}
 
 	// Set all of x except the pollEventErr bit.
-	x := atomic.Load(&pd.atomicInfo)
-	for !atomic.Cas(&pd.atomicInfo, x, (x&pollEventErr)|info) {
-		x = atomic.Load(&pd.atomicInfo)
+	x := pd.atomicInfo.Load()
+	for !pd.atomicInfo.CompareAndSwap(x, (x&pollEventErr)|info) {
+		x = pd.atomicInfo.Load()
 	}
 }
 
 // setEventErr sets the result of pd.info().eventErr() to b.
 func (pd *pollDesc) setEventErr(b bool) {
-	x := atomic.Load(&pd.atomicInfo)
-	for (x&pollEventErr != 0) != b && !atomic.Cas(&pd.atomicInfo, x, x^pollEventErr) {
-		x = atomic.Load(&pd.atomicInfo)
+	x := pd.atomicInfo.Load()
+	for (x&pollEventErr != 0) != b && !pd.atomicInfo.CompareAndSwap(x, x^pollEventErr) {
+		x = pd.atomicInfo.Load()
 	}
 }
 
@@ -216,11 +215,11 @@ func poll_runtime_isPollServerDescriptor(fd uintptr) bool {
 func poll_runtime_pollOpen(fd uintptr) (*pollDesc, int) {
 	pd := pollcache.alloc()
 	lock(&pd.lock)
-	wg := atomic.Loaduintptr(&pd.wg)
+	wg := pd.wg.Load()
 	if wg != 0 && wg != pdReady {
 		throw("runtime: blocked write on free polldesc")
 	}
-	rg := atomic.Loaduintptr(&pd.rg)
+	rg := pd.rg.Load()
 	if rg != 0 && rg != pdReady {
 		throw("runtime: blocked read on free polldesc")
 	}
@@ -228,10 +227,10 @@ func poll_runtime_pollOpen(fd uintptr) (*pollDesc, int) {
 	pd.closing = false
 	pd.setEventErr(false)
 	pd.rseq++
-	atomic.Storeuintptr(&pd.rg, 0)
+	pd.rg.Store(0)
 	pd.rd = 0
 	pd.wseq++
-	atomic.Storeuintptr(&pd.wg, 0)
+	pd.wg.Store(0)
 	pd.wd = 0
 	pd.self = pd
 	pd.publishInfo()
@@ -250,11 +249,11 @@ func poll_runtime_pollClose(pd *pollDesc) {
 	if !pd.closing {
 		throw("runtime: close polldesc w/o unblock")
 	}
-	wg := atomic.Loaduintptr(&pd.wg)
+	wg := pd.wg.Load()
 	if wg != 0 && wg != pdReady {
 		throw("runtime: blocked write on closing polldesc")
 	}
-	rg := atomic.Loaduintptr(&pd.rg)
+	rg := pd.rg.Load()
 	if rg != 0 && rg != pdReady {
 		throw("runtime: blocked read on closing polldesc")
 	}
@@ -279,9 +278,9 @@ func poll_runtime_pollReset(pd *pollDesc, mode int) int {
 		return errcode
 	}
 	if mode == 'r' {
-		atomic.Storeuintptr(&pd.rg, 0)
+		pd.rg.Store(0)
 	} else if mode == 'w' {
-		atomic.Storeuintptr(&pd.wg, 0)
+		pd.wg.Store(0)
 	}
 	return pollNoError
 }
@@ -502,16 +501,16 @@ func netpollblock(pd *pollDesc, mode int32, waitio bool) bool {
 	// set the gpp semaphore to pdWait
 	for {
 		// Consume notification if already ready.
-		if atomic.Casuintptr(gpp, pdReady, 0) {
+		if gpp.CompareAndSwap(pdReady, 0) {
 			return true
 		}
-		if atomic.Casuintptr(gpp, 0, pdWait) {
+		if gpp.CompareAndSwap(0, pdWait) {
 			break
 		}
 
 		// Double check that this isn't corrupt; otherwise we'd loop
 		// forever.
-		if v := atomic.Loaduintptr(gpp); v != pdReady && v != 0 {
+		if v := gpp.Load(); v != pdReady && v != 0 {
 			throw("runtime: double wait")
 		}
 	}
@@ -519,11 +518,11 @@ func netpollblock(pd *pollDesc, mode int32, waitio bool) bool {
 	// need to recheck error states after setting gpp to pdWait
 	// this is necessary because runtime_pollUnblock/runtime_pollSetDeadline/deadlineimpl
 	// do the opposite: store to closing/rd/wd, publishInfo, load of rg/wg
-	if waitio || netpollcheckerr(pd, mode) == 0 {
+	if waitio || netpollcheckerr(pd, mode) == pollNoError {
 		gopark(netpollblockcommit, unsafe.Pointer(gpp), waitReasonIOWait, traceEvGoBlockNet, 5)
 	}
 	// be careful to not lose concurrent pdReady notification
-	old := atomic.Xchguintptr(gpp, 0)
+	old := gpp.Swap(0)
 	if old > pdWait {
 		throw("runtime: corrupted polldesc")
 	}
@@ -537,7 +536,7 @@ func netpollunblock(pd *pollDesc, mode int32, ioready bool) *g {
 	}
 
 	for {
-		old := atomic.Loaduintptr(gpp)
+		old := gpp.Load()
 		if old == pdReady {
 			return nil
 		}
@@ -550,7 +549,7 @@ func netpollunblock(pd *pollDesc, mode int32, ioready bool) *g {
 		if ioready {
 			new = pdReady
 		}
-		if atomic.Casuintptr(gpp, old, new) {
+		if gpp.CompareAndSwap(old, new) {
 			if old == pdWait {
 				old = 0
 			}
@@ -599,15 +598,15 @@ func netpolldeadlineimpl(pd *pollDesc, seq uintptr, read, write bool) {
 	}
 }
 
-func netpollDeadline(arg interface{}, seq uintptr) {
+func netpollDeadline(arg any, seq uintptr) {
 	netpolldeadlineimpl(arg.(*pollDesc), seq, true, true)
 }
 
-func netpollReadDeadline(arg interface{}, seq uintptr) {
+func netpollReadDeadline(arg any, seq uintptr) {
 	netpolldeadlineimpl(arg.(*pollDesc), seq, true, false)
 }
 
-func netpollWriteDeadline(arg interface{}, seq uintptr) {
+func netpollWriteDeadline(arg any, seq uintptr) {
 	netpolldeadlineimpl(arg.(*pollDesc), seq, false, true)
 }
 
@@ -640,7 +639,7 @@ func (c *pollCache) alloc() *pollDesc {
 // a conversion requires an allocation because pointers to
 // go:notinheap types (which pollDesc is) must be stored
 // in interfaces indirectly. See issue 42076.
-func (pd *pollDesc) makeArg() (i interface{}) {
+func (pd *pollDesc) makeArg() (i any) {
 	x := (*eface)(unsafe.Pointer(&i))
 	x._type = pdType
 	x.data = unsafe.Pointer(&pd.self)
@@ -648,6 +647,6 @@ func (pd *pollDesc) makeArg() (i interface{}) {
 }
 
 var (
-	pdEface interface{} = (*pollDesc)(nil)
-	pdType  *_type      = efaceOf(&pdEface)._type
+	pdEface any    = (*pollDesc)(nil)
+	pdType  *_type = efaceOf(&pdEface)._type
 )

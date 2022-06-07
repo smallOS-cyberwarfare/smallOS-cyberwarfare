@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2022 Apr 13
+*options.txt*	For Vim version 8.2.  Last change: 2022 May 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1392,14 +1392,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 			    characters.  It permits dynamic French paragraph
 			    indentation (negative) or emphasizing the line
 			    continuation (positive).
+			    (default: 0)
 		sbr	    Display the 'showbreak' value before applying the
 			    additional indent.
+			    (default: off)
 		list:{n}    Adds an additional indent for lines that match a
 			    numbered or bulleted list (using the
 			    'formatlistpat' setting).
 		list:-1	    Uses the length of a match with 'formatlistpat'
 			    for indentation.
-	The default value for min is 20, shift and list is 0.
+			    (default: 0)
+		column:{n}  Indent at column {n}. Will overrule the other
+			    sub-options. Note: an additional indent may be
+			    added for the 'showbreak' setting.
+			    (default: off)
 
 						*'browsedir'* *'bsdir'*
 'browsedir' 'bsdir'	string	(default: "last")
@@ -1615,8 +1621,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 				   *'cindent'* *'cin'* *'nocindent'* *'nocin'*
 'cindent' 'cin'		boolean	(default off)
 			local to buffer
-			{not available when compiled without the |+cindent|
-			feature}
 	Enables automatic C program indenting.  See 'cinkeys' to set the keys
 	that trigger reindenting in insert mode and 'cinoptions' to set your
 	preferred indent style.
@@ -1633,8 +1637,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 							*'cinkeys'* *'cink'*
 'cinkeys' 'cink'	string	(default "0{,0},0),0],:,0#,!^F,o,O,e")
 			local to buffer
-			{not available when compiled without the |+cindent|
-			feature}
 	A list of keys that, when typed in Insert mode, cause reindenting of
 	the current line.  Only used if 'cindent' is on and 'indentexpr' is
 	empty.
@@ -1644,8 +1646,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cinoptions'* *'cino'*
 'cinoptions' 'cino'	string	(default "")
 			local to buffer
-			{not available when compiled without the |+cindent|
-			feature}
 	The 'cinoptions' affect the way 'cindent' reindents lines in a C
 	program.  See |cinoptions-values| for the values of this option, and
 	|C-indenting| for info on C indenting in general.
@@ -1654,8 +1654,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cinwords'* *'cinw'*
 'cinwords' 'cinw'	string	(default "if,else,while,do,for,switch")
 			local to buffer
-			{not available when compiled without both the
-			|+cindent| and the |+smartindent| features}
 	These keywords start an extra indent in the next line when
 	'smartindent' or 'cindent' is set.  For 'cindent' this is only done at
 	an appropriate place (inside {}).
@@ -1666,8 +1664,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cinscopedecls'* *'cinsd'*
 'cinscopedecls' 'cinsd'	string	(default "public,protected,private")
 			local to buffer
-			{not available when compiled without the |+cindent|
-			feature}
 	Keywords that are interpreted as a C++ scope declaration by |cino-g|.
 	Useful e.g. for working with the Qt framework that defines additional
 	scope declarations "signals", "public slots" and "private slots": >
@@ -4572,8 +4568,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'indentexpr'* *'inde'*
 'indentexpr' 'inde'	string	(default "")
 			local to buffer
-			{not available when compiled without the |+cindent|
-			or |+eval| features}
+			{not available when compiled without the |+eval|
+			feature}
 	Expression which is evaluated to obtain the proper indent for a line.
 	It is used when a new line is created, for the |=| operator and
 	in Insert mode as specified with the 'indentkeys' option.
@@ -4618,8 +4614,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'indentkeys'* *'indk'*
 'indentkeys' 'indk'	string	(default "0{,0},0),0],:,0#,!^F,o,O,e")
 			local to buffer
-			{not available when compiled without the |+cindent|
-			feature}
 	A list of keys that, when typed in Insert mode, cause reindenting of
 	the current line.  Only happens if 'indentexpr' isn't empty.
 	The format is identical to 'cinkeys', see |indentkeys-format|.
@@ -5007,8 +5001,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'lisp'* *'nolisp'*
 'lisp'			boolean	(default off)
 			local to buffer
-			{not available when compiled without the |+lispindent|
-			feature}
 	Lisp mode: When <Enter> is typed in insert mode set the indent for
 	the next line to Lisp standards (well, sort of).  Also happens with
 	"cc" or "S".  'autoindent' must also be on for this to work.  The 'p'
@@ -5022,8 +5014,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'lispwords'* *'lw'*
 'lispwords' 'lw'	string	(default is very long)
 			global or local to buffer |global-local|
-			{not available when compiled without the |+lispindent|
-			feature}
 	Comma-separated list of words that influence the Lisp indenting.
 	|'lisp'|
 
@@ -7216,8 +7206,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 			     *'smartindent'* *'si'* *'nosmartindent'* *'nosi'*
 'smartindent' 'si'	boolean	(default off)
 			local to buffer
-			{not available when compiled without the
-			|+smartindent| feature}
 	Do smart autoindenting when starting a new line.  Works for C-like
 	programs, but can also be used for other languages.  'cindent' does
 	something like this, works better in most cases, but is more strict,
@@ -8073,6 +8061,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	This requires Vim to be built with the |+vtp| feature.
 
 	Note that the "cterm" attributes are still used, not the "gui" ones.
+
+	When using Vim with Windows Terminal, the background of Windows
+	Terminal is normally filled with the Vim background color.  Setting
+	'termguicolors' and the guibg of the Normal highlight group to NONE
+	will make the background transparent: >
+		:hi Normal guibg=NONE
+<
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'termwinkey'* *'twk'*

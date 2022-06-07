@@ -2,22 +2,13 @@ const LifecycleCmd = require('../lifecycle-cmd.js')
 
 // This ends up calling run-script(['start', ...args])
 class Start extends LifecycleCmd {
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get description () {
-    return 'Start a package'
-  }
+  static description = 'Start a package'
+  static name = 'start'
+  static params = [
+    'ignore-scripts',
+    'script-shell',
+  ]
 
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get name () {
-    return 'start'
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get params () {
-    return [
-      'ignore-scripts',
-      'script-shell',
-    ]
-  }
+  static ignoreImplicitWorkspace = false
 }
 module.exports = Start

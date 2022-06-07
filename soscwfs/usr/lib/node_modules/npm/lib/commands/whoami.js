@@ -2,23 +2,13 @@ const getIdentity = require('../utils/get-identity.js')
 
 const BaseCommand = require('../base-command.js')
 class Whoami extends BaseCommand {
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get description () {
-    return 'Display npm username'
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get name () {
-    return 'whoami'
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get params () {
-    return ['registry']
-  }
+  static description = 'Display npm username'
+  static name = 'whoami'
+  static params = ['registry']
+  static ignoreImplicitWorkspace = true
 
   async exec (args) {
-    const username = await getIdentity(this.npm, this.npm.flatOptions)
+    const username = await getIdentity(this.npm, { ...this.npm.flatOptions })
     this.npm.output(
       this.npm.config.get('json') ? JSON.stringify(username) : username
     )

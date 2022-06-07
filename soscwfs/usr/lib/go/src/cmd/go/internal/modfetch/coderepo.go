@@ -376,7 +376,7 @@ func (r *codeRepo) convert(info *codehost.RevInfo, statVers string) (*RevInfo, e
 			}
 		}
 
-		invalidf := func(format string, args ...interface{}) error {
+		invalidf := func(format string, args ...any) error {
 			return &module.ModuleError{
 				Path: r.modPath,
 				Err: &module.InvalidVersionError{
@@ -590,11 +590,11 @@ func (r *codeRepo) validatePseudoVersion(info *codehost.RevInfo, version string)
 	if rev != info.Short {
 		switch {
 		case strings.HasPrefix(rev, info.Short):
-			return fmt.Errorf("revision is longer than canonical (%s)", info.Short)
+			return fmt.Errorf("revision is longer than canonical (expected %s)", info.Short)
 		case strings.HasPrefix(info.Short, rev):
-			return fmt.Errorf("revision is shorter than canonical (%s)", info.Short)
+			return fmt.Errorf("revision is shorter than canonical (expected %s)", info.Short)
 		default:
-			return fmt.Errorf("does not match short name of revision (%s)", info.Short)
+			return fmt.Errorf("does not match short name of revision (expected %s)", info.Short)
 		}
 	}
 
@@ -1089,7 +1089,7 @@ func (fi dataFileInfo) Size() int64        { return int64(len(fi.f.data)) }
 func (fi dataFileInfo) Mode() fs.FileMode  { return 0644 }
 func (fi dataFileInfo) ModTime() time.Time { return time.Time{} }
 func (fi dataFileInfo) IsDir() bool        { return false }
-func (fi dataFileInfo) Sys() interface{}   { return nil }
+func (fi dataFileInfo) Sys() any           { return nil }
 
 // hasPathPrefix reports whether the path s begins with the
 // elements in prefix.

@@ -5,33 +5,26 @@ const Table = require('cli-table3')
 
 const BaseCommand = require('../base-command.js')
 class Hook extends BaseCommand {
-  static get description () {
-    return 'Manage registry hooks'
-  }
+  static description = 'Manage registry hooks'
+  static name = 'hook'
+  static params = [
+    'registry',
+    'otp',
+  ]
 
-  static get name () {
-    return 'hook'
-  }
+  static usage = [
+    'add <pkg> <url> <secret> [--type=<type>]',
+    'ls [pkg]',
+    'rm <id>',
+    'update <id> <url> <secret>',
+  ]
 
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get params () {
-    return [
-      'registry',
-      'otp',
-    ]
-  }
-
-  static get usage () {
-    return [
-      'add <pkg> <url> <secret> [--type=<type>]',
-      'ls [pkg]',
-      'rm <id>',
-      'update <id> <url> <secret>',
-    ]
-  }
+  static ignoreImplicitWorkspace = true
 
   async exec (args) {
-    return otplease(this.npm.flatOptions, (opts) => {
+    return otplease({
+      ...this.npm.flatOptions,
+    }, (opts) => {
       switch (args[0]) {
         case 'add':
           return this.add(args[1], args[2], args[3], opts)
@@ -50,12 +43,12 @@ class Hook extends BaseCommand {
 
   async add (pkg, uri, secret, opts) {
     const hook = await hookApi.add(pkg, uri, secret, opts)
-    if (opts.json)
+    if (opts.json) {
       this.npm.output(JSON.stringify(hook, null, 2))
-    else if (opts.parseable) {
+    } else if (opts.parseable) {
       this.npm.output(Object.keys(hook).join('\t'))
       this.npm.output(Object.keys(hook).map(k => hook[k]).join('\t'))
-    } else if (!opts.silent && opts.loglevel !== 'silent') {
+    } else if (!this.npm.silent) {
       this.npm.output(`+ ${this.hookName(hook)} ${
         opts.unicode ? ' ➜ ' : ' -> '
       } ${hook.endpoint}`)
@@ -64,20 +57,21 @@ class Hook extends BaseCommand {
 
   async ls (pkg, opts) {
     const hooks = await hookApi.ls({ ...opts, package: pkg })
-    if (opts.json)
+    if (opts.json) {
       this.npm.output(JSON.stringify(hooks, null, 2))
-    else if (opts.parseable) {
+    } else if (opts.parseable) {
       this.npm.output(Object.keys(hooks[0]).join('\t'))
       hooks.forEach(hook => {
         this.npm.output(Object.keys(hook).map(k => hook[k]).join('\t'))
       })
-    } else if (!hooks.length)
+    } else if (!hooks.length) {
       this.npm.output("You don't have any hooks configured yet.")
-    else if (!opts.silent && opts.loglevel !== 'silent') {
-      if (hooks.length === 1)
+    } else if (!this.npm.silent) {
+      if (hooks.length === 1) {
         this.npm.output('You have one hook configured.')
-      else
+      } else {
         this.npm.output(`You have ${hooks.length} hooks configured.`)
+      }
 
       const table = new Table({ head: ['id', 'target', 'endpoint'] })
       hooks.forEach((hook) => {
@@ -94,8 +88,9 @@ class Hook extends BaseCommand {
             },
             hook.response_code,
           ])
-        } else
+        } else {
           table.push([{ colSpan: 2, content: 'never triggered' }])
+        }
       })
       this.npm.output(table.toString())
     }
@@ -103,12 +98,12 @@ class Hook extends BaseCommand {
 
   async rm (id, opts) {
     const hook = await hookApi.rm(id, opts)
-    if (opts.json)
+    if (opts.json) {
       this.npm.output(JSON.stringify(hook, null, 2))
-    else if (opts.parseable) {
+    } else if (opts.parseable) {
       this.npm.output(Object.keys(hook).join('\t'))
       this.npm.output(Object.keys(hook).map(k => hook[k]).join('\t'))
-    } else if (!opts.silent && opts.loglevel !== 'silent') {
+    } else if (!this.npm.silent) {
       this.npm.output(`- ${this.hookName(hook)} ${
         opts.unicode ? ' ✘ ' : ' X '
       } ${hook.endpoint}`)
@@ -117,12 +112,12 @@ class Hook extends BaseCommand {
 
   async update (id, uri, secret, opts) {
     const hook = await hookApi.update(id, uri, secret, opts)
-    if (opts.json)
+    if (opts.json) {
       this.npm.output(JSON.stringify(hook, null, 2))
-    else if (opts.parseable) {
+    } else if (opts.parseable) {
       this.npm.output(Object.keys(hook).join('\t'))
       this.npm.output(Object.keys(hook).map(k => hook[k]).join('\t'))
-    } else if (!opts.silent && opts.loglevel !== 'silent') {
+    } else if (!this.npm.silent) {
       this.npm.output(`+ ${this.hookName(hook)} ${
         opts.unicode ? ' ➜ ' : ' -> '
       } ${hook.endpoint}`)
@@ -131,10 +126,12 @@ class Hook extends BaseCommand {
 
   hookName (hook) {
     let target = hook.name
-    if (hook.type === 'scope')
+    if (hook.type === 'scope') {
       target = '@' + target
-    if (hook.type === 'owner')
+    }
+    if (hook.type === 'owner') {
       target = '~' + target
+    }
     return target
   }
 }

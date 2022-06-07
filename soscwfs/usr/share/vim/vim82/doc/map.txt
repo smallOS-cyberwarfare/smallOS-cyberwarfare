@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2022 Apr 14
+*map.txt*       For Vim version 8.2.  Last change: 2022 May 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -120,7 +120,8 @@ modes.
 			command applies.
 			Use the <buffer> argument to remove buffer-local
 			mappings |:map-<buffer>|
-			Warning: This also removes the default mappings.
+			Warning: This also removes the |mac-standard-mappings|
+			and the |dos-standard-mappings|.
 
 :map				|mapmode-nvo|
 :nm[ap]				|mapmode-n|
@@ -700,6 +701,7 @@ not to be matched with any key sequence.  This is useful in plugins
 							*<MouseMove>*
 The special key name "<MouseMove>" can be used to handle mouse movement.  It
 needs to be enabled with 'mousemoveevent'.  Currently only works in the GUI.
+The |getmousepos()| function can be used to obtain the mouse position.
 
 							*<Char>* *<Char->*
 To map a character by its decimal, octal or hexadecimal number the <Char>

@@ -12,43 +12,29 @@ const reifyFinish = require('../utils/reify-finish.js')
 
 const ArboristWorkspaceCmd = require('../arborist-cmd.js')
 class Link extends ArboristWorkspaceCmd {
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get description () {
-    return 'Symlink a package folder'
-  }
+  static description = 'Symlink a package folder'
+  static name = 'link'
+  static usage = [
+    '(in package dir)',
+    '[<@scope>/]<pkg>[@<version>]',
+  ]
 
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get name () {
-    return 'link'
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get usage () {
-    return [
-      '(in package dir)',
-      '[<@scope>/]<pkg>[@<version>]',
-    ]
-  }
-
-  /* istanbul ignore next - see test/lib/load-all-commands.js */
-  static get params () {
-    return [
-      'save',
-      'save-exact',
-      'global',
-      'global-style',
-      'legacy-bundling',
-      'strict-peer-deps',
-      'package-lock',
-      'omit',
-      'ignore-scripts',
-      'audit',
-      'bin-links',
-      'fund',
-      'dry-run',
-      ...super.params,
-    ]
-  }
+  static params = [
+    'save',
+    'save-exact',
+    'global',
+    'global-style',
+    'legacy-bundling',
+    'strict-peer-deps',
+    'package-lock',
+    'omit',
+    'ignore-scripts',
+    'audit',
+    'bin-links',
+    'fund',
+    'dry-run',
+    ...super.params,
+  ]
 
   async completion (opts) {
     const dir = this.npm.globalDir
@@ -82,7 +68,6 @@ class Link extends ArboristWorkspaceCmd {
     const globalOpts = {
       ...this.npm.flatOptions,
       path: globalTop,
-      log: this.npm.log,
       global: true,
       prune: false,
     }
@@ -131,7 +116,6 @@ class Link extends ArboristWorkspaceCmd {
     const localArb = new Arborist({
       ...this.npm.flatOptions,
       prune: false,
-      log: this.npm.log,
       path: this.npm.prefix,
       save,
     })
@@ -139,7 +123,6 @@ class Link extends ArboristWorkspaceCmd {
       ...this.npm.flatOptions,
       prune: false,
       path: this.npm.prefix,
-      log: this.npm.log,
       add: names.map(l => `file:${resolve(globalTop, 'node_modules', l)}`),
       save,
       workspaces: this.workspaceNames,
@@ -156,12 +139,10 @@ class Link extends ArboristWorkspaceCmd {
     const arb = new Arborist({
       ...this.npm.flatOptions,
       path: globalTop,
-      log: this.npm.log,
       global: true,
     })
     await arb.reify({
       add,
-      log: this.npm.log,
     })
     await reifyFinish(this.npm, arb)
   }
@@ -169,8 +150,9 @@ class Link extends ArboristWorkspaceCmd {
   // Returns a list of items that can't be fulfilled by
   // things found in the current arborist inventory
   missingArgsFromTree (tree, args) {
-    if (tree.isLink)
+    if (tree.isLink) {
       return this.missingArgsFromTree(tree.target, args)
+    }
 
     const foundNodes = []
     const missing = args.filter(a => {
@@ -193,8 +175,9 @@ class Link extends ArboristWorkspaceCmd {
 
     // remote nodes from the loaded tree in order
     // to avoid dropping them later when reifying
-    for (const node of foundNodes)
+    for (const node of foundNodes) {
       node.parent = null
+    }
 
     return missing
   }

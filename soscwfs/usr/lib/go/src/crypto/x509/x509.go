@@ -18,6 +18,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"internal/godebug"
 	"io"
 	"math/big"
 	"net"
@@ -51,7 +52,7 @@ type pkixPublicKey struct {
 // ed25519.PublicKey. More types might be supported in the future.
 //
 // This kind of key is commonly encoded in PEM blocks of type "PUBLIC KEY".
-func ParsePKIXPublicKey(derBytes []byte) (pub interface{}, err error) {
+func ParsePKIXPublicKey(derBytes []byte) (pub any, err error) {
 	var pki publicKeyInfo
 	if rest, err := asn1.Unmarshal(derBytes, &pki); err != nil {
 		if _, err := asn1.Unmarshal(derBytes, &pkcs1PublicKey{}); err == nil {
@@ -68,7 +69,7 @@ func ParsePKIXPublicKey(derBytes []byte) (pub interface{}, err error) {
 	return parsePublicKey(algo, &pki)
 }
 
-func marshalPublicKey(pub interface{}) (publicKeyBytes []byte, publicKeyAlgorithm pkix.AlgorithmIdentifier, err error) {
+func marshalPublicKey(pub any) (publicKeyBytes []byte, publicKeyAlgorithm pkix.AlgorithmIdentifier, err error) {
 	switch pub := pub.(type) {
 	case *rsa.PublicKey:
 		publicKeyBytes, err = asn1.Marshal(pkcs1PublicKey{
@@ -113,7 +114,7 @@ func marshalPublicKey(pub interface{}) (publicKeyBytes []byte, publicKeyAlgorith
 // and ed25519.PublicKey. Unsupported key types result in an error.
 //
 // This kind of key is commonly encoded in PEM blocks of type "PUBLIC KEY".
-func MarshalPKIXPublicKey(pub interface{}) ([]byte, error) {
+func MarshalPKIXPublicKey(pub any) ([]byte, error) {
 	var publicKeyBytes []byte
 	var publicKeyAlgorithm pkix.AlgorithmIdentifier
 	var err error
@@ -181,15 +182,15 @@ type SignatureAlgorithm int
 const (
 	UnknownSignatureAlgorithm SignatureAlgorithm = iota
 
-	MD2WithRSA // Unsupported.
-	MD5WithRSA // Only supported for signing, not verification.
-	SHA1WithRSA
+	MD2WithRSA  // Unsupported.
+	MD5WithRSA  // Only supported for signing, not verification.
+	SHA1WithRSA // Only supported for signing, and verification of CRLs, CSRs, and OCSP responses.
 	SHA256WithRSA
 	SHA384WithRSA
 	SHA512WithRSA
 	DSAWithSHA1   // Unsupported.
 	DSAWithSHA256 // Unsupported.
-	ECDSAWithSHA1
+	ECDSAWithSHA1 // Only supported for signing, and verification of CRLs, CSRs, and OCSP responses.
 	ECDSAWithSHA256
 	ECDSAWithSHA384
 	ECDSAWithSHA512
@@ -635,7 +636,7 @@ type Certificate struct {
 	SignatureAlgorithm SignatureAlgorithm
 
 	PublicKeyAlgorithm PublicKeyAlgorithm
-	PublicKey          interface{}
+	PublicKey          any
 
 	Version             int
 	SerialNumber        *big.Int
@@ -729,11 +730,23 @@ type Certificate struct {
 // involves algorithms that are not currently implemented.
 var ErrUnsupportedAlgorithm = errors.New("x509: cannot verify signature: algorithm unimplemented")
 
-// An InsecureAlgorithmError
+// debugAllowSHA1 allows SHA-1 signatures. See issue 41682.
+var debugAllowSHA1 = godebug.Get("x509sha1") == "1"
+
+// An InsecureAlgorithmError indicates that the SignatureAlgorithm used to
+// generate the signature is not secure, and the signature has been rejected.
+//
+// To temporarily restore support for SHA-1 signatures, include the value
+// "x509sha1=1" in the GODEBUG environment variable. Note that this option will
+// be removed in Go 1.19.
 type InsecureAlgorithmError SignatureAlgorithm
 
 func (e InsecureAlgorithmError) Error() string {
-	return fmt.Sprintf("x509: cannot verify signature: insecure algorithm %v", SignatureAlgorithm(e))
+	var override string
+	if SignatureAlgorithm(e) == SHA1WithRSA || SignatureAlgorithm(e) == ECDSAWithSHA1 {
+		override = " (temporarily override with GODEBUG=x509sha1=1)"
+	}
+	return fmt.Sprintf("x509: cannot verify signature: insecure algorithm %v", SignatureAlgorithm(e)) + override
 }
 
 // ConstraintViolationError results when a requested usage is not permitted by
@@ -757,7 +770,7 @@ func (c *Certificate) hasSANExtension() bool {
 }
 
 // CheckSignatureFrom verifies that the signature on c is a valid signature
-// from parent.
+// from parent. SHA1WithRSA and ECDSAWithSHA1 signatures are not supported.
 func (c *Certificate) CheckSignatureFrom(parent *Certificate) error {
 	// RFC 5280, 4.2.1.9:
 	// "If the basic constraints extension is not present in a version 3
@@ -779,13 +792,13 @@ func (c *Certificate) CheckSignatureFrom(parent *Certificate) error {
 
 	// TODO(agl): don't ignore the path length constraint.
 
-	return parent.CheckSignature(c.SignatureAlgorithm, c.RawTBSCertificate, c.Signature)
+	return checkSignature(c.SignatureAlgorithm, c.RawTBSCertificate, c.Signature, parent.PublicKey, debugAllowSHA1)
 }
 
 // CheckSignature verifies that signature is a valid signature over signed from
 // c's public key.
 func (c *Certificate) CheckSignature(algo SignatureAlgorithm, signed, signature []byte) error {
-	return checkSignature(algo, signed, signature, c.PublicKey)
+	return checkSignature(algo, signed, signature, c.PublicKey, true)
 }
 
 func (c *Certificate) hasNameConstraints() bool {
@@ -801,13 +814,13 @@ func (c *Certificate) getSANExtension() []byte {
 	return nil
 }
 
-func signaturePublicKeyAlgoMismatchError(expectedPubKeyAlgo PublicKeyAlgorithm, pubKey interface{}) error {
+func signaturePublicKeyAlgoMismatchError(expectedPubKeyAlgo PublicKeyAlgorithm, pubKey any) error {
 	return fmt.Errorf("x509: signature algorithm specifies an %s public key, but have public key of type %T", expectedPubKeyAlgo.String(), pubKey)
 }
 
-// CheckSignature verifies that signature is a valid signature over signed from
+// checkSignature verifies that signature is a valid signature over signed from
 // a crypto.PublicKey.
-func checkSignature(algo SignatureAlgorithm, signed, signature []byte, publicKey crypto.PublicKey) (err error) {
+func checkSignature(algo SignatureAlgorithm, signed, signature []byte, publicKey crypto.PublicKey, allowSHA1 bool) (err error) {
 	var hashType crypto.Hash
 	var pubKeyAlgo PublicKeyAlgorithm
 
@@ -825,6 +838,11 @@ func checkSignature(algo SignatureAlgorithm, signed, signature []byte, publicKey
 		}
 	case crypto.MD5:
 		return InsecureAlgorithmError(algo)
+	case crypto.SHA1:
+		if !allowSHA1 {
+			return InsecureAlgorithmError(algo)
+		}
+		fallthrough
 	default:
 		if !hashType.Available() {
 			return ErrUnsupportedAlgorithm
@@ -1339,7 +1357,7 @@ func subjectBytes(cert *Certificate) ([]byte, error) {
 // signingParamsForPublicKey returns the parameters to use for signing with
 // priv. If requestedSigAlgo is not zero then it overrides the default
 // signature algorithm.
-func signingParamsForPublicKey(pub interface{}, requestedSigAlgo SignatureAlgorithm) (hashFunc crypto.Hash, sigAlgo pkix.AlgorithmIdentifier, err error) {
+func signingParamsForPublicKey(pub any, requestedSigAlgo SignatureAlgorithm) (hashFunc crypto.Hash, sigAlgo pkix.AlgorithmIdentifier, err error) {
 	var pubType PublicKeyAlgorithm
 
 	switch pub := pub.(type) {
@@ -1465,7 +1483,7 @@ var emptyASN1Subject = []byte{0x30, 0}
 //
 // If SubjectKeyId from template is empty and the template is a CA, SubjectKeyId
 // will be generated from the hash of the public key.
-func CreateCertificate(rand io.Reader, template, parent *Certificate, pub, priv interface{}) ([]byte, error) {
+func CreateCertificate(rand io.Reader, template, parent *Certificate, pub, priv any) ([]byte, error) {
 	key, ok := priv.(crypto.Signer)
 	if !ok {
 		return nil, errors.New("x509: certificate private key does not implement crypto.Signer")
@@ -1579,10 +1597,13 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub, priv 
 	}
 
 	// Check the signature to ensure the crypto.Signer behaved correctly.
-	// We skip this check if the signature algorithm is MD5WithRSA as we
-	// only support this algorithm for signing, and not verification.
-	if sigAlg := getSignatureAlgorithmFromAI(signatureAlgorithm); sigAlg != MD5WithRSA {
-		if err := checkSignature(sigAlg, c.Raw, signature, key.Public()); err != nil {
+	sigAlg := getSignatureAlgorithmFromAI(signatureAlgorithm)
+	switch sigAlg {
+	case MD5WithRSA:
+		// We skip the check if the signature algorithm is only supported for
+		// signing, not verification.
+	default:
+		if err := checkSignature(sigAlg, c.Raw, signature, key.Public(), true); err != nil {
 			return nil, fmt.Errorf("x509: signature over certificate returned by signer is invalid: %w", err)
 		}
 	}
@@ -1627,7 +1648,7 @@ func ParseDERCRL(derBytes []byte) (*pkix.CertificateList, error) {
 //
 // Note: this method does not generate an RFC 5280 conformant X.509 v2 CRL.
 // To generate a standards compliant CRL, use CreateRevocationList instead.
-func (c *Certificate) CreateCRL(rand io.Reader, priv interface{}, revokedCerts []pkix.RevokedCertificate, now, expiry time.Time) (crlBytes []byte, err error) {
+func (c *Certificate) CreateCRL(rand io.Reader, priv any, revokedCerts []pkix.RevokedCertificate, now, expiry time.Time) (crlBytes []byte, err error) {
 	key, ok := priv.(crypto.Signer)
 	if !ok {
 		return nil, errors.New("x509: certificate private key does not implement crypto.Signer")
@@ -1702,7 +1723,7 @@ type CertificateRequest struct {
 	SignatureAlgorithm SignatureAlgorithm
 
 	PublicKeyAlgorithm PublicKeyAlgorithm
-	PublicKey          interface{}
+	PublicKey          any
 
 	Subject pkix.Name
 
@@ -1839,7 +1860,7 @@ func parseCSRExtensions(rawAttributes []asn1.RawValue) ([]pkix.Extension, error)
 // ed25519.PrivateKey satisfies this.)
 //
 // The returned slice is the certificate request in DER encoding.
-func CreateCertificateRequest(rand io.Reader, template *CertificateRequest, priv interface{}) (csr []byte, err error) {
+func CreateCertificateRequest(rand io.Reader, template *CertificateRequest, priv any) (csr []byte, err error) {
 	key, ok := priv.(crypto.Signer)
 	if !ok {
 		return nil, errors.New("x509: certificate private key does not implement crypto.Signer")
@@ -2061,7 +2082,7 @@ func parseCertificateRequest(in *certificateRequest) (*CertificateRequest, error
 
 // CheckSignature reports whether the signature on c is valid.
 func (c *CertificateRequest) CheckSignature() error {
-	return checkSignature(c.SignatureAlgorithm, c.RawTBSCertificateRequest, c.Signature, c.PublicKey)
+	return checkSignature(c.SignatureAlgorithm, c.RawTBSCertificateRequest, c.Signature, c.PublicKey, true)
 }
 
 // RevocationList contains the fields used to create an X.509 v2 Certificate
