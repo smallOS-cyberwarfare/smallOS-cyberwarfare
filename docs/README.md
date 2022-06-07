@@ -18,10 +18,10 @@ Find DOM sinks in source code by url. Helps to manually find DOM XSS
 - [impulse](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/impulse/README.md)  
 Denial Of Service (DOS) ToolKit  
   
-- [ncat](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/ncat/README.md)
+- [ncat](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/ncat/README.md)  
 Read and Write to machines across network
 
-- [nmap](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/nmap/README.md)
+- [nmap](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/nmap/README.md)  
 Multipurpouse Network Scanning Tool  
    
 - [ngrok-opensource](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/ngrok/README.md)  
