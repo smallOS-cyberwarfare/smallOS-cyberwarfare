@@ -10,7 +10,7 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 - dirstalk (folders scanner)  
 - domsinkfinder (XSS-DOM sinks highlighter)
 - impulse (ddos tools)  
-- ngrok (open source client)
+- ngrok (share localhost services)
 - ncat (empowered netcat)
 - nmap (network scanner)
 - nuclei (vuln scanner)  
