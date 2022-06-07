@@ -25,6 +25,7 @@ Read and Write to machines across network
 Multipurpouse Network Scanning Tool  
    
 - [ngrok-opensource](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/ngrok/README.md)  
+Open Ports without router. Share localhost services
   
 - [nuclei](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/nuclei/README.md)  
 Fast and customizable vulnerability scanner based on simple YAML based DSL  
