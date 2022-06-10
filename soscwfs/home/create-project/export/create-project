@@ -9,7 +9,9 @@ const getPrefixPath = async () => {
       if (err) {
 	reject(err);
       } else {
-	resolve(res.substr(0, res.length-1));
+	// resolve(res.substr(0, res.length-1));
+	// Fix for Linux:
+	resolve("/home/create-project/export");
       }
     });
   });
@@ -105,7 +107,7 @@ const getDescription = async path => {
 const extractFiles = async filename => {
   const prefix = await getPrefixPath();
   return new Promise( (resolve, reject) => {
-    child_process.exec(`echo "u" | 7z x "${prefix}/include/create-project-templates/${filename}.7z" -o"./"`, (err, res) => {
+    child_process.exec(`7z x "${prefix}/create-project-templates/${filename}.7z" -o"./"`, (err, res) => {
       if (err) {
         reject(err);
       } else {
@@ -118,7 +120,7 @@ const extractFiles = async filename => {
 const createTemplate = async filename => {
   const prefix = await getPrefixPath();
   return new Promise( (resolve, reject) => {
-    child_process.exec(`7z a "${prefix}/include/create-project-templates/${filename}.7z" "./${filename}"`, (err, res) => {
+    child_process.exec(`7z a "${prefix}/create-project-templates/${filename}.7z" "./${filename}"`, (err, res) => {
       if (err) {
         reject(err);
       } else {
@@ -182,7 +184,7 @@ const getSelectedOptions = () => {
   const prefix = await getPrefixPath();
   const options = getSelectedOptions();
   if (options.list) {
-    const path = `${prefix}/include/create-project-templates`;
+    const path = `${prefix}/create-project-templates`;
     const files = get7zFiles(await readdir(path));
     console.log("Available Templates:");
     for (let i in files) {
@@ -210,7 +212,7 @@ const getSelectedOptions = () => {
     console.log("Template Created");
 
   } else if (options.remove) {
-    const path = `${prefix}/include/create-project-templates`;
+    const path = `${prefix}/create-project-templates`;
     try {
       fs.unlinkSync(`${path}/${options.remove}`);
     } catch(err) {}
@@ -231,7 +233,7 @@ const getSelectedOptions = () => {
   } else if (options.templates) {
     options.templates.shift();
     options.templates.shift();
-    const path = `${prefix}/include/create-project-templates`;
+    const path = `${prefix}/create-project-templates`;
     const files = get7zFiles(await readdir(path));
     for (let i in options.templates) {
       for (let j in files) {

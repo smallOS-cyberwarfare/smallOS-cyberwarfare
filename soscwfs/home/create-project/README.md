@@ -5,7 +5,7 @@ Easy way to create project folder structures and default files for fast developm
 
 
 ### Install
-
+- You need 7z command. In termux pkg install 7z, in Linux apt-get install p7zip-full
 
 Linux:
 ```
