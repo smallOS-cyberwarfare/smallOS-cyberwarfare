@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package vet implements the ``go vet'' command.
+// Package vet implements the “go vet” command.
 package vet
 
 import (
@@ -94,8 +94,7 @@ func runVet(ctx context.Context, cmd *base.Command, args []string) {
 		base.Fatalf("no packages to vet")
 	}
 
-	var b work.Builder
-	b.Init()
+	b := work.NewBuilder("")
 
 	root := &work.Action{Mode: "go vet"}
 	for _, p := range pkgs {

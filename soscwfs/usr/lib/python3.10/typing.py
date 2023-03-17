@@ -901,7 +901,7 @@ class ParamSpec(_Final, _Immutable, _TypeVarLike, _root=True):
 
     Parameter specification variables can be introspected. e.g.:
 
-       P.__name__ == 'T'
+       P.__name__ == 'P'
        P.__bound__ == None
        P.__covariant__ == False
        P.__contravariant__ == False
@@ -1099,7 +1099,8 @@ class _GenericAlias(_BaseGenericAlias, _root=True):
         else:
             origin = self.__origin__
         args = tuple(self.__args__)
-        if len(args) == 1 and not isinstance(args[0], tuple):
+        if len(args) == 1 and (not isinstance(args[0], tuple) or
+                               origin is Tuple and not args[0]):
             args, = args
         return operator.getitem, (origin, args)
 

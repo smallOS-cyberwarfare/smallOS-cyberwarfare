@@ -1,25 +1,24 @@
 #!/usr/bin/env bash
 #       Name: SearchSploit - Exploit-DB's CLI search tool
-#    Version: 4.1.3 (2020-06-22)
+#    Version: 4.2.1 (2022-11-11)
 # Written by: Offensive Security, Unix-Ninja, and g0tmi1k
-#   Homepage: https://github.com/offensive-security/exploitdb
+#   Homepage: https://gitlab.com/exploit-database/exploitdb
 #     Manual: https://www.exploit-db.com/searchsploit
 #
 ## NOTE:
-#   Exit code '0' means finished normally
+#   Exit code '0' means finished successfully
 #   Exit code '1' means something went wrong
 #   Exit code '2' means help screen
 #   Exit code '6' means updated packages (APT, brew or Git)
 #-----------------------------------------------------------------------------#
 
-
 ## Settings File
 rc_file=""
-
 
 ## Default options
 CLIPBOARD=0
 COLOUR=1
+CVE=0
 EDBID=0
 EXACT=0
 EXAMINE=0
@@ -46,24 +45,24 @@ COLOUR_OFF_GREP=
 COLOUR_ON_GREP=
 REGEX_GREP=
 
-
-## Check if our grep supports --color
-if grep --help 2>&1 | grep "[-]-color" >/dev/null 2>&1 ; then
+## Check if our grep supports --color (BSD vs GNU)
+if grep --help 2>&1 | grep "[-]-color" >/dev/null 2>&1; then
   COLOUR_OFF_GREP="--color=never"
   COLOUR_ON_GREP="--color=always"
 fi
 
-## Check if our grep supports ---perl-regexp
-if grep --help 2>&1 | grep "[-]-perl-regexp" >/dev/null 2>&1 ; then
+## Check if our grep supports --perl-regexp (BSD vs GNU)
+if grep --help 2>&1 | grep "[-]-perl-regexp" >/dev/null 2>&1; then
   REGEX_GREP="-P"
 else
   REGEX_GREP="-E"
 fi
 
-
 ## Set LANG variable to avoid illegal byte sequence errors
 LANG=C
 
+## Set TERM
+export TERM=xterm-256color
 
 ## Usage info
 ##  - https://www.tldp.org/LDP/abs/html/standard-options.html
@@ -81,7 +80,8 @@ function usage() {
   echo "  ${progname} linux kernel 3.2 --exclude=\"(PoC)|/dos/\""
   echo "  ${progname} -s Apache Struts 2.0.0"
   echo "  ${progname} linux reverse password"
-  echo "  ${progname} -j 55555 | json_pp"
+  echo "  ${progname} -j 55555 | jq"
+  echo "  ${progname} --cve 2021-44228"
   echo ""
   echo "  For more examples, see the manual: https://www.exploit-db.com/searchsploit"
   echo ""
@@ -89,23 +89,24 @@ function usage() {
   echo " Options "
   echo "========="
   echo "## Search Terms"
-  echo "   -c, --case     [Term]      Perform a case-sensitive search (Default is inSEnsITiVe)"
-  echo "   -e, --exact    [Term]      Perform an EXACT & order match on exploit title (Default is an AND match on each term) [Implies \"-t\"]"
+  echo "   -c, --case     [term]      Perform a case-sensitive search (Default is inSEnsITiVe)"
+  echo "   -e, --exact    [term]      Perform an EXACT & order match on exploit title (Default is an AND match on each term) [Implies \"-t\"]"
   echo "                                e.g. \"WordPress 4.1\" would not be detect \"WordPress Core 4.1\")"
   echo "   -s, --strict               Perform a strict search, so input values must exist, disabling fuzzy search for version range"
   echo "                                e.g. \"1.1\" would not be detected in \"1.0 < 1.3\")"
-  echo "   -t, --title    [Term]      Search JUST the exploit title (Default is title AND the file's path)"
+  echo "   -t, --title    [term]      Search JUST the exploit title (Default is title AND the file's path)"
   echo "       --exclude=\"term\"       Remove values from results. By using \"|\" to separate, you can chain multiple values"
   echo "                                e.g. --exclude=\"term1|term2|term3\""
+  echo "       --cve      [CVE]       Search for Common Vulnerabilities and Exposures (CVE) value"
   echo ""
   echo "## Output"
-  echo "   -j, --json     [Term]      Show result in JSON format"
-  echo "   -o, --overflow [Term]      Exploit titles are allowed to overflow their columns"
+  echo "   -j, --json     [term]      Show result in JSON format"
+  echo "   -o, --overflow [term]      Exploit titles are allowed to overflow their columns"
   echo "   -p, --path     [EDB-ID]    Show the full path to an exploit (and also copies the path to the clipboard if possible)"
   echo "   -v, --verbose              Display more information in output"
-  echo "   -w, --www      [Term]      Show URLs to Exploit-DB.com rather than the local path"
+  echo "   -w, --www      [term]      Show URLs to Exploit-DB.com rather than the local path"
   echo "       --id                   Display the EDB-ID value rather than local path"
-  echo "       --colour               Disable colour highlighting in search results"
+  echo "       --disable-colour       Disable colour highlighting in search results"
   echo ""
   echo "## Non-Searching"
   echo "   -m, --mirror   [EDB-ID]    Mirror (aka copies) an exploit to the current working directory"
@@ -135,7 +136,6 @@ function usage() {
   exit 2
 }
 
-
 ## Update database check
 function update() {
   arraylength="${#files_array[@]}"
@@ -150,7 +150,6 @@ function update() {
     tmp_package+=("${package_array[${i}]}")
   done
 
-
   ## Loop around all the new arrays
   arraylength="${#tmp_git[@]}"
   for (( i=0; i<${arraylength}; i++ )); do
@@ -163,7 +162,7 @@ function update() {
     if [[ "$?" == "0" ]] && [[ "${apt}" != "" ]]; then
       updatedeb "${package}"
     else
-      ## Update from homebrew (e.g. OSX)
+      ## Update from homebrew (e.g. macOS/OSX)
       brew 2>/dev/null >/dev/null
       if [[ "$?" == "0" ]]; then
         ## This only really only updates "./searchsploit". The rest (can) come via git as its updated more frequently
@@ -179,7 +178,6 @@ function update() {
   exit 6
 }
 
-
 ## Update database (via .deb/apt)
 function updatedeb() {
   package_in="${1}"
@@ -194,7 +192,6 @@ function updatedeb() {
   echo -e "\n[*] apt update finished"
 }
 
-
 ## Update database (via homebrew)
 function updatedbrew() {
   package_in="${1}"
@@ -207,7 +204,6 @@ function updatedbrew() {
 
   echo -e "\n[*] Brew update finished"
 }
-
 
 ## Update database (via Git)
 function updategit() {
@@ -263,7 +259,6 @@ function updategit() {
   echo "[i] Path: ${path_in}/"
 }
 
-
 ## Printing dotted lines in the correct manner
 function drawline() {
   printf "%0.s-" $( eval echo {1..$(( COL1 + 1 ))} )
@@ -272,11 +267,10 @@ function drawline() {
   echo ""
 }
 
-
 ## Used in searchsploitout/nmap's XML
 function validterm() {
   ## Check to see if its any phrases which would give a TON of incorrect results
-  if [ "$( echo ${1} | tr '[:upper:]' '[:lower:]' )" == "microsoft" ] \
+  if   [ "$( echo ${1} | tr '[:upper:]' '[:lower:]' )" == "microsoft" ] \
     || [ "$( echo ${1} | tr '[:upper:]' '[:lower:]' )" == "microsoft windows" ] \
     || [ "$( echo ${1} | tr '[:upper:]' '[:lower:]' )" == "windows" ] \
     || [ "$( echo ${1} | tr '[:upper:]' '[:lower:]' )" == "apache" ] \
@@ -297,7 +291,6 @@ function validterm() {
   return 0
 }
 
-
 ## Used in searchsploitout/nmap's XML
 function searchsploitout() {
   ## Make sure there is a value
@@ -308,7 +301,7 @@ function searchsploitout() {
 
   arg="-t"   ## Title search by default!
   [[ "${COLOUR}" != "1" ]] \
-    && arg="${arg} --colour"
+    && arg="${arg} --disable-colour"
   [[ "${EDBID}" == "1" ]] \
     && arg="${arg} --id"
   [[ "${JSON}" == "1" ]] \
@@ -378,7 +371,6 @@ function searchsploitout() {
   fi
 }
 
-
 ## Read XML file
 function nmapxml() {
   ## Feedback to the end user
@@ -424,16 +416,22 @@ function nmapxml() {
   done
 }
 
-
 ## Build search terms
 function buildterms() {
   tag_in="${1}"
 
-  ## If we are to use colour ("--colour"), add the values to search for between "or"
+  ## If we are to use colour ("--disable-colour"), add the values to search for between "or"
   if [[ "${COLOUR}" -eq 1 ]]; then
     [[ "${COLOUR_TAG}" ]] \
       && COLOUR_TAG="${COLOUR_TAG}|"
     COLOUR_TAG="${COLOUR_TAG}${tag_in}"
+  fi
+
+  ## Some regex to try and detect version
+  ## Basic: major.minor[.build][.revision]  // major.minor[.maintenance][.build]  -- example: 1.2.3.4)
+  ## Plus alphanumeric (e.g. alpha, beta): 1a, 2.2b, 3.3-c, 4.4-rc4, 5.5-r
+  if ! echo "${tag_in}" | grep ${REGEX_GREP} -q "^(\d+)(\.?\d*)(\.?\d*)((\.|\-)?(\w*))$"; then
+    FUZZY_SEARCH="${FUZZY_SEARCH} | grep ${COLOUR_OFF_GREP} -F ${CASE_TAG_GREP} \"${tag_in}\""
   fi
 
   ## Search both title AND path
@@ -441,12 +439,6 @@ function buildterms() {
     ## Search command for each term (with case sensitive flag, "-c")
     SEARCH="${SEARCH} | grep ${COLOUR_OFF_GREP} -F ${CASE_TAG_GREP} \"${tag_in}\""
 
-    ## Some regex to try and detect version
-    ## Basic: major.minor[.build][.revision]  // major.minor[.maintenance][.build]  -- example: 1.2.3.4)
-    ## Plus alphanumeric (e.g. alpha, beta): 1a, 2.2b, 3.3-c, 4.4-rc4, 5.5-r
-    if ! echo "${tag_in}" | grep ${REGEX_GREP} -q "^(\d+)(\.?\d*)(\.?\d*)((\.|\-)?(\w*))$"; then
-      FUZZY_SEARCH="${FUZZY_SEARCH} | grep ${COLOUR_OFF_GREP} -F ${CASE_TAG_GREP} \"${tag_in}\""
-    fi
   ## Search just the title, NOT the path ("-t"/"-e")
   else
     ## If there is already a value, prepend text to get ready
@@ -465,7 +457,6 @@ function buildterms() {
   fi
 }
 
-
 ## Read in the values from files_*.csv
 function findresults() {
   file_in="${1}"
@@ -480,19 +471,21 @@ function findresults() {
     url="exploits"
   fi
 
-
   ## JSON require full options ("--json")
   if [[ "${JSON}" -eq 1 ]] || [[ "${FUZZY}" -eq 1 ]]; then
-    ## Read (id, path, title, date, author, type, platform) separated between commas
+    ## Read (id, path, title, date_published, author, type, platform, port, date_added, date_updated, verified, codes, tags, aliases, screenshot_url, application_url, source_url) separated between commas
     ## Needs to end with a `,` to match the awk search later for FUZZY_SEARCH with "sort -u"
-    SEARCH="awk -F '[,]' '{print \$1\",\"\$2\",\"\$3\",\"\$4\",\"\$5\",\"\$6\",\"\$7\",\"}' \"${path_in}/${file_in}\""
+    SEARCH="awk -F '[,]' '{print \$1\",\"\$2\",\"\$3\",\"\$4\",\"\$5\",\"\$6\",\"\$7\",\"\$8\",\"\$9\",\"\$10\",\"\$11\",\"\$12\",\"\$13\",\"\$14\",\"\$15\",\"\$16\",\"\$17}' \"${path_in}/${file_in}\""
     ## Read (id, path, title) separated between commas & search for less than (and grater than values) too
     FUZZY_SEARCH="awk -F '[,]' '{print \$1\",\"\$2\",\"\$3}' \"${path_in}/${file_in}\" | grep ${COLOUR_OFF_GREP} \"<\|>\""
+  ## CVE ("--cve")
+  elif [[ "${CVE}" -eq 1 ]]; then
+    ## Read (id, path, title, codes) separated between commas (as these are the visible/common fields)
+    SEARCH="awk -F '[,]' '{print \$1\",\"\$2\",\"\$3\",\"\$12}' \"${path_in}/${file_in}\""
   else
     ## Read (id, path, title) separated between commas (as these are the only visible fields)
     SEARCH="awk -F '[,]' '{print \$1\",\"\$2\",\"\$3}' \"${path_in}/${file_in}\""
   fi
-
 
   ## EXACT search command ("-e")
   if [[ "${EXACT}" -eq 1 ]]; then
@@ -505,11 +498,9 @@ function findresults() {
     done
   fi
 
-
   ## If we are NOT to use the path name ("-t"/"-e")
   [[ "${FILEPATH}" -eq 0 ]] \
     && SEARCH="${SEARCH} | awk -F '[,]' '${CASE_TAG_FGREP}(\$3) ~ /${AWK_SEARCH}/ {print}'"
-
 
   ## Remove any terms not wanted from the search
   [[ "${EXCLUDE}" ]] \
@@ -517,12 +508,10 @@ function findresults() {
   [[ "${EXCLUDE}" ]] && [[ "${FUZZY}" -eq 1 ]] \
     && FUZZY_SEARCH="${FUZZY_SEARCH} | grep ${REGEX_GREP} -vi '${EXCLUDE}'"
 
-
-  ## If we are to use colour ("--colour"), add the value here
+  ## If we are to use colour ("--disable-colour"), add the value here
   if [[ "${COLOUR_TAG}" ]] && [[ "${JSON}" -eq 0 ]]; then
     COLOUR_TAG="grep ${COLOUR_ON_GREP} -iE \"${COLOUR_TAG}|$\""
   fi
-
 
   ## Dynamically set column widths to the current screen size
   [[ "${WEBLINK}" -eq 1 ]] \
@@ -532,7 +521,6 @@ function findresults() {
 
   COL1=$(( $( tput cols ) - COL2 - 1 ))
 
-
   ## Search, format, and print results (--overflow)
   [[ "${OVERFLOW}" -eq 1 ]] \
     && FORMAT_COL1=${COL1} \
@@ -540,7 +528,6 @@ function findresults() {
 
   ## Maximum length COL2 can be
   FORMAT_COL2=$(( ${COL2} - 2 ))
-
 
   ## Are we doing a fuzzy search & did we manage to detect the version
   if [[ "${FUZZY}" -eq 1 ]] && [[ -n "${VERSION}" ]]; then
@@ -556,13 +543,12 @@ function findresults() {
           && MIN=0
 
         RESULT="$( printf '%s\n' "${MIN}" "${VERSION}" "${MAX}" | sort -V )"
-        ## Sub if sort -v isn't working?   if (( $( echo "${MIN} <= ${VERSION}" | bc -l ) )) && (( $( echo "${MAX} >= ${VERSION}" | bc -l ) )) ; then
+        ## Sub if sort -v isn't working?   if (( $( echo "${MIN} <= ${VERSION}" | bc -l ) )) && (( $( echo "${MAX} >= ${VERSION}" | bc -l ) )); then
         ## ...else there is dpkg (if Debian)
-        if [[ "$( echo "${RESULT}" | head -n 1 )" == "${MIN}" ]] \
-          && [[ "$( echo "${RESULT}" | tail -n 1 )" == "${MAX}" ]]; then
+        if [[ "$( echo "${RESULT}" | head -n 1 )" == "${MIN}" ]] && [[ "$( echo "${RESULT}" | tail -n 1 )" == "${MAX}" ]]; then
             [ -n "${ID}" ] \
               && ID="${ID}|"
-            ID="${ID}$( echo $TITLE | awk -F ',' '{print $1}' )"
+            ID="${ID}$( echo ${TITLE} | awk -F ',' '{print $1}' )"
             ## Found one, no point going on
             break
         fi
@@ -599,7 +585,6 @@ function findresults() {
     )
   fi
 
-
   ## Magic search Fu + strip double quotes + Fix any escaping `\` (need todo it again for JSON only later: issues/#173)
   OUTPUT="$(
     ( \
@@ -610,9 +595,8 @@ function findresults() {
     | sort -u
   )"
 
-
   ## If there are no results, no point going on
-  [[ -z "$OUTPUT" ]] \
+  [[ -z "${OUTPUT}" ]] \
     && return
 
   ## Print JSON format (full options) ("--json")?
@@ -631,7 +615,7 @@ function findresults() {
     else
       OUTPUT="$( echo "${OUTPUT}" \
         | sed 's_\\_\\\\_g' \
-        | awk -F ',' '{ printf "\\n\\t\\t'{'\"Title\":\"%s\",\"EDB-ID\":\"%s\",\"Date\":\"%s\",\"Author\":\"%s\",\"Type\":\"%s\",\"Platform\":\"%s\",\"Path\":\"'${path_in}/'%s\"},", $3, $1, $4, $5, $6, $7, $2 }' )"
+        | awk -F ',' '{ printf "\\n\\t\\t'{'\"Title\":\"%s\",\"EDB-ID\":\"%s\",\"Date_Published\":\"%s\",\"Date_Added\":\"%s\",\"Date_Updated\":\"%s\",\"Author\":\"%s\",\"Type\":\"%s\",\"Platform\":\"%s\",\"Port\":\"%s\",\"Verified\":\"%s\",\"Codes\":\"%s\",\"Tags\":\"%s\",\"Aliases\":\"%s\",\"Screenshot\":\"%s\",\"Application\":\"%s\",\"Source\":\"%s\",\"Path\":\"'${path_in}/'%s\"},", $3, $1, $4, $9, $10, $5, $6, $7, $8, $11, $12, $13, $14, $15, $16, $17, $2}' )"
     fi
     OUTPUT="$( echo -e ${OUTPUT} \
       | sort -f \
@@ -654,19 +638,16 @@ function findresults() {
       | sort -f )"
   fi
 
-
-  ## Display colour highlights ("--colour")?
+  ## Display colour highlights ("--disable-colour")?
   if [[ "${COLOUR_TAG}" ]] && [[ "${JSON}" -eq 0 ]] && [[ "${OUTPUT}" ]]; then
     OUTPUT=$( echo -e "${OUTPUT}" | eval ${COLOUR_TAG} )
   fi
 }
 
-
 function printresults() {
   title_in="${1}"
   path_in="${2}"
   json_title="$( echo ${title_in} | tr /a-z/ /A-Z/ )"
-
 
   ## Print header if in JSON ("--json")
   if [[ "${JSON}" -eq 1 ]]; then
@@ -690,11 +671,9 @@ function printresults() {
     drawline
   fi
 
-
   ## Show content
   [[ "${OUTPUT}" ]] \
     && echo "${OUTPUT}"
-
 
   ## Print footer if in JSON ("--json")
   if [[ "${JSON}" -eq 1 ]]; then
@@ -704,9 +683,7 @@ function printresults() {
   fi
 }
 
-
 #-----------------------------------------------------------------------------#
-
 
 ## Locate setting file
 ## User home folder config
@@ -727,27 +704,25 @@ elif [[ ! -f "${rc_file}" ]]; then
   exit 1
 fi
 
-
 ## Use config file
 source "${rc_file}"
 
-
 #-----------------------------------------------------------------------------#
-
 
 ## Check for empty arguments
 if [[ $# -eq 0 ]]; then
   usage >&2
 fi
 
-
 ## Parse long arguments
 ARGS="-"
 for param in "$@"; do
   if [[ "${param}" == "--case" ]]; then
     SCASE=1
-  elif [[ "${param}" == "--colour" ]] || [[ "${param}" == "--color" ]]; then
+  elif [[ "${param}" == "--disable-colour" ]] || [[ "${param}" == "--disablecolour" ]] || [[ "${param}" == "--disable-color" ]] || [[ "${param}" == "--disablecolor" ]]; then
     COLOUR=""
+  elif [[ "${param}" == "--cve" ]]; then
+    CVE=1
   elif [[ "${param}" == "--exact" ]]; then
     EXACT=1
   elif [[ "${param}" == "--examine" ]] || [[ "${param}" == "--open" ]] || [[ "${param}" == "--view" ]]; then
@@ -787,10 +762,9 @@ for param in "$@"; do
       shift
       continue
     fi
-    TAGS="${TAGS} ${param//\`/_}"
+    TAGS="${TAGS} ${param//[\`\']/_}"
   fi
 done
-
 
 ## Parse short arguments
 while getopts "cehjmnopstuvwx" arg "${ARGS}"; do
@@ -816,9 +790,7 @@ while getopts "cehjmnopstuvwx" arg "${ARGS}"; do
   shift $(( OPTIND - 1 ))
 done
 
-
 #-----------------------------------------------------------------------------#
-
 
 ## Check for files_*.csv
 arraylength="${#files_array[@]}"
@@ -830,13 +802,13 @@ for (( i=0; i<${arraylength}; i++ )); do
   ## Method #1 - File itself
   elif [[ -f "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${files_array[${i}]}" ]]; then
     echo "[i] Found (#1): $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/${files_array[${i}]}" 1>&2
-    echo "[i] To remove this message, please edit \"${rc_file}\" for \"${files_array[${i}]}\" (package_array: ${package_array[${i}]})" 1>&2
+    echo "[i] To remove this message, please edit \"${rc_file}\" which has \"package_array: ${package_array[${i}]}\" to point too: path_array+=(\"$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )\")" 1>&2
     echo 1>&2
     path_array[${i}]="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
   ## Method #2 - Symbolic link
   elif [[ -f "$( dirname "$( readlink "$0" )" )/${files_array[${i}]}" ]]; then
     echo "[i] Found (#2): $( dirname "$( readlink "$0" )" )/${files_array[${i}]}" 1>&2
-    echo "[i] To remove this message, please edit \"${rc_file}\" for \"${files_array[${i}]}\" (package_array: ${package_array[${i}]})" 1>&2
+    echo "[i] To remove this message, please edit \"${rc_file}\" which has \"package_array: ${package_array[${i}]}\" to point too: path_array+=(\"$( dirname "$( readlink "$0" )" )\")" 1>&2
     echo 1>&2
     path_array[${i}]="$( dirname "$( readlink "$0" )" )"
   else
@@ -851,9 +823,7 @@ for (( i=0; i<${arraylength}; i++ )); do
   fi
 done
 
-
 #-----------------------------------------------------------------------------#
-
 
 ## Read in XML
 if [[ "${XML}" -eq 1 ]]; then
@@ -883,13 +853,11 @@ if [[ "${XML}" -eq 1 ]]; then
   exit 0
 fi
 
-
 ## Print the full path. If pbcopy/xclip is available then copy to the clipboard
 if [[ "${GETPATH}" -eq 1 ]]; then
   for exploit in ${TAGS}; do
     ## Get EDB-ID from input
     edbdb="$( echo ${exploit} | rev | cut -d '/' -f1 | rev | cut -d'-' -f1 | cut -d'.' -f1 | tr -dc '0-9' )"
-
 
     ## Loop until we find something
     arraylength="${#files_array[@]}"
@@ -900,7 +868,7 @@ if [[ "${GETPATH}" -eq 1 ]]; then
       line=$( grep -m 1 -E "^${edbdb}," "${files}" )
 
       if [[ "${line}" ]]; then
-        path="$( echo $line | cut -d ',' -f 2 )"
+        path="$( echo ${line} | cut -d ',' -f 2 )"
         location="${path_array[${i}]}/${path}"
         name="${name_array[${i}]}"
 
@@ -916,14 +884,27 @@ if [[ "${GETPATH}" -eq 1 ]]; then
       fi
     done
 
-
     ## Did we find the exploit?
     if [[ -f "${location}" ]]; then
       ## Get title
       title=$( grep -m 1 "${path}" "${files}" | cut -d ',' -f 3 | sed 's/"//g' )
 
+      ## Get codes
+      codes=$( grep -m 1 "${path}" "${files}" | cut -d ',' -f 12 | sed 's/"//g; s/;/, /g' )
+      if [ -z "${codes}" ]; then
+        codes="N/A"
+      fi
+
+      ## Get verified status
+      verified=$( grep -m 1 "${path}" "${files}" | cut -d ',' -f 11 | sed 's/"//g' )
+      if [ "${verified}" = "1" ]; then
+        verified="True"
+      else
+        verified="False"
+      fi
+
       ## File type
-      fileinfo="$( file -b "${location}" )"
+      fileinfo="$( file -b "${location}" 2>/dev/null || echo "<missing file package>" )"
 
       ## How long is the name?
       PADDING=$(( 9 - ${#name} ))
@@ -932,19 +913,22 @@ if [[ "${GETPATH}" -eq 1 ]]; then
       printf "%-${PADDING}s%s"
       echo "${name}: ${title}"
       echo "      URL: https://www.exploit-db.com/${url}"
+      ## Path is useful doing --mirror
       echo "     Path: ${location}"
+      echo "    Codes: ${codes}"
+      echo " Verified: ${verified}"
       echo "File Type: ${fileinfo}"
-      echo ""
+#     echo ""
 
       ## Copy to clipboard?
       if [[ "${CLIPBOARD}" -eq 1 ]]; then
         ## Are any copy programs available?
         if hash xclip 2>/dev/null || hash pbcopy 2>/dev/null; then
-          ## Linux (Will require $DISPLAY)
+          ## Linux (Will require ${DISPLAY})
           if hash xclip 2>/dev/null; then
             echo -ne "${location}" | xclip -selection clipboard 2>/dev/null
             echo "Copied EDB-ID #${edbdb}'s path to the clipboard"
-          ## OSX
+          ## macOS/OSX
           elif hash pbcopy 2>/dev/null; then
             echo -ne "${location}" | pbcopy
             echo "Copied EDB-ID #${edbdb}'s path to the clipboard"
@@ -983,24 +967,19 @@ if [[ "${GETPATH}" -eq 1 ]]; then
   exit 0
 fi
 
-
 #-----------------------------------------------------------------------------#
-
 
 ## Are we are doing an exact match ("-e")? If so, do NOT check folder path (Implies "-t").
 [[ "${EXACT}" -eq 1 ]] \
   && FILEPATH=0
-
 
 ## Case sensitive ("-c"), remove the default flags
 [[ "${SCASE}" -eq 1 ]] \
   && CASE_TAG_GREP="" \
   && CASE_TAG_FGREP=""
 
-
 ## Remove leading space
 TAGS="$( echo ${TAGS} | sed -e 's/^[[:space:]]//' )"
-
 
 ## Check to see if the version of "sort" is supported
 echo | sort -V 2>/dev/null >/dev/null
@@ -1009,7 +988,6 @@ if [ $? -ne "0" ]; then
   echo "[i] Enabling '${progname} --strict'" 1>&2
   FUZZY=0
 fi
-
 
 ## Some regex to try and detect version
 ## Basic: major.minor[.build][.revision]  // major.minor[.maintenance][.build]  -- example: 1.2.3.4)
@@ -1032,7 +1010,6 @@ for tag_in in ${TAGS}; do
   fi
 done
 
-
 ## Did not get a version? If so, no point doing a fuzzy search
 if [[ "${FUZZY}" -eq 1 ]] && [[ -z "${VERSION}" ]] && [[ "${VERBOSE}" -eq 1 ]]; then
   echo "[i] Unable to detect version in terms: ${TAGS}" 1>&2
@@ -1040,19 +1017,15 @@ if [[ "${FUZZY}" -eq 1 ]] && [[ -z "${VERSION}" ]] && [[ "${VERBOSE}" -eq 1 ]]; 
   FUZZY=0
 fi
 
-
 ## Is it just a single tag, disable fuzzy
 [[  "${TAGS}" != *" "* ]] \
   && FUZZY=0
 
-
 #-----------------------------------------------------------------------------#
-
 
 ## Print header if in JSON ("--json")
 [[ "${JSON}" -eq 1 ]] \
   && printf "{\n\t\"SEARCH\": \"${TAGS}\""
-
 
 ## Check for files_*.csv
 arraylength="${#files_array[@]}"
@@ -1070,11 +1043,9 @@ for (( i=0; i<${arraylength}; i++ )); do
   COLOUR_TAG=""
 done
 
-
 ## Print footer if in JSON ("--json")
 [[ "${JSON}" -eq 1 ]] \
   && printf "\n}\n"
-
 
 ## Done
 exit 0

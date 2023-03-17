@@ -2,7 +2,7 @@
 Command line search tool for Exploit-DB
 
 ### Download
-https://github.com/offensive-security/exploitdb via git clone https://github.com/offensive-security/exploitdb
+git clone https://gitlab.com/exploit-database/exploitdb via git clone https://gitlab.com/exploit-database/exploitdb.git  
 
 ### Usage  
 > searchsploit [options] term1 [term2] ... [termN]

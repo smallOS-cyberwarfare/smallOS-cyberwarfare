@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -11,6 +11,13 @@ try:
     from crypt import crypt
 except:  # removed ImportError because of https://github.com/sqlmapproject/sqlmap/issues/3171
     from thirdparty.fcrypt.fcrypt import crypt
+
+try:
+    from Crypto.Cipher.DES import MODE_CBC as CBC
+    from Crypto.Cipher.DES import new as des
+except:
+    from thirdparty.pydes.pyDes import CBC
+    from thirdparty.pydes.pyDes import des
 
 _multiprocessing = None
 
@@ -80,8 +87,6 @@ from lib.core.settings import UNICODE_ENCODING
 from lib.core.wordlist import Wordlist
 from thirdparty import six
 from thirdparty.colorama.initialise import init as coloramainit
-from thirdparty.pydes.pyDes import CBC
-from thirdparty.pydes.pyDes import des
 from thirdparty.six.moves import queue as _queue
 
 def mysql_passwd(password, uppercase=True):
@@ -219,14 +224,21 @@ def oracle_old_passwd(password, username, uppercase=True):  # prior to version '
     'F894844C34402B67'
     """
 
-    IV, pad = "\0" * 8, "\0"
+    IV, pad = b"\0" * 8, b"\0"
 
     unistr = b"".join((b"\0" + _.encode(UNICODE_ENCODING)) if ord(_) < 256 else _.encode(UNICODE_ENCODING) for _ in (username + password).upper())
 
-    cipher = des(decodeHex("0123456789ABCDEF"), CBC, IV, pad)
-    encrypted = cipher.encrypt(unistr)
-    cipher = des(encrypted[-8:], CBC, IV, pad)
-    encrypted = cipher.encrypt(unistr)
+    if des.__module__ == "Crypto.Cipher.DES":
+        unistr += b"\0" * ((8 - len(unistr) % 8) & 7)
+        cipher = des(decodeHex("0123456789ABCDEF"), CBC, iv=IV)
+        encrypted = cipher.encrypt(unistr)
+        cipher = des(encrypted[-8:], CBC, iv=IV)
+        encrypted = cipher.encrypt(unistr)
+    else:
+        cipher = des(decodeHex("0123456789ABCDEF"), CBC, IV, pad)
+        encrypted = cipher.encrypt(unistr)
+        cipher = des(encrypted[-8:], CBC, IV, pad)
+        encrypted = cipher.encrypt(unistr)
 
     retVal = encodeHex(encrypted[-8:], binary=False)
 
@@ -689,7 +701,7 @@ def attackDumpedTable():
             _ = ','.join(binary_fields)
             warnMsg = "potential binary fields detected ('%s'). In case of any problems you are " % _
             warnMsg += "advised to rerun table dump with '--fresh-queries --binary-fields=\"%s\"'" % _
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
         for i in xrange(count):
             if not found and i > HASH_RECOGNITION_QUIT_THRESHOLD:
@@ -1052,7 +1064,7 @@ def dictionaryAttack(attack_dict):
                                 item = [(user, hash_), {"salt": hash_[4:12], "count": 1 << ITOA64.index(hash_[3]), "prefix": hash_[:3]}]
                             else:
                                 warnMsg = "invalid hash '%s'" % hash_
-                                logger.warn(warnMsg)
+                                logger.warning(warnMsg)
 
                         if item and hash_ not in keys:
                             resumed = hashDBRetrieve(hash_)
@@ -1185,7 +1197,7 @@ def dictionaryAttack(attack_dict):
                     print()
                     processException = True
                     warnMsg = "user aborted during dictionary-based attack phase (Ctrl+C was pressed)"
-                    logger.warn(warnMsg)
+                    logger.warning(warnMsg)
 
                 finally:
                     _finalize(retVal, results, processes, attack_info)
@@ -1260,7 +1272,7 @@ def dictionaryAttack(attack_dict):
                         print()
                         processException = True
                         warnMsg = "user aborted during dictionary-based attack phase (Ctrl+C was pressed)"
-                        logger.warn(warnMsg)
+                        logger.warning(warnMsg)
 
                         for process in processes:
                             try:
@@ -1278,11 +1290,11 @@ def dictionaryAttack(attack_dict):
 
     if foundHash and len(hash_regexes) == 0:
         warnMsg = "unknown hash format"
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
 
     if len(results) == 0:
         warnMsg = "no clear password(s) found"
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
 
     return results
 

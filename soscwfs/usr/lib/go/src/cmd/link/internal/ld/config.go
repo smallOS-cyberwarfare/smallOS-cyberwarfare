@@ -199,7 +199,7 @@ func mustLinkExternal(ctxt *Link) (res bool, reason string) {
 
 	// Internally linking cgo is incomplete on some architectures.
 	// https://golang.org/issue/14449
-	if iscgo && ctxt.Arch.InFamily(sys.MIPS64, sys.MIPS, sys.RISCV64) {
+	if iscgo && ctxt.Arch.InFamily(sys.Loong64, sys.MIPS64, sys.MIPS, sys.RISCV64) {
 		return true, buildcfg.GOARCH + " does not support internal cgo"
 	}
 	if iscgo && (buildcfg.GOOS == "android" || buildcfg.GOOS == "dragonfly") {
@@ -212,7 +212,7 @@ func mustLinkExternal(ctxt *Link) (res bool, reason string) {
 		// windows/arm64 internal linking is not implemented.
 		return true, buildcfg.GOOS + "/" + buildcfg.GOARCH + " does not support internal cgo"
 	}
-	if iscgo && (ctxt.Arch == sys.ArchPPC64 || ctxt.Arch == sys.ArchPPC64LE) {
+	if iscgo && ctxt.Arch == sys.ArchPPC64 {
 		// Big Endian PPC64 cgo internal linking is not implemented for aix or linux.
 		return true, buildcfg.GOOS + " does not support internal cgo"
 	}
@@ -244,6 +244,15 @@ func mustLinkExternal(ctxt *Link) (res bool, reason string) {
 
 	if unknownObjFormat {
 		return true, "some input objects have an unrecognized file format"
+	}
+
+	if len(dynimportfail) > 0 {
+		// This error means that we were unable to generate
+		// the _cgo_import.go file for some packages.
+		// This typically means that there are some dependencies
+		// that the cgo tool could not figure out.
+		// See issue #52863.
+		return true, fmt.Sprintf("some packages could not be built to support internal linking (%v)", dynimportfail)
 	}
 
 	return false, ""

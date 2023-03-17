@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -39,6 +39,7 @@ optDict = {
         "authType": "string",
         "authCred": "string",
         "authFile": "string",
+        "abortCode": "string",
         "ignoreCode": "string",
         "ignoreProxy": "boolean",
         "ignoreRedirects": "boolean",
@@ -64,6 +65,7 @@ optDict = {
         "csrfToken": "string",
         "csrfUrl": "string",
         "csrfMethod": "string",
+        "csrfData": "string",
         "csrfRetries": "integer",
         "forceSSL": "boolean",
         "chunked": "boolean",
@@ -203,6 +205,7 @@ optDict = {
 
     "General": {
         "trafficFile": "string",
+        "abortOnEmpty": "boolean",
         "answers": "string",
         "batch": "boolean",
         "base64Parameter": "string",
@@ -214,6 +217,7 @@ optDict = {
         "crawlDepth": "integer",
         "crawlExclude": "string",
         "csvDel": "string",
+        "dumpFile": "string",
         "dumpFormat": "string",
         "encoding": "string",
         "eta": "boolean",
@@ -243,6 +247,7 @@ optDict = {
         "dependencies": "boolean",
         "disableColoring": "boolean",
         "listTampers": "boolean",
+        "noLogging": "boolean",
         "offline": "boolean",
         "purge": "boolean",
         "resultsFile": "string",

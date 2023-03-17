@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -9,6 +9,7 @@ from __future__ import division
 
 import os
 import re
+import subprocess
 import time
 
 from lib.controller.action import action
@@ -186,12 +187,12 @@ def _showInjections():
     if conf.tamper:
         warnMsg = "changes made by tampering scripts are not "
         warnMsg += "included in shown payload content(s)"
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
 
     if conf.hpp:
         warnMsg = "changes made by HTTP parameter pollution are not "
         warnMsg += "included in shown payload content(s)"
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
 
 def _randomFillBlankFields(value):
     retVal = value
@@ -496,7 +497,7 @@ def start():
                     if skip:
                         continue
 
-                    if place not in conf.paramDict:
+                    if place not in conf.paramDict or place not in conf.parameters:
                         continue
 
                     paramDict = conf.paramDict[place]
@@ -510,6 +511,23 @@ def start():
                         kb.vainRun = False
                         testSqlInj = True
                         paramKey = (conf.hostname, conf.path, place, parameter)
+
+                        if kb.processUserMarks:
+                            if testSqlInj and place not in (PLACE.CUSTOM_POST, PLACE.CUSTOM_HEADER):
+                                if kb.processNonCustom is None:
+                                    message = "other non-custom parameters found. "
+                                    message += "Do you want to process them too? [Y/n/q] "
+                                    choice = readInput(message, default='Y').upper()
+
+                                    if choice == 'Q':
+                                        raise SqlmapUserQuitException
+                                    else:
+                                        kb.processNonCustom = choice == 'Y'
+
+                                if not kb.processNonCustom:
+                                    infoMsg = "skipping %sparameter '%s'" % ("%s " % paramType if paramType != parameter else "", parameter)
+                                    logger.info(infoMsg)
+                                    continue
 
                         if paramKey in kb.testedParams:
                             testSqlInj = False
@@ -556,7 +574,7 @@ def start():
 
                             if not check:
                                 warnMsg = "%sparameter '%s' does not appear to be dynamic" % ("%s " % paramType if paramType != parameter else "", parameter)
-                                logger.warn(warnMsg)
+                                logger.warning(warnMsg)
 
                                 if conf.skipStatic:
                                     infoMsg = "skipping static %sparameter '%s'" % ("%s " % paramType if paramType != parameter else "", parameter)
@@ -598,6 +616,19 @@ def start():
 
                                         kb.injections.append(injection)
 
+                                        if not kb.alerted:
+                                            if conf.alert:
+                                                infoMsg = "executing alerting shell command(s) ('%s')" % conf.alert
+                                                logger.info(infoMsg)
+                                                try:
+                                                    process = subprocess.Popen(conf.alert, shell=True)
+                                                    process.wait()
+                                                except Exception as ex:
+                                                    errMsg = "error occurred while executing '%s' ('%s')" % (conf.alert, getSafeExString(ex))
+                                                    logger.error(errMsg)
+
+                                            kb.alerted = True
+
                                         # In case when user wants to end detection phase (Ctrl+C)
                                         if not proceed:
                                             break
@@ -612,7 +643,7 @@ def start():
 
                                 if not injectable:
                                     warnMsg = "%sparameter '%s' does not seem to be injectable" % ("%s " % paramType if paramType != parameter else "", parameter)
-                                    logger.warn(warnMsg)
+                                    logger.warning(warnMsg)
 
                             finally:
                                 if place == PLACE.COOKIE:
@@ -709,7 +740,7 @@ def start():
 
             if conf.multipleTargets:
                 warnMsg = "user aborted in multiple target mode"
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
 
                 message = "do you want to skip to the next target in list? [Y/n/q]"
                 choice = readInput(message, default='Y').upper()
@@ -749,7 +780,7 @@ def start():
                 warnMsg = "it appears that the target "
                 warnMsg += "has a maximum connections "
                 warnMsg += "constraint"
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
 
     if kb.dataOutputFlag and not conf.multipleTargets:
         logger.info("fetched data logged to text files under '%s'" % conf.outputPath)

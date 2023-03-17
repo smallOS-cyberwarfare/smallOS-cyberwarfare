@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -48,7 +48,7 @@ class Connector(GenericConnector):
 
         except (self.__sqlite.DatabaseError, self.__sqlite.OperationalError):
             warnMsg = "unable to connect using SQLite 3 library, trying with SQLite 2"
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
             try:
                 try:

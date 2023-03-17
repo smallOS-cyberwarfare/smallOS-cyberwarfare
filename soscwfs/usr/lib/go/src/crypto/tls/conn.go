@@ -32,6 +32,7 @@ type Conn struct {
 
 	// handshakeStatus is 1 if the connection is currently transferring
 	// application data (i.e. is not currently processing a handshake).
+	// handshakeStatus == 1 implies handshakeErr == nil.
 	// This field is only to be accessed with sync/atomic.
 	handshakeStatus uint32
 	// constant after handshake; protected by handshakeMutex
@@ -587,12 +588,14 @@ func (c *Conn) readChangeCipherSpec() error {
 
 // readRecordOrCCS reads one or more TLS records from the connection and
 // updates the record layer state. Some invariants:
-//   * c.in must be locked
-//   * c.input must be empty
+//   - c.in must be locked
+//   - c.input must be empty
+//
 // During the handshake one and only one of the following will happen:
 //   - c.hand grows
 //   - c.in.changeCipherSpec is called
 //   - an error is returned
+//
 // After the handshake one and only one of the following will happen:
 //   - c.hand grows
 //   - c.input is set
@@ -758,7 +761,7 @@ func (c *Conn) readRecordOrCCS(expectChangeCipherSpec bool) error {
 	return nil
 }
 
-// retryReadRecord recurses into readRecordOrCCS to drop a non-advancing record, like
+// retryReadRecord recurs into readRecordOrCCS to drop a non-advancing record, like
 // a warning alert, empty application_data, or a change_cipher_spec in TLS 1.3.
 func (c *Conn) retryReadRecord(expectChangeCipherSpec bool) error {
 	c.retryCount++
@@ -1000,18 +1003,37 @@ func (c *Conn) writeRecordLocked(typ recordType, data []byte) (int, error) {
 	return n, nil
 }
 
-// writeRecord writes a TLS record with the given type and payload to the
-// connection and updates the record layer state.
-func (c *Conn) writeRecord(typ recordType, data []byte) (int, error) {
+// writeHandshakeRecord writes a handshake message to the connection and updates
+// the record layer state. If transcript is non-nil the marshalled message is
+// written to it.
+func (c *Conn) writeHandshakeRecord(msg handshakeMessage, transcript transcriptHash) (int, error) {
 	c.out.Lock()
 	defer c.out.Unlock()
 
-	return c.writeRecordLocked(typ, data)
+	data, err := msg.marshal()
+	if err != nil {
+		return 0, err
+	}
+	if transcript != nil {
+		transcript.Write(data)
+	}
+
+	return c.writeRecordLocked(recordTypeHandshake, data)
+}
+
+// writeChangeCipherRecord writes a ChangeCipherSpec message to the connection and
+// updates the record layer state.
+func (c *Conn) writeChangeCipherRecord() error {
+	c.out.Lock()
+	defer c.out.Unlock()
+	_, err := c.writeRecordLocked(recordTypeChangeCipherSpec, []byte{1})
+	return err
 }
 
 // readHandshake reads the next handshake message from
-// the record layer.
-func (c *Conn) readHandshake() (any, error) {
+// the record layer. If transcript is non-nil, the message
+// is written to the passed transcriptHash.
+func (c *Conn) readHandshake(transcript transcriptHash) (any, error) {
 	for c.hand.Len() < 4 {
 		if err := c.readRecord(); err != nil {
 			return nil, err
@@ -1090,6 +1112,11 @@ func (c *Conn) readHandshake() (any, error) {
 	if !m.unmarshal(data) {
 		return nil, c.in.setErrorLocked(c.sendAlert(alertUnexpectedMessage))
 	}
+
+	if transcript != nil {
+		transcript.Write(data)
+	}
+
 	return m, nil
 }
 
@@ -1165,7 +1192,7 @@ func (c *Conn) handleRenegotiation() error {
 		return errors.New("tls: internal error: unexpected renegotiation")
 	}
 
-	msg, err := c.readHandshake()
+	msg, err := c.readHandshake(nil)
 	if err != nil {
 		return err
 	}
@@ -1211,7 +1238,7 @@ func (c *Conn) handlePostHandshakeMessage() error {
 		return c.handleRenegotiation()
 	}
 
-	msg, err := c.readHandshake()
+	msg, err := c.readHandshake(nil)
 	if err != nil {
 		return err
 	}
@@ -1247,7 +1274,11 @@ func (c *Conn) handleKeyUpdate(keyUpdate *keyUpdateMsg) error {
 		defer c.out.Unlock()
 
 		msg := &keyUpdateMsg{}
-		_, err := c.writeRecordLocked(recordTypeHandshake, msg.marshal())
+		msgBytes, err := msg.marshal()
+		if err != nil {
+			return err
+		}
+		_, err = c.writeRecordLocked(recordTypeHandshake, msgBytes)
 		if err != nil {
 			// Surface the error at the next write.
 			c.out.setErrorLocked(err)
@@ -1403,6 +1434,13 @@ func (c *Conn) HandshakeContext(ctx context.Context) error {
 }
 
 func (c *Conn) handshakeContext(ctx context.Context) (ret error) {
+	// Fast sync/atomic-based exit if there is no handshake in flight and the
+	// last one succeeded without an error. Avoids the expensive context setup
+	// and mutex for most Read and Write calls.
+	if c.handshakeComplete() {
+		return nil
+	}
+
 	handshakeCtx, cancel := context.WithCancel(ctx)
 	// Note: defer this before starting the "interrupter" goroutine
 	// so that we can tell the difference between the input being canceled and
@@ -1460,6 +1498,9 @@ func (c *Conn) handshakeContext(ctx context.Context) (ret error) {
 
 	if c.handshakeErr == nil && !c.handshakeComplete() {
 		c.handshakeErr = errors.New("tls: internal error: handshake should have had a result")
+	}
+	if c.handshakeErr != nil && c.handshakeComplete() {
+		panic("tls: internal error: handshake returned an error but is marked successful")
 	}
 
 	return c.handshakeErr

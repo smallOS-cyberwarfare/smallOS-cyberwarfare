@@ -18,10 +18,7 @@ func (check *Checker) funcBody(decl *declInfo, name string, sig *Signature, body
 	}
 
 	if check.conf.Trace {
-		check.trace(body.Pos(), "--- %s: %s", name, sig)
-		defer func() {
-			check.trace(syntax.EndPos(body), "--- <end>")
-		}()
+		check.trace(body.Pos(), "-- %s: %s", name, sig)
 	}
 
 	// set function scope extent
@@ -44,7 +41,7 @@ func (check *Checker) funcBody(decl *declInfo, name string, sig *Signature, body
 
 	check.stmtList(0, body.List)
 
-	if check.hasLabel && !check.conf.IgnoreLabels {
+	if check.hasLabel && !check.conf.IgnoreBranchErrors {
 		check.labels(body)
 	}
 
@@ -95,6 +92,7 @@ const (
 
 	// additional context information
 	finalSwitchCase
+	inTypeSwitch
 )
 
 func (check *Checker) simpleStmt(s syntax.Stmt) {
@@ -314,7 +312,7 @@ L:
 }
 
 // TODO(gri) Once we are certain that typeHash is correct in all situations, use this version of caseTypes instead.
-//           (Currently it may be possible that different types have identical names and import paths due to ImporterFrom.)
+// (Currently it may be possible that different types have identical names and import paths due to ImporterFrom.)
 //
 // func (check *Checker) caseTypes(x *operand, xtyp *Interface, types []syntax.Expr, seen map[string]syntax.Expr) (T Type) {
 // 	var dummy operand
@@ -370,7 +368,9 @@ func (check *Checker) stmt(ctxt stmtContext, s syntax.Stmt) {
 	// process collected function literals before scope changes
 	defer check.processDelayed(len(check.delayed))
 
-	inner := ctxt &^ (fallthroughOk | finalSwitchCase)
+	// reset context for statements of inner blocks
+	inner := ctxt &^ (fallthroughOk | finalSwitchCase | inTypeSwitch)
+
 	switch s := s.(type) {
 	case *syntax.EmptyStmt:
 		// ignore
@@ -504,28 +504,28 @@ func (check *Checker) stmt(ctxt stmtContext, s syntax.Stmt) {
 			check.hasLabel = true
 			break // checked in 2nd pass (check.labels)
 		}
+		if check.conf.IgnoreBranchErrors {
+			break
+		}
 		switch s.Tok {
 		case syntax.Break:
 			if ctxt&breakOk == 0 {
-				if check.conf.CompilerErrorMessages {
-					check.error(s, "break is not in a loop, switch, or select statement")
-				} else {
-					check.error(s, "break not in for, switch, or select statement")
-				}
+				check.error(s, "break not in for, switch, or select statement")
 			}
 		case syntax.Continue:
 			if ctxt&continueOk == 0 {
-				if check.conf.CompilerErrorMessages {
-					check.error(s, "continue is not in a loop")
-				} else {
-					check.error(s, "continue not in for statement")
-				}
+				check.error(s, "continue not in for statement")
 			}
 		case syntax.Fallthrough:
 			if ctxt&fallthroughOk == 0 {
-				msg := "fallthrough statement out of place"
-				if ctxt&finalSwitchCase != 0 {
+				var msg string
+				switch {
+				case ctxt&finalSwitchCase != 0:
 					msg = "cannot fallthrough final case in switch"
+				case ctxt&inTypeSwitch != 0:
+					msg = "cannot fallthrough in type switch"
+				default:
+					msg = "fallthrough statement out of place"
 				}
 				check.error(s, msg)
 			}
@@ -572,7 +572,7 @@ func (check *Checker) stmt(ctxt stmtContext, s syntax.Stmt) {
 		check.simpleStmt(s.Init)
 
 		if g, _ := s.Tag.(*syntax.TypeSwitchGuard); g != nil {
-			check.typeSwitchStmt(inner, s, g)
+			check.typeSwitchStmt(inner|inTypeSwitch, s, g)
 		} else {
 			check.switchStmt(inner, s)
 		}

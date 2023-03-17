@@ -1,0 +1,8 @@
+./ansicolors.go
+./color.go
+./constants_linux.go
+./screen.go
+./style.go
+./templatehelper.go
+./termenv.go
+./termenv_unix.go

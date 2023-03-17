@@ -113,6 +113,7 @@ const Ptr = Pointer
 // available in the memory directly following the rtype value.
 //
 // tflag values must be kept in sync with copies in:
+//
 //	cmd/compile/internal/reflectdata/reflect.go
 //	cmd/link/internal/ld/decodesym.go
 //	runtime/type.go
@@ -268,17 +269,13 @@ type sliceType struct {
 
 // Struct field
 type structField struct {
-	name        name    // name is always non-empty
-	typ         *rtype  // type of field
-	offsetEmbed uintptr // byte offset of field<<1 | isEmbedded
-}
-
-func (f *structField) offset() uintptr {
-	return f.offsetEmbed >> 1
+	name   name    // name is always non-empty
+	typ    *rtype  // type of field
+	offset uintptr // byte offset of field
 }
 
 func (f *structField) embedded() bool {
-	return f.offsetEmbed&1 != 0
+	return f.name.embedded()
 }
 
 // structType represents a struct type.
@@ -298,7 +295,7 @@ type structType struct {
 //
 // The next two bytes are the data length:
 //
-//	 l := uint16(data[1])<<8 | uint16(data[2])
+//	l := uint16(data[1])<<8 | uint16(data[2])
 //
 // Bytes [3:3+l] are the string data.
 //
@@ -325,6 +322,10 @@ func (n name) isExported() bool {
 
 func (n name) hasTag() bool {
 	return (*n.bytes)&(1<<1) != 0
+}
+
+func (n name) embedded() bool {
+	return (*n.bytes)&(1<<3) != 0
 }
 
 // readVarint parses a varint as encoded by encoding/binary.
@@ -577,7 +578,14 @@ func (t *rtype) Name() string {
 	}
 	s := t.String()
 	i := len(s) - 1
-	for i >= 0 && s[i] != '.' {
+	sqBrackets := 0
+	for i >= 0 && (s[i] != '.' || sqBrackets != 0) {
+		switch s[i] {
+		case ']':
+			sqBrackets++
+		case '[':
+			sqBrackets--
+		}
 		i--
 	}
 	return s[i+1:]
@@ -939,7 +947,10 @@ func haveIdenticalUnderlyingType(T, V *rtype, cmpTags bool) bool {
 			if cmpTags && tf.name.tag() != vf.name.tag() {
 				return false
 			}
-			if tf.offsetEmbed != vf.offsetEmbed {
+			if tf.offset != vf.offset {
+				return false
+			}
+			if tf.embedded() != vf.embedded() {
 				return false
 			}
 		}

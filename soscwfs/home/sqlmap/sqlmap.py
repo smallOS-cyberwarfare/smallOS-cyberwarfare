@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -32,14 +32,20 @@ try:
     import traceback
     import warnings
 
+    if "--deprecations" not in sys.argv:
+        warnings.filterwarnings(action="ignore", category=DeprecationWarning)
+    else:
+        warnings.resetwarnings()
+        warnings.filterwarnings(action="ignore", message="'crypt'", category=DeprecationWarning)
+        warnings.simplefilter("ignore", category=ImportWarning)
+        if sys.version_info >= (3, 0):
+            warnings.simplefilter("ignore", category=ResourceWarning)
+
     warnings.filterwarnings(action="ignore", message="Python 2 is no longer supported")
     warnings.filterwarnings(action="ignore", message=".*was already imported", category=UserWarning)
     warnings.filterwarnings(action="ignore", message=".*using a very old release", category=UserWarning)
     warnings.filterwarnings(action="ignore", message=".*default buffer size will be used", category=RuntimeWarning)
     warnings.filterwarnings(action="ignore", category=UserWarning, module="psycopg2")
-
-    if "--deprecations" not in sys.argv:
-        warnings.filterwarnings(action="ignore", category=DeprecationWarning)
 
     from lib.core.data import logger
 
@@ -58,15 +64,15 @@ try:
     from lib.core.common import setPaths
     from lib.core.common import weAreFrozen
     from lib.core.convert import getUnicode
-    from lib.core.common import MKSTEMP_PREFIX
     from lib.core.common import setColor
     from lib.core.common import unhandledExceptionMessage
+    from lib.core.compat import LooseVersion
+    from lib.core.compat import xrange
     from lib.core.data import cmdLineOptions
     from lib.core.data import conf
     from lib.core.data import kb
     from lib.core.datatype import OrderedSet
-    from lib.core.compat import LooseVersion
-    from lib.core.compat import xrange
+    from lib.core.enums import MKSTEMP_PREFIX
     from lib.core.exception import SqlmapBaseException
     from lib.core.exception import SqlmapShellQuitException
     from lib.core.exception import SqlmapSilentQuitException
@@ -161,6 +167,7 @@ def main():
             # to an IPC database
             sys.stdout = StdDbOut(conf.taskid, messagetype="stdout")
             sys.stderr = StdDbOut(conf.taskid, messagetype="stderr")
+
             setRestAPILog()
 
         conf.showTime = True
@@ -243,7 +250,10 @@ def main():
         raise SystemExit
 
     except KeyboardInterrupt:
-        print()
+        try:
+            print()
+        except IOError:
+            pass
 
     except EOFError:
         print()
@@ -337,6 +347,12 @@ def main():
             logger.critical(errMsg)
             raise SystemExit
 
+        elif "invalid maximum character passed to PyUnicode_New" in excMsg and re.search(r"\A3\.[34]", sys.version) is not None:
+            errMsg = "please upgrade the Python version (>= 3.5) "
+            errMsg += "(Reference: 'https://bugs.python.org/issue18183')"
+            logger.critical(errMsg)
+            raise SystemExit
+
         elif all(_ in excMsg for _ in ("scramble_caching_sha2", "TypeError")):
             errMsg = "please downgrade the 'PyMySQL' package (=< 0.8.1) "
             errMsg += "(Reference: 'https://github.com/PyMySQL/PyMySQL/issues/700')"
@@ -359,6 +375,12 @@ def main():
             errMsg = "error occurred at Python interpreter which "
             errMsg += "is fixed in 2.7.3. Please update accordingly "
             errMsg += "(Reference: 'https://docs.python.org/2/library/sys.html')"
+            logger.critical(errMsg)
+            raise SystemExit
+
+        elif "AttributeError: unable to access item" in excMsg and re.search(r"3\.11\.\d+a", sys.version):
+            errMsg = "there is a known issue when sqlmap is run with ALPHA versions of Python 3.11. "
+            errMsg += "Please downgrade to some stable Python version"
             logger.critical(errMsg)
             raise SystemExit
 
@@ -414,6 +436,11 @@ def main():
             logger.critical(errMsg)
             raise SystemExit
 
+        elif any(_ in errMsg for _ in (": 9.9.9#",)):
+            errMsg = "LOL :)"
+            logger.critical(errMsg)
+            raise SystemExit
+
         elif kb.get("dumpKeyboardInterrupt"):
             raise SystemExit
 
@@ -435,13 +462,19 @@ def main():
             dataToStdout(excMsg)
             raise SystemExit
 
-        elif any(_ in excMsg for _ in ("ImportError", "ModuleNotFoundError", "<frozen", "Can't find file for module", "SAXReaderNotAvailable", "source code string cannot contain null bytes", "No module named", "tp_name field", "module 'sqlite3' has no attribute 'OperationalError'")):
+        elif any(_ in excMsg for _ in ("ImportError", "ModuleNotFoundError", "<frozen", "Can't find file for module", "SAXReaderNotAvailable", "<built-in function compile> returned NULL without setting an exception", "source code string cannot contain null bytes", "No module named", "tp_name field", "module 'sqlite3' has no attribute 'OperationalError'")):
             errMsg = "invalid runtime environment ('%s')" % excMsg.split("Error: ")[-1].strip()
             logger.critical(errMsg)
             raise SystemExit
 
         elif all(_ in excMsg for _ in ("SyntaxError: Non-ASCII character", ".py on line", "but no encoding declared")):
             errMsg = "invalid runtime environment ('%s')" % excMsg.split("Error: ")[-1].strip()
+            logger.critical(errMsg)
+            raise SystemExit
+
+        elif all(_ in excMsg for _ in ("PermissionError: [WinError 5]", "multiprocessing")):
+            errMsg = "there is a permission problem in running multiprocessing on this system. "
+            errMsg += "Please rerun with '--disable-multi'"
             logger.critical(errMsg)
             raise SystemExit
 
@@ -467,6 +500,11 @@ def main():
             errMsg = "there has been a problem in enumeration. "
             errMsg += "Because of a considerable chance of false-positive case "
             errMsg += "you are advised to rerun with switch '--flush-session'"
+            logger.critical(errMsg)
+            raise SystemExit
+
+        elif "database disk image is malformed" in excMsg:
+            errMsg = "local session file seems to be malformed. Please rerun with '--flush-session'"
             logger.critical(errMsg)
             raise SystemExit
 
@@ -512,7 +550,7 @@ def main():
 
         if getDaysFromLastUpdate() > LAST_UPDATE_NAGGING_DAYS:
             warnMsg = "your sqlmap version is outdated"
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
         if conf.get("showTime"):
             dataToStdout("\n[*] ending @ %s\n\n" % time.strftime("%X /%Y-%m-%d/"), forceOutput=True)
@@ -579,5 +617,5 @@ if __name__ == "__main__":
         else:
             sys.exit(getattr(os, "_exitcode", 0))
 else:
-    # cancelling postponed imports (because of Travis CI checks)
+    # cancelling postponed imports (because of CI/CD checks)
     __import__("lib.controller.controller")

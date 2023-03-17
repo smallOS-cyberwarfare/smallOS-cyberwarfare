@@ -54,6 +54,8 @@ func resolveFile(file *ast.File, handle *token.File, declErr func(token.Pos, str
 	file.Unresolved = r.unresolved[0:i]
 }
 
+const maxScopeDepth int = 1e3
+
 type resolver struct {
 	handle  *token.File
 	declErr func(token.Pos, string)
@@ -85,16 +87,19 @@ func (r *resolver) sprintf(format string, args ...any) string {
 }
 
 func (r *resolver) openScope(pos token.Pos) {
+	r.depth++
+	if r.depth > maxScopeDepth {
+		panic(bailout{pos: pos, msg: "exceeded max scope depth during object resolution"})
+	}
 	if debugResolve {
 		r.trace("opening scope @%v", pos)
-		r.depth++
 	}
 	r.topScope = ast.NewScope(r.topScope)
 }
 
 func (r *resolver) closeScope() {
+	r.depth--
 	if debugResolve {
-		r.depth--
 		r.trace("closing scope")
 	}
 	r.topScope = r.topScope.Outer
@@ -188,7 +193,6 @@ var unresolved = new(ast.Object)
 // the object it denotes. If no object is found and collectUnresolved is
 // set, x is marked as unresolved and collected in the list of unresolved
 // identifiers.
-//
 func (r *resolver) resolve(ident *ast.Ident, collectUnresolved bool) {
 	if ident.Obj != nil {
 		panic(r.sprintf("%v: identifier %s already declared or resolved", ident.Pos(), ident.Name))

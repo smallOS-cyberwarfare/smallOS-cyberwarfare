@@ -16,7 +16,7 @@ const { getContents, logTar } = require('../utils/tar.js')
 // keys that npm supports in .npmrc files and elsewhere.  We *may* want to
 // revisit this at some point, and have a minimal set that's a SemVer-major
 // change that ought to get a RFC written on it.
-const flatten = require('../utils/config/flatten.js')
+const { flatten } = require('../utils/config/index.js')
 
 // this is the only case in the CLI where we want to use the old full slow
 // 'read-package-json' module, because we want to pull in all the defaults and
@@ -37,7 +37,7 @@ class Publish extends BaseCommand {
     'include-workspace-root',
   ]
 
-  static usage = ['[<folder>]']
+  static usage = ['<package-spec>']
   static ignoreImplicitWorkspace = false
 
   async exec (args) {
@@ -61,7 +61,8 @@ class Publish extends BaseCommand {
       throw new Error('Tag name must not be a valid SemVer range: ' + defaultTag.trim())
     }
 
-    const opts = { ...this.npm.flatOptions }
+    const opts = { ...this.npm.flatOptions, progress: false }
+    log.disableProgress()
 
     // you can publish name@version, ./foo.tgz, etc.
     // even though the default is the 'file:.' cwd.
@@ -80,7 +81,12 @@ class Publish extends BaseCommand {
     }
 
     // we pass dryRun: true to libnpmpack so it doesn't write the file to disk
-    const tarballData = await pack(spec, { ...opts, dryRun: true })
+    const tarballData = await pack(spec, {
+      ...opts,
+      dryRun: true,
+      prefix: this.npm.localPrefix,
+      workspaces: this.workspacePaths,
+    })
     const pkgContents = await getContents(manifest, tarballData)
 
     // The purpose of re-reading the manifest is in case it changed,
@@ -96,7 +102,7 @@ class Publish extends BaseCommand {
     const resolved = npa.resolve(manifest.name, manifest.version)
     const registry = npmFetch.pickRegistry(resolved, opts)
     const creds = this.npm.config.getCredentialsByURI(registry)
-    const noCreds = !creds.token && !creds.username
+    const noCreds = !(creds.token || creds.username || creds.certfile && creds.keyfile)
     const outputRegistry = replaceInfo(registry)
 
     if (noCreds) {
@@ -108,10 +114,16 @@ class Publish extends BaseCommand {
       }
     }
 
-    log.notice('', `Publishing to ${outputRegistry}${dryRun ? ' (dry-run)' : ''}`)
+    const access = opts.access === null ? 'default' : opts.access
+    let msg = `Publishing to ${outputRegistry} with tag ${defaultTag} and ${access} access`
+    if (dryRun) {
+      msg = `${msg} (dry-run)`
+    }
+
+    log.notice('', msg)
 
     if (!dryRun) {
-      await otplease(opts, opts => libpub(manifest, tarballData, opts))
+      await otplease(this.npm, opts, opts => libpub(manifest, tarballData, opts))
     }
 
     if (spec.type === 'directory' && !ignoreScripts) {

@@ -24,6 +24,7 @@ var cgoEnabled = map[string]bool{
 	"linux/amd64": true,
 	"linux/arm": true,
 	"linux/arm64": true,
+	"linux/loong64": true,
 	"linux/mips": true,
 	"linux/mips64": true,
 	"linux/mips64le": true,

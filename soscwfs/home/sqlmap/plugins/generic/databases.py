@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -83,7 +83,7 @@ class Databases(object):
         if not kb.data.currentDb and Backend.isDbms(DBMS.VERTICA):
             kb.data.currentDb = VERTICA_DEFAULT_SCHEMA
 
-        if Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2, DBMS.PGSQL, DBMS.MONETDB, DBMS.DERBY, DBMS.VERTICA, DBMS.PRESTO, DBMS.MIMERSQL, DBMS.CRATEDB, DBMS.CACHE, DBMS.FRONTBASE):
+        if Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2, DBMS.PGSQL, DBMS.MONETDB, DBMS.DERBY, DBMS.VERTICA, DBMS.PRESTO, DBMS.MIMERSQL, DBMS.CRATEDB, DBMS.CACHE, DBMS.FRONTBASE, DBMS.CLICKHOUSE):
             warnMsg = "on %s you'll need to use " % Backend.getIdentifiedDbms()
             warnMsg += "schema names for enumeration as the counterpart to database "
             warnMsg += "names on other DBMSes"
@@ -106,13 +106,13 @@ class Databases(object):
             warnMsg = "information_schema not available, "
             warnMsg += "back-end DBMS is MySQL < 5. database "
             warnMsg += "names will be fetched from 'mysql' database"
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
-        elif Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2, DBMS.PGSQL, DBMS.MONETDB, DBMS.DERBY, DBMS.VERTICA, DBMS.PRESTO, DBMS.MIMERSQL, DBMS.CRATEDB, DBMS.CACHE, DBMS.FRONTBASE):
+        elif Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2, DBMS.PGSQL, DBMS.MONETDB, DBMS.DERBY, DBMS.VERTICA, DBMS.PRESTO, DBMS.MIMERSQL, DBMS.CRATEDB, DBMS.CACHE, DBMS.FRONTBASE, DBMS.CLICKHOUSE):
             warnMsg = "schema names are going to be used on %s " % Backend.getIdentifiedDbms()
             warnMsg += "for enumeration as the counterpart to database "
             warnMsg += "names on other DBMSes"
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
             infoMsg = "fetching database (schema) names"
 
@@ -120,7 +120,7 @@ class Databases(object):
             warnMsg = "user names are going to be used on %s " % Backend.getIdentifiedDbms()
             warnMsg += "for enumeration as the counterpart to database "
             warnMsg += "names on other DBMSes"
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
             infoMsg = "fetching database (user) names"
 
@@ -220,7 +220,7 @@ class Databases(object):
             if Backend.isDbms(DBMS.MYSQL) and not kb.data.has_information_schema:
                 warnMsg = "information_schema not available, "
                 warnMsg += "back-end DBMS is MySQL < 5.0"
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
                 bruteForce = True
 
             elif Backend.getIdentifiedDbms() in (DBMS.MCKOI, DBMS.EXTREMEDB, DBMS.RAIMA):
@@ -235,7 +235,7 @@ class Databases(object):
                 if not tables:
                     warnMsg = "cannot retrieve table names, "
                     warnMsg += "back-end DBMS is %s" % Backend.getIdentifiedDbms()
-                    logger.warn(warnMsg)
+                    logger.warning(warnMsg)
                     bruteForce = True
                 else:
                     return tables
@@ -381,7 +381,7 @@ class Databases(object):
                     if count == 0:
                         warnMsg = "database '%s' " % unsafeSQLIdentificatorNaming(db)
                         warnMsg += "appears to be empty"
-                        logger.warn(warnMsg)
+                        logger.warning(warnMsg)
                         break
 
                     elif not isNumPosStrValue(count):
@@ -441,7 +441,7 @@ class Databases(object):
                     else:
                         warnMsg = "unable to retrieve the table names "
                         warnMsg += "for database '%s'" % unsafeSQLIdentificatorNaming(db)
-                        logger.warn(warnMsg)
+                        logger.warning(warnMsg)
 
         if isNoneValue(kb.data.cachedTables):
             kb.data.cachedTables.clear()
@@ -471,7 +471,7 @@ class Databases(object):
                 warnMsg = "missing database parameter. sqlmap is going "
                 warnMsg += "to use the current database to enumerate "
                 warnMsg += "table(s) columns"
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
 
             conf.db = self.getCurrentDb()
 
@@ -542,7 +542,7 @@ class Databases(object):
             if Backend.isDbms(DBMS.MYSQL) and not kb.data.has_information_schema:
                 warnMsg = "information_schema not available, "
                 warnMsg += "back-end DBMS is MySQL < 5.0"
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
                 bruteForce = True
 
             elif Backend.getIdentifiedDbms() in (DBMS.ACCESS, DBMS.MCKOI, DBMS.EXTREMEDB, DBMS.RAIMA):
@@ -621,7 +621,7 @@ class Databases(object):
                     condQueryStr = "%%s%s" % colCondParam
                     condQuery = " AND (%s)" % " OR ".join(condQueryStr % (condition, unsafeSQLIdentificatorNaming(col)) for col in sorted(colList))
 
-                if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL, DBMS.HSQLDB, DBMS.H2, DBMS.MONETDB, DBMS.VERTICA, DBMS.PRESTO, DBMS.CRATEDB, DBMS.CUBRID, DBMS.CACHE, DBMS.FRONTBASE, DBMS.VIRTUOSO):
+                if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL, DBMS.HSQLDB, DBMS.H2, DBMS.MONETDB, DBMS.VERTICA, DBMS.PRESTO, DBMS.CRATEDB, DBMS.CUBRID, DBMS.CACHE, DBMS.FRONTBASE, DBMS.VIRTUOSO, DBMS.CLICKHOUSE):
                     query = rootQuery.inband.query % (unsafeSQLIdentificatorNaming(tbl), unsafeSQLIdentificatorNaming(conf.db))
                     query += condQuery
 
@@ -757,7 +757,7 @@ class Databases(object):
                     condQueryStr = "%%s%s" % colCondParam
                     condQuery = " AND (%s)" % " OR ".join(condQueryStr % (condition, unsafeSQLIdentificatorNaming(col)) for col in sorted(colList))
 
-                if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL, DBMS.HSQLDB, DBMS.H2, DBMS.MONETDB, DBMS.VERTICA, DBMS.PRESTO, DBMS.CRATEDB, DBMS.CUBRID, DBMS.CACHE, DBMS.FRONTBASE, DBMS.VIRTUOSO):
+                if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL, DBMS.HSQLDB, DBMS.H2, DBMS.MONETDB, DBMS.VERTICA, DBMS.PRESTO, DBMS.CRATEDB, DBMS.CUBRID, DBMS.CACHE, DBMS.FRONTBASE, DBMS.VIRTUOSO, DBMS.CLICKHOUSE):
                     query = rootQuery.blind.count % (unsafeSQLIdentificatorNaming(tbl), unsafeSQLIdentificatorNaming(conf.db))
                     query += condQuery
 
@@ -838,7 +838,7 @@ class Databases(object):
                         query = rootQuery.blind.query % (unsafeSQLIdentificatorNaming(tbl.upper()), unsafeSQLIdentificatorNaming(conf.db.upper()))
                         query = query.replace(" ORDER BY ", "%s ORDER BY " % condQuery)
                         field = None
-                    elif Backend.isDbms(DBMS.MONETDB):
+                    elif Backend.getIdentifiedDbms() in (DBMS.MONETDB, DBMS.CLICKHOUSE):
                         query = safeStringFormat(rootQuery.blind.query, (unsafeSQLIdentificatorNaming(tbl), unsafeSQLIdentificatorNaming(conf.db), index))
                         field = None
                     elif Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2, DBMS.DERBY, DBMS.ALTIBASE):
@@ -880,7 +880,7 @@ class Databases(object):
                                 singleTimeWarnMessage(warnMsg)
 
                         if not onlyColNames:
-                            if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL, DBMS.HSQLDB, DBMS.H2, DBMS.VERTICA, DBMS.PRESTO, DBMS.CRATEDB, DBMS.CACHE, DBMS.FRONTBASE, DBMS.VIRTUOSO):
+                            if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL, DBMS.HSQLDB, DBMS.H2, DBMS.VERTICA, DBMS.PRESTO, DBMS.CRATEDB, DBMS.CACHE, DBMS.FRONTBASE, DBMS.VIRTUOSO, DBMS.CLICKHOUSE):
                                 query = rootQuery.blind.query2 % (unsafeSQLIdentificatorNaming(tbl), column, unsafeSQLIdentificatorNaming(conf.db))
                             elif Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2, DBMS.DERBY, DBMS.ALTIBASE, DBMS.MIMERSQL):
                                 query = rootQuery.blind.query2 % (unsafeSQLIdentificatorNaming(tbl.upper()), column, unsafeSQLIdentificatorNaming(conf.db.upper()))
@@ -925,7 +925,7 @@ class Databases(object):
             warnMsg += ("table '%s' " % unsafeSQLIdentificatorNaming(unArrayizeValue(tblList))) if len(tblList) == 1 else "any table "
             if METADB_SUFFIX not in conf.db:
                 warnMsg += "in database '%s'" % unsafeSQLIdentificatorNaming(conf.db)
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
             if bruteForce is None:
                 return self.getColumns(onlyColNames=onlyColNames, colTuple=colTuple, bruteForce=True)
@@ -994,7 +994,7 @@ class Databases(object):
             warnMsg = "missing table parameter, sqlmap will retrieve "
             warnMsg += "the number of entries for all database "
             warnMsg += "management system databases' tables"
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
         elif "." in conf.tbl:
             if not conf.db:
@@ -1004,7 +1004,7 @@ class Databases(object):
             warnMsg = "missing database parameter. sqlmap is going to "
             warnMsg += "use the current database to retrieve the "
             warnMsg += "number of entries for table '%s'" % unsafeSQLIdentificatorNaming(conf.tbl)
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
             conf.db = self.getCurrentDb()
 

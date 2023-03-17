@@ -3,22 +3,22 @@
 This is an official repository of [The Exploit Database](https://www.exploit-db.com/), a [project](https://www.offensive-security.com/community-projects/) sponsored by [Offensive Security](https://www.offensive-security.com/).
 Our repositories are:
 
-  - Exploits & Shellcodes: [https://github.com/offensive-security/exploitdb](https://github.com/offensive-security/exploitdb)
-  - Binary Exploits: [https://github.com/offensive-security/exploitdb-bin-sploits](https://github.com/offensive-security/exploitdb-bin-sploits)
-  - Papers: [https://github.com/offensive-security/exploitdb-papers](https://github.com/offensive-security/exploitdb-papers)
+  - Exploits & Shellcodes: [gitlab.com/exploit-database/exploitdb](https://gitlab.com/exploit-database/exploitdb)
+  - Binary Exploits: [gitlab.com/exploit-database/exploitdb-bin-sploits](https://gitlab.com/exploit-database/exploitdb-bin-sploits)
+  - Papers: [gitlab.com/exploit-database/exploitdb-papers](https://gitlab.com/exploit-database/exploitdb-papers)
 
 The Exploit Database is an archive of public exploits and corresponding vulnerable software, developed for use by penetration testers and vulnerability researchers. Its aim is to serve as the most comprehensive collection of [exploits](https://www.exploit-db.com/), [shellcode](https://www.exploit-db.com/shellcodes) and [papers](https://www.exploit-db.com/papers) gathered through direct submissions, mailing lists, and other public sources, and present them in a freely-available and easy-to-navigate database. The Exploit Database is a repository for exploits and Proof-of-Concepts rather than advisories, making it a valuable resource for those who need actionable data right away.
 You can learn more about the project [here (Top Right -> About Exploit-DB)](https://www.exploit-db.com/) and [here (History)](https://www.exploit-db.com/history).
 
-This repository is updated daily with the most recently added submissions. Any additional resources can be found in our [binary exploits repository](https://github.com/offensive-security/exploitdb-bin-sploits).
+This repository is updated daily with the most recently added submissions. Any additional resources can be found in our [binary exploits repository](https://gitlab.com/exploit-database/exploitdb-bin-sploits).
 
-Exploits are located in the [`/exploits/`](https://github.com/offensive-security/exploitdb/tree/master/exploits) directory, shellcodes can be found in the [`/shellcodes/`](https://github.com/offensive-security/exploitdb/tree/master/shellcodes) directory.
+Exploits are located in the [`/exploits/`](https://gitlab.com/exploit-database/exploitdb/tree/main/exploits) directory, shellcodes can be found in the [`/shellcodes/`](https://gitlab.com/exploit-database/exploitdb/tree/main/shellcodes) directory.
 
 - - -
 
 ## License
 
-This project (and SearchSploit) is released under "[GNU General Public License v2.0](https://github.com/offensive-security/exploitdb/blob/master/LICENSE.md)".
+This project (and SearchSploit) is released under "[GNU General Public License v2.0](https://gitlab.com/exploit-database/exploitdb/-/blob/main/LICENSE.md)".
 
 - - -
 
@@ -42,7 +42,8 @@ kali@kali:~$ searchsploit -h
   searchsploit linux kernel 3.2 --exclude="(PoC)|/dos/"
   searchsploit -s Apache Struts 2.0.0
   searchsploit linux reverse password
-  searchsploit -j 55555 | json_pp
+  searchsploit -j 55555 | jq
+  searchsploit --cve 2021-44228
 
   For more examples, see the manual: https://www.exploit-db.com/searchsploit
 
@@ -50,23 +51,24 @@ kali@kali:~$ searchsploit -h
  Options
 =========
 ## Search Terms
-   -c, --case     [Term]      Perform a case-sensitive search (Default is inSEnsITiVe)
-   -e, --exact    [Term]      Perform an EXACT & order match on exploit title (Default is an AND match on each term) [Implies "-t"]
+   -c, --case     [term]      Perform a case-sensitive search (Default is inSEnsITiVe)
+   -e, --exact    [term]      Perform an EXACT & order match on exploit title (Default is an AND match on each term) [Implies "-t"]
                                 e.g. "WordPress 4.1" would not be detect "WordPress Core 4.1")
    -s, --strict               Perform a strict search, so input values must exist, disabling fuzzy search for version range
                                 e.g. "1.1" would not be detected in "1.0 < 1.3")
-   -t, --title    [Term]      Search JUST the exploit title (Default is title AND the file's path)
+   -t, --title    [term]      Search JUST the exploit title (Default is title AND the file's path)
        --exclude="term"       Remove values from results. By using "|" to separate, you can chain multiple values
                                 e.g. --exclude="term1|term2|term3"
+       --cve      [CVE]       Search for Common Vulnerabilities and Exposures (CVE) value
 
 ## Output
-   -j, --json     [Term]      Show result in JSON format
-   -o, --overflow [Term]      Exploit titles are allowed to overflow their columns
+   -j, --json     [term]      Show result in JSON format
+   -o, --overflow [term]      Exploit titles are allowed to overflow their columns
    -p, --path     [EDB-ID]    Show the full path to an exploit (and also copies the path to the clipboard if possible)
    -v, --verbose              Display more information in output
-   -w, --www      [Term]      Show URLs to Exploit-DB.com rather than the local path
+   -w, --www      [term]      Show URLs to Exploit-DB.com rather than the local path
        --id                   Display the EDB-ID value rather than local path
-       --colour               Disable colour highlighting in search results
+       --disable-colour       Disable colour highlighting in search results
 
 ## Non-Searching
    -m, --mirror   [EDB-ID]    Mirror (aka copies) an exploit to the current working directory
@@ -112,10 +114,12 @@ kali@kali:~$
 kali@kali:~$ searchsploit -p 39446
   Exploit: Microsoft Windows 7 (x86) - 'afd.sys' Dangling Pointer Privilege Escalation (MS14-040)
       URL: https://www.exploit-db.com/exploits/39446
-     Path: /usr/share/exploitdb/exploits/windows_x86/local/39446.py
-File Type: Python script, ASCII text executable, with CRLF line terminators
+     Path: /Users/b/Projects/git/forks/exploitdb/exploits/windows_x86/local/39446.py
+    Codes: N/A
+ Verified: False
+File Type: Python script text executable, ASCII text
 
-Copied EDB-ID #39446's path to the clipboard.
+Copied EDB-ID #39446's path to the clipboard
 kali@kali:~$
 ```
 
@@ -136,7 +140,7 @@ Exploit-DB/SearchSploit is already packaged inside of Kali-Linux. A method of in
 kali@kali:~$ sudo apt -y install exploitdb
 ```
 
-_NOTE: Optional is to install the additional packages:_
+_NOTE, Optional is to install the additional packages:_
 
 ```
 kali@kali:~$ sudo apt -y install exploitdb-bin-sploits exploitdb-papers
@@ -144,10 +148,10 @@ kali@kali:~$ sudo apt -y install exploitdb-bin-sploits exploitdb-papers
 
 **Git**
 
-In short: clone the repository, add the binary into `$PATH`, and edit the config file to reflect the git path:
+In short, clone the repository, add the binary into `$PATH`, and edit the config file to reflect the git path:
 
 ```
-$ sudo git clone https://github.com/offensive-security/exploitdb.git /opt/exploitdb
+$ sudo git clone https://gitlab.com/exploit-database/exploitdb.git /opt/exploitdb
 $ sudo ln -sf /opt/exploitdb/searchsploit /usr/local/bin/searchsploit
 ```
 
@@ -166,5 +170,5 @@ user@MacBook:~$ brew update && brew install exploitdb
 The following people made this possible:
 
 - [Offensive Security](https://www.offensive-security.com/)
-- [Unix-Ninja](https://github.com/unix-ninja)
-- [g0tmi1k](https://blog.g0tmi1k.com/)
+- [@Unix-Ninja](https://github.com/unix-ninja)
+- [@g0tmi1k](https://blog.g0tmi1k.com/)

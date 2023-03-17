@@ -50,7 +50,7 @@ class Diff extends BaseCommand {
     // node_modules is sometimes under ./lib, and in global mode we're only ever
     // walking through node_modules (because we will have been given a package
     // name already)
-    if (this.npm.config.get('global')) {
+    if (this.npm.global) {
       this.top = resolve(this.npm.globalDir, '..')
     } else {
       this.top = this.prefix
@@ -106,7 +106,7 @@ class Diff extends BaseCommand {
       const pkgName = await this.packageName(this.prefix)
       return [
         `${pkgName}@${this.npm.config.get('tag')}`,
-        `file:${this.prefix}`,
+        `file:${this.prefix.replace(/#/g, '%23')}`,
       ]
     }
 
@@ -134,7 +134,7 @@ class Diff extends BaseCommand {
       }
       return [
         `${pkgName}@${a}`,
-        `file:${this.prefix}`,
+        `file:${this.prefix.replace(/#/g, '%23')}`,
       ]
     }
 
@@ -165,7 +165,7 @@ class Diff extends BaseCommand {
         }
         return [
           `${spec.name}@${spec.fetchSpec}`,
-          `file:${this.prefix}`,
+          `file:${this.prefix.replace(/#/g, '%23')}`,
         ]
       }
 
@@ -178,14 +178,14 @@ class Diff extends BaseCommand {
         }
       }
 
-      const aSpec = `file:${node.realpath}`
+      const aSpec = `file:${node.realpath.replace(/#/g, '%23')}`
 
       // finds what version of the package to compare against, if a exact
       // version or tag was passed than it should use that, otherwise
       // work from the top of the arborist tree to find the original semver
       // range declared in the package that depends on the package.
       let bSpec
-      if (spec.rawSpec) {
+      if (spec.rawSpec !== '*') {
         bSpec = spec.rawSpec
       } else {
         const bTargetVersion =
@@ -211,8 +211,8 @@ class Diff extends BaseCommand {
       ]
     } else if (spec.type === 'directory') {
       return [
-        `file:${spec.fetchSpec}`,
-        `file:${this.prefix}`,
+        `file:${spec.fetchSpec.replace(/#/g, '%23')}`,
+        `file:${this.prefix.replace(/#/g, '%23')}`,
       ]
     } else {
       throw this.usageError(`Spec type ${spec.type} not supported.`)
@@ -269,7 +269,7 @@ class Diff extends BaseCommand {
 
     return specs.map(i => {
       const spec = npa(i)
-      if (spec.rawSpec) {
+      if (spec.rawSpec !== '*') {
         return i
       }
 
@@ -279,7 +279,7 @@ class Diff extends BaseCommand {
 
       const res = !node || !node.package || !node.package.version
         ? spec.fetchSpec
-        : `file:${node.realpath}`
+        : `file:${node.realpath.replace(/#/g, '%23')}`
 
       return `${spec.name}@${res}`
     })

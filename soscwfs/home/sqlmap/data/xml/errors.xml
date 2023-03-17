@@ -199,6 +199,7 @@
         <error regexp="io\.prestosql\.jdbc"/>
         <error regexp="com\.simba\.presto\.jdbc"/>
         <error regexp="UNION query has different number of fields: \d+, \d+"/>
+        <error regexp="line \d+:\d+: mismatched input '[^']+'. Expecting:"/>
     </dbms>
 
     <dbms value="Altibase">
@@ -208,6 +209,11 @@
     <dbms value="MimerSQL">
         <error regexp="com\.mimer\.jdbc"/>
         <error regexp="Syntax error,[^\n]+assumed to mean"/>
+    </dbms>
+
+    <dbms value="ClickHouse">
+        <error regexp="Code: \d+. DB::Exception:"/>
+        <error regexp="Syntax error: failed at position \d+"/>
     </dbms>
 
     <dbms value="CrateDB">

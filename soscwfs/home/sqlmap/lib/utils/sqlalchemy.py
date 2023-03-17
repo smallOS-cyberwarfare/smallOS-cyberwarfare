@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
-import imp
+import importlib
 import logging
 import os
 import re
@@ -13,15 +13,18 @@ import sys
 import traceback
 import warnings
 
+_path = list(sys.path)
 _sqlalchemy = None
 try:
-    f, pathname, desc = imp.find_module("sqlalchemy", sys.path[1:])
-    _ = imp.load_module("sqlalchemy", f, pathname, desc)
-    if hasattr(_, "dialects"):
-        _sqlalchemy = _
+    sys.path = sys.path[1:]
+    module = importlib.import_module("sqlalchemy")
+    if hasattr(module, "dialects"):
+        _sqlalchemy = module
         warnings.simplefilter(action="ignore", category=_sqlalchemy.exc.SAWarning)
-except ImportError:
+except:
     pass
+finally:
+    sys.path = _path
 
 try:
     import MySQLdb  # used by SQLAlchemy in case of MySQL
@@ -36,6 +39,7 @@ from lib.core.exception import SqlmapFilePathException
 from lib.core.exception import SqlmapMissingDependence
 from plugins.generic.connector import Connector as GenericConnector
 from thirdparty import six
+from thirdparty.six.moves import urllib as _urllib
 
 def getSafeExString(ex, encoding=None):  # Cross-referenced function
     raise NotImplementedError
@@ -46,6 +50,14 @@ class SQLAlchemy(GenericConnector):
 
         self.dialect = dialect
         self.address = conf.direct
+
+        if conf.dbmsUser:
+            self.address = self.address.replace("'%s':" % conf.dbmsUser, "%s:" % _urllib.parse.quote(conf.dbmsUser))
+            self.address = self.address.replace("%s:" % conf.dbmsUser, "%s:" % _urllib.parse.quote(conf.dbmsUser))
+
+        if conf.dbmsPass:
+            self.address = self.address.replace(":'%s'@" % conf.dbmsPass, ":%s@" % _urllib.parse.quote(conf.dbmsPass))
+            self.address = self.address.replace(":%s@" % conf.dbmsPass, ":%s@" % _urllib.parse.quote(conf.dbmsPass))
 
         if self.dialect:
             self.address = re.sub(r"\A.+://", "%s://" % self.dialect, self.address)

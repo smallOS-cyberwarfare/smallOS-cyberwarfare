@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -183,7 +183,7 @@ class Miscellaneous(object):
 
             warnMsg += "saved on the file system can only be deleted "
             warnMsg += "manually"
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
     def likeOrExact(self, what):
         message = "do you want sqlmap to consider provided %s(s):\n" % what

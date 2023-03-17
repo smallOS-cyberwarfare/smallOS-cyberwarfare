@@ -14,10 +14,11 @@ import (
 // tflag is documented in reflect/type.go.
 //
 // tflag values must be kept in sync with copies in:
+//
 //	cmd/compile/internal/reflectdata/reflect.go
 //	cmd/link/internal/ld/decodesym.go
 //	reflect/type.go
-//      internal/reflectlite/type.go
+//	internal/reflectlite/type.go
 type tflag uint8
 
 const (
@@ -126,7 +127,14 @@ func (t *_type) name() string {
 	}
 	s := t.string()
 	i := len(s) - 1
-	for i >= 0 && s[i] != '.' {
+	sqBrackets := 0
+	for i >= 0 && (s[i] != '.' || sqBrackets != 0) {
+		switch s[i] {
+		case ']':
+			sqBrackets++
+		case '[':
+			sqBrackets--
+		}
 		i--
 	}
 	return s[i+1:]
@@ -406,13 +414,9 @@ type ptrtype struct {
 }
 
 type structfield struct {
-	name       name
-	typ        *_type
-	offsetAnon uintptr
-}
-
-func (f *structfield) offset() uintptr {
-	return f.offsetAnon >> 1
+	name   name
+	typ    *_type
+	offset uintptr
 }
 
 type structtype struct {
@@ -433,6 +437,10 @@ func (n name) data(off int) *byte {
 
 func (n name) isExported() bool {
 	return (*n.bytes)&(1<<0) != 0
+}
+
+func (n name) isEmbedded() bool {
+	return (*n.bytes)&(1<<3) != 0
 }
 
 func (n name) readvarint(off int) (int, int) {
@@ -695,7 +703,10 @@ func typesEqual(t, v *_type, seen map[_typePair]struct{}) bool {
 			if tf.name.tag() != vf.name.tag() {
 				return false
 			}
-			if tf.offsetAnon != vf.offsetAnon {
+			if tf.offset != vf.offset {
+				return false
+			}
+			if tf.name.isEmbedded() != vf.name.isEmbedded() {
 				return false
 			}
 		}

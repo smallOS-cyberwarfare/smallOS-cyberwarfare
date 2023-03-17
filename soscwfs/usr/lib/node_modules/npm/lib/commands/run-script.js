@@ -35,6 +35,7 @@ class RunScript extends BaseCommand {
     'include-workspace-root',
     'if-present',
     'ignore-scripts',
+    'foreground-scripts',
     'script-shell',
   ]
 
@@ -116,7 +117,6 @@ class RunScript extends BaseCommand {
       args,
       scriptShell,
       stdio: 'inherit',
-      stdioString: true,
       pkg,
       banner: !this.npm.silent,
     }

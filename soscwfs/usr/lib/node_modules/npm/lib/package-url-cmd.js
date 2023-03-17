@@ -2,6 +2,7 @@
 
 const pacote = require('pacote')
 const hostedGitInfo = require('hosted-git-info')
+const Arborist = require('@npmcli/arborist')
 
 const openUrl = require('./utils/open-url.js')
 const log = require('./utils/log-shim')
@@ -31,6 +32,7 @@ class PackageUrlCommand extends BaseCommand {
         ...this.npm.flatOptions,
         where: this.npm.localPrefix,
         fullMetadata: true,
+        Arborist,
       }
       const mani = await pacote.manifest(arg, opts)
       const url = this.getUrl(arg, mani)
@@ -40,6 +42,9 @@ class PackageUrlCommand extends BaseCommand {
   }
 
   async execWorkspaces (args, filters) {
+    if (args && args.length) {
+      return this.exec(args)
+    }
     await this.setWorkspaces(filters)
     return this.exec(this.workspacePaths)
   }

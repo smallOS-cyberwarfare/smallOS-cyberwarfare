@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -68,7 +68,7 @@ def update():
     elif not os.path.exists(os.path.join(paths.SQLMAP_ROOT_PATH, ".git")):
         warnMsg = "not a git repository. It is recommended to clone the 'sqlmapproject/sqlmap' repository "
         warnMsg += "from GitHub (e.g. 'git clone --depth 1 %s sqlmap')" % GIT_REPOSITORY
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
 
         if VERSION == getLatestRevision():
             logger.info("already at the latest revision '%s'" % getRevisionNumber())

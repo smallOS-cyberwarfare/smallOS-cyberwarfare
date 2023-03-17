@@ -9,8 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"go/build"
-	exec "internal/execabs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -79,6 +79,8 @@ and test commands:
 	-asan
 		enable interoperation with address sanitizer.
 		Supported only on linux/arm64, linux/amd64.
+		Supported only on linux/amd64 or linux/arm64 and only with GCC 7 and higher
+		or Clang/LLVM 9 and higher.
 	-v
 		print the names of packages as they are compiled.
 	-work
@@ -149,11 +151,10 @@ and test commands:
 		For example, when building with a non-standard configuration,
 		use -pkgdir to keep generated packages in a separate location.
 	-tags tag,list
-		a comma-separated list of build tags to consider satisfied during the
-		build. For more information about build tags, see the description of
-		build constraints in the documentation for the go/build package.
-		(Earlier versions of Go used a space-separated list, and that form
-		is deprecated but still recognized.)
+		a comma-separated list of additional build tags to consider satisfied
+		during the build. For more information about build tags, see
+		'go help buildconstraint'. (Earlier versions of Go used a
+		space-separated list, and that form is deprecated but still recognized.)
 	-trimpath
 		remove all file system paths from the resulting executable.
 		Instead of absolute file system paths, the recorded file names
@@ -397,13 +398,12 @@ func oneMainPkg(pkgs []*load.Package) []*load.Package {
 
 var pkgsFilter = func(pkgs []*load.Package) []*load.Package { return pkgs }
 
-var runtimeVersion = runtime.Version()
+var RuntimeVersion = runtime.Version()
 
 func runBuild(ctx context.Context, cmd *base.Command, args []string) {
 	modload.InitWorkfile()
 	BuildInit()
-	var b Builder
-	b.Init()
+	b := NewBuilder("")
 
 	pkgs := load.PackagesAndErrors(ctx, load.PackageOpts{LoadVCS: true}, args)
 	load.CheckPackageErrors(pkgs)
@@ -558,16 +558,22 @@ See also: go build, go get, go clean.
 // libname returns the filename to use for the shared library when using
 // -buildmode=shared. The rules we use are:
 // Use arguments for special 'meta' packages:
+//
 //	std --> libstd.so
 //	std cmd --> libstd,cmd.so
+//
 // A single non-meta argument with trailing "/..." is special cased:
+//
 //	foo/... --> libfoo.so
 //	(A relative path like "./..."  expands the "." first)
+//
 // Use import paths for other cases, changing '/' to '-':
+//
 //	somelib --> libsubdir-somelib.so
 //	./ or ../ --> libsubdir-somelib.so
 //	gopkg.in/tomb.v2 -> libgopkg.in-tomb.v2.so
 //	a/... b/... ---> liba/c,b/d.so - all matching import paths
+//
 // Name parts are joined with ','.
 func libname(args []string, pkgs []*load.Package) (string, error) {
 	var libname string
@@ -721,8 +727,8 @@ func InstallPackages(ctx context.Context, patterns []string, pkgs []*load.Packag
 	}
 	base.ExitIfErrors()
 
-	var b Builder
-	b.Init()
+	b := NewBuilder("")
+
 	depMode := ModeBuild
 	if cfg.BuildI {
 		depMode = ModeInstall

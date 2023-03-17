@@ -15,7 +15,8 @@ build_time_vars = {'ABIFLAGS': '',
  'BINDIR': '/usr/bin',
  'BINLIBDEST': '/usr/lib/python3.10',
  'BLDLIBRARY': '-L. -lpython3.10',
- 'BLDSHARED': 'gcc -shared',
+ 'BLDSHARED': 'gcc -shared -Wl,--as-needed,-O1,--sort-common '
+              '-Wl,--as-needed,-O1,--sort-common',
  'BUILDEXE': '',
  'BUILDPYTHON': 'python',
  'BUILD_GNU_TYPE': 'aarch64-alpine-linux-musl',
@@ -23,13 +24,13 @@ build_time_vars = {'ABIFLAGS': '',
  'CC': 'gcc',
  'CCSHARED': '-fPIC',
  'CFLAGS': '-Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall '
-           '-g  -g -g -DTHREAD_STACK_SIZE=0x100000',
+           '-Os -g -O2 -Os -g -O2 -Os -g -O2 -DTHREAD_STACK_SIZE=0x100000',
  'CFLAGSFORSHARED': '-fPIC',
  'CFLAGS_ALIASING': '',
  'CONFIGFILES': 'configure configure.ac acconfig.h pyconfig.h.in '
                 'Makefile.pre.in',
- 'CONFIGURE_CFLAGS': '-g',
- 'CONFIGURE_CFLAGS_NODIST': '-fno-semantic-interposition -flto=4 '
+ 'CONFIGURE_CFLAGS': '-Os -g -O2',
+ 'CONFIGURE_CFLAGS_NODIST': '-fno-semantic-interposition -flto '
                             '-fuse-linker-plugin -ffat-lto-objects '
                             '-flto-partition=none -g -std=c99 -Wextra '
                             '-Wno-unused-result -Wno-unused-parameter '
@@ -37,9 +38,9 @@ build_time_vars = {'ABIFLAGS': '',
                             '-Wstrict-prototypes '
                             '-Werror=implicit-function-declaration '
                             '-fvisibility=hidden',
- 'CONFIGURE_CPPFLAGS': '-Os',
- 'CONFIGURE_LDFLAGS': '',
- 'CONFIGURE_LDFLAGS_NODIST': '-fno-semantic-interposition -flto=4 '
+ 'CONFIGURE_CPPFLAGS': '-Os -O2',
+ 'CONFIGURE_LDFLAGS': '-Wl,--as-needed,-O1,--sort-common',
+ 'CONFIGURE_LDFLAGS_NODIST': '-fno-semantic-interposition -flto '
                              '-fuse-linker-plugin -ffat-lto-objects '
                              '-flto-partition=none -g',
  'CONFIG_ARGS': "'--build=aarch64-alpine-linux-musl' "
@@ -49,25 +50,26 @@ build_time_vars = {'ABIFLAGS': '',
                 "'--with-computed-gotos' '--with-dbmliborder=gdbm:ndbm' "
                 "'--with-system-expat' '--with-system-ffi' "
                 "'--with-system-libmpdec' '--without-ensurepip' "
-                "'--with-bluetoothdir=/home/buildozer/aports/main/python3/src/bluez-5.64' "
+                "'--with-bluetoothdir=/home/buildozer/aports/main/python3/src/bluez-5.65' "
                 "'build_alias=aarch64-alpine-linux-musl' "
-                "'host_alias=aarch64-alpine-linux-musl' 'CC=gcc' 'CFLAGS= -g' "
-                "'CPPFLAGS=-Os'",
+                "'host_alias=aarch64-alpine-linux-musl' 'CC=gcc' 'CFLAGS=-Os "
+                "-g -O2' 'LDFLAGS=-Wl,--as-needed,-O1,--sort-common' "
+                "'CPPFLAGS=-Os -O2'",
  'CONFINCLUDEDIR': '/usr/include',
  'CONFINCLUDEPY': '/usr/include/python3.10',
  'COREPYTHONPATH': '',
- 'COVERAGE_INFO': '/home/buildozer/aports/main/python3/src/Python-3.10.4/coverage.info',
- 'COVERAGE_REPORT': '/home/buildozer/aports/main/python3/src/Python-3.10.4/lcov-report',
+ 'COVERAGE_INFO': '/home/buildozer/aports/main/python3/src/Python-3.10.10/coverage.info',
+ 'COVERAGE_REPORT': '/home/buildozer/aports/main/python3/src/Python-3.10.10/lcov-report',
  'COVERAGE_REPORT_OPTIONS': '--no-branch-coverage --title "CPython lcov '
                             'report"',
- 'CPPFLAGS': '-I. -I./Include -Os -Os',
+ 'CPPFLAGS': '-I. -I./Include -Os -O2 -Os -O2',
  'CXX': 'g++',
  'DESTDIRS': '/usr /usr/lib /usr/lib/python3.10 '
              '/usr/lib/python3.10/lib-dynload',
  'DESTLIB': '/usr/lib/python3.10',
  'DESTPATH': '',
  'DESTSHARED': '/usr/lib/python3.10/lib-dynload',
- 'DFLAGS': '',
+ 'DFLAGS': '-Os -g',
  'DIRMODE': 755,
  'DIST': 'README.rst ChangeLog configure configure.ac acconfig.h pyconfig.h.in '
          'Makefile.pre.in Include Lib Misc Ext-dummy',
@@ -279,7 +281,7 @@ build_time_vars = {'ABIFLAGS': '',
  'HAVE_LIBDL': 1,
  'HAVE_LIBDLD': 0,
  'HAVE_LIBIEEE': 0,
- 'HAVE_LIBINTL_H': 0,
+ 'HAVE_LIBINTL_H': 1,
  'HAVE_LIBREADLINE': 1,
  'HAVE_LIBRESOLV': 0,
  'HAVE_LIBSENDFILE': 0,
@@ -546,10 +548,12 @@ build_time_vars = {'ABIFLAGS': '',
  'IO_H': 'Modules/_io/_iomodule.h',
  'IO_OBJS': '\\',
  'LDCXXSHARED': 'g++ -shared',
- 'LDFLAGS': '',
+ 'LDFLAGS': '-Wl,--as-needed,-O1,--sort-common '
+            '-Wl,--as-needed,-O1,--sort-common',
  'LDLIBRARY': 'libpython3.10.so',
  'LDLIBRARYDIR': '',
- 'LDSHARED': 'gcc -shared',
+ 'LDSHARED': 'gcc -shared -Wl,--as-needed,-O1,--sort-common '
+             '-Wl,--as-needed,-O1,--sort-common',
  'LDVERSION': '3.10',
  'LIBC': '',
  'LIBDEST': '/usr/lib/python3.10',
@@ -649,9 +653,9 @@ build_time_vars = {'ABIFLAGS': '',
  'PYTHON_OBJS': '\\',
  'PY_BUILTIN_HASHLIB_HASHES': '"md5,sha1,sha256,sha512,sha3,blake2"',
  'PY_BUILTIN_MODULE_CFLAGS': '-Wno-unused-result -Wsign-compare -DNDEBUG -g '
-                             '-fwrapv -O3 -Wall -g  -g -g '
-                             '-DTHREAD_STACK_SIZE=0x100000 '
-                             '-fno-semantic-interposition -flto=4 '
+                             '-fwrapv -O3 -Wall -Os -g -O2 -Os -g -O2 -Os -g '
+                             '-O2 -DTHREAD_STACK_SIZE=0x100000 '
+                             '-fno-semantic-interposition -flto '
                              '-fuse-linker-plugin -ffat-lto-objects '
                              '-flto-partition=none -g -std=c99 -Wextra '
                              '-Wno-unused-result -Wno-unused-parameter '
@@ -660,11 +664,11 @@ build_time_vars = {'ABIFLAGS': '',
                              '-Werror=implicit-function-declaration '
                              '-fvisibility=hidden -fprofile-use '
                              '-fprofile-correction -I./Include/internal -I. '
-                             '-I./Include -Os -Os -fPIC '
+                             '-I./Include -Os -O2 -Os -O2 -fPIC '
                              '-DPy_BUILD_CORE_BUILTIN',
  'PY_CFLAGS': '-Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall '
-              '-g  -g -g -DTHREAD_STACK_SIZE=0x100000',
- 'PY_CFLAGS_NODIST': '-fno-semantic-interposition -flto=4 -fuse-linker-plugin '
+              '-Os -g -O2 -Os -g -O2 -Os -g -O2 -DTHREAD_STACK_SIZE=0x100000',
+ 'PY_CFLAGS_NODIST': '-fno-semantic-interposition -flto -fuse-linker-plugin '
                      '-ffat-lto-objects -flto-partition=none -g -std=c99 '
                      '-Wextra -Wno-unused-result -Wno-unused-parameter '
                      '-Wno-missing-field-initializers -Wstrict-prototypes '
@@ -673,35 +677,39 @@ build_time_vars = {'ABIFLAGS': '',
                      '-I./Include/internal',
  'PY_COERCE_C_LOCALE': 1,
  'PY_CORE_CFLAGS': '-Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O3 '
-                   '-Wall -g  -g -g -DTHREAD_STACK_SIZE=0x100000 '
-                   '-fno-semantic-interposition -flto=4 -fuse-linker-plugin '
-                   '-ffat-lto-objects -flto-partition=none -g -std=c99 -Wextra '
+                   '-Wall -Os -g -O2 -Os -g -O2 -Os -g -O2 '
+                   '-DTHREAD_STACK_SIZE=0x100000 -fno-semantic-interposition '
+                   '-flto -fuse-linker-plugin -ffat-lto-objects '
+                   '-flto-partition=none -g -std=c99 -Wextra '
                    '-Wno-unused-result -Wno-unused-parameter '
                    '-Wno-missing-field-initializers -Wstrict-prototypes '
                    '-Werror=implicit-function-declaration -fvisibility=hidden '
                    '-fprofile-use -fprofile-correction -I./Include/internal '
-                   '-I. -I./Include -Os -Os -fPIC -DPy_BUILD_CORE',
- 'PY_CORE_LDFLAGS': '-fno-semantic-interposition -flto=4 -fuse-linker-plugin '
+                   '-I. -I./Include -Os -O2 -Os -O2 -fPIC -DPy_BUILD_CORE',
+ 'PY_CORE_LDFLAGS': '-Wl,--as-needed,-O1,--sort-common '
+                    '-Wl,--as-needed,-O1,--sort-common '
+                    '-fno-semantic-interposition -flto -fuse-linker-plugin '
                     '-ffat-lto-objects -flto-partition=none -g',
- 'PY_CPPFLAGS': '-I. -I./Include -Os -Os',
+ 'PY_CPPFLAGS': '-I. -I./Include -Os -O2 -Os -O2',
  'PY_ENABLE_SHARED': 1,
  'PY_FORMAT_SIZE_T': '"z"',
- 'PY_LDFLAGS': '',
- 'PY_LDFLAGS_NODIST': '-fno-semantic-interposition -flto=4 -fuse-linker-plugin '
+ 'PY_LDFLAGS': '-Wl,--as-needed,-O1,--sort-common '
+               '-Wl,--as-needed,-O1,--sort-common',
+ 'PY_LDFLAGS_NODIST': '-fno-semantic-interposition -flto -fuse-linker-plugin '
                       '-ffat-lto-objects -flto-partition=none -g',
  'PY_SSL_DEFAULT_CIPHERS': 1,
  'PY_SSL_DEFAULT_CIPHER_STRING': 0,
  'PY_STDMODULE_CFLAGS': '-Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv '
-                        '-O3 -Wall -g  -g -g -DTHREAD_STACK_SIZE=0x100000 '
-                        '-fno-semantic-interposition -flto=4 '
-                        '-fuse-linker-plugin -ffat-lto-objects '
-                        '-flto-partition=none -g -std=c99 -Wextra '
-                        '-Wno-unused-result -Wno-unused-parameter '
+                        '-O3 -Wall -Os -g -O2 -Os -g -O2 -Os -g -O2 '
+                        '-DTHREAD_STACK_SIZE=0x100000 '
+                        '-fno-semantic-interposition -flto -fuse-linker-plugin '
+                        '-ffat-lto-objects -flto-partition=none -g -std=c99 '
+                        '-Wextra -Wno-unused-result -Wno-unused-parameter '
                         '-Wno-missing-field-initializers -Wstrict-prototypes '
                         '-Werror=implicit-function-declaration '
                         '-fvisibility=hidden -fprofile-use '
                         '-fprofile-correction -I./Include/internal -I. '
-                        '-I./Include -Os -Os -fPIC',
+                        '-I./Include -Os -O2 -Os -O2 -fPIC',
  'Py_DEBUG': 0,
  'Py_ENABLE_SHARED': 1,
  'Py_HASH_ALGORITHM': 0,
@@ -710,7 +718,7 @@ build_time_vars = {'ABIFLAGS': '',
  'READELF': 'readelf',
  'RESSRCDIR': 'Mac/Resources/framework',
  'RETSIGTYPE': 'void',
- 'RUNSHARED': 'LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.10.4',
+ 'RUNSHARED': 'LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.10.10',
  'SCRIPTDIR': '/usr/lib',
  'SETPGRP_HAVE_ARG': 0,
  'SHELL': '/bin/sh',
@@ -752,10 +760,10 @@ build_time_vars = {'ABIFLAGS': '',
  'TCLTK_LIBS': '',
  'TESTOPTS': '',
  'TESTPATH': '',
- 'TESTPYTHON': 'LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.10.4 '
+ 'TESTPYTHON': 'LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.10.10 '
                './python',
  'TESTPYTHONOPTS': '',
- 'TESTRUNNER': 'LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.10.4 '
+ 'TESTRUNNER': 'LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.10.10 '
                './python ./Tools/scripts/run_tests.py',
  'TESTSUBDIRS': 'ctypes/test \\',
  'TESTTIMEOUT': 1200,
@@ -783,8 +791,8 @@ build_time_vars = {'ABIFLAGS': '',
  'WITH_VALGRIND': 0,
  'X87_DOUBLE_ROUNDING': 0,
  'XMLLIBSUBDIRS': 'xml xml/dom xml/etree xml/parsers xml/sax',
- 'abs_builddir': '/home/buildozer/aports/main/python3/src/Python-3.10.4',
- 'abs_srcdir': '/home/buildozer/aports/main/python3/src/Python-3.10.4',
+ 'abs_builddir': '/home/buildozer/aports/main/python3/src/Python-3.10.10',
+ 'abs_srcdir': '/home/buildozer/aports/main/python3/src/Python-3.10.10',
  'datarootdir': '/usr/share',
  'exec_prefix': '/usr',
  'prefix': '/usr',

@@ -79,13 +79,15 @@ func walkConvInterface(n *ir.ConvExpr, init *ir.Nodes) ir.Node {
 
 	var typeWord ir.Node
 	if toType.IsEmptyInterface() {
-		// Implement interface to empty interface conversion.
-		// res = itab
+		// Implement interface to empty interface conversion:
+		//
+		// var res *uint8
+		// res = (*uint8)(unsafe.Pointer(itab))
 		// if res != nil {
 		//    res = res.type
 		// }
 		typeWord = typecheck.Temp(types.NewPtr(types.Types[types.TUINT8]))
-		init.Append(ir.NewAssignStmt(base.Pos, typeWord, itab))
+		init.Append(ir.NewAssignStmt(base.Pos, typeWord, typecheck.Conv(typecheck.Conv(itab, types.Types[types.TUNSAFEPTR]), typeWord.Type())))
 		nif := ir.NewIfStmt(base.Pos, typecheck.Expr(ir.NewBinaryExpr(base.Pos, ir.ONE, typeWord, typecheck.NodNil())), nil, nil)
 		nif.Body = []ir.Node{ir.NewAssignStmt(base.Pos, typeWord, itabType(typeWord))}
 		init.Append(nif)
@@ -118,6 +120,12 @@ func dataWord(pos src.XPos, n ir.Node, init *ir.Nodes, escapes bool) ir.Node {
 		return n
 	}
 
+	isInteger := fromType.IsInteger()
+	isBool := fromType.IsBoolean()
+	if sc := fromType.SoleComponent(); sc != nil {
+		isInteger = sc.IsInteger()
+		isBool = sc.IsBoolean()
+	}
 	// Try a bunch of cases to avoid an allocation.
 	var value ir.Node
 	switch {
@@ -125,10 +133,11 @@ func dataWord(pos src.XPos, n ir.Node, init *ir.Nodes, escapes bool) ir.Node {
 		// n is zero-sized. Use zerobase.
 		cheapExpr(n, init) // Evaluate n for side-effects. See issue 19246.
 		value = ir.NewLinksymExpr(base.Pos, ir.Syms.Zerobase, types.Types[types.TUINTPTR])
-	case fromType.IsBoolean() || (fromType.Size() == 1 && fromType.IsInteger()):
+	case isBool || fromType.Size() == 1 && isInteger:
 		// n is a bool/byte. Use staticuint64s[n * 8] on little-endian
 		// and staticuint64s[n * 8 + 7] on big-endian.
 		n = cheapExpr(n, init)
+		n = soleComponent(init, n)
 		// byteindex widens n so that the multiplication doesn't overflow.
 		index := ir.NewBinaryExpr(base.Pos, ir.OLSH, byteindex(n), ir.NewInt(3))
 		if ssagen.Arch.LinkArch.ByteOrder == binary.BigEndian {
@@ -390,6 +399,29 @@ func rtconvfn(src, dst *types.Type) (param, result types.Kind) {
 		}
 	}
 	return types.Txxx, types.Txxx
+}
+
+func soleComponent(init *ir.Nodes, n ir.Node) ir.Node {
+	if n.Type().SoleComponent() == nil {
+		return n
+	}
+	// Keep in sync with cmd/compile/internal/types/type.go:Type.SoleComponent.
+	for {
+		switch {
+		case n.Type().IsStruct():
+			if n.Type().Field(0).Sym.IsBlank() {
+				// Treat blank fields as the zero value as the Go language requires.
+				n = typecheck.Temp(n.Type().Field(0).Type)
+				appendWalkStmt(init, ir.NewAssignStmt(base.Pos, n, nil))
+				continue
+			}
+			n = typecheck.Expr(ir.NewSelectorExpr(n.Pos(), ir.OXDOT, n, n.Type().Field(0).Sym))
+		case n.Type().IsArray():
+			n = typecheck.Expr(ir.NewIndexExpr(n.Pos(), n, ir.NewInt(0)))
+		default:
+			return n
+		}
+	}
 }
 
 // byteindex converts n, which is byte-sized, to an int used to index into an array.

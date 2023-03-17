@@ -1,0 +1,4 @@
+./filetype.go
+./kind.go
+./match.go
+./version.go

@@ -96,6 +96,7 @@ func needAlloc(n *ir.Name) bool {
 func (s *ssafn) AllocFrame(f *ssa.Func) {
 	s.stksize = 0
 	s.stkptrsize = 0
+	s.stkalign = int64(types.RegSize)
 	fn := s.curfn
 
 	// Mark the PAUTO's unused.
@@ -160,6 +161,9 @@ func (s *ssafn) AllocFrame(f *ssa.Func) {
 		}
 		s.stksize += w
 		s.stksize = types.Rnd(s.stksize, n.Type().Alignment())
+		if n.Type().Alignment() > int64(types.RegSize) {
+			s.stkalign = n.Type().Alignment()
+		}
 		if n.Type().HasPointers() {
 			s.stkptrsize = s.stksize
 			lastHasPtr = true
@@ -169,8 +173,8 @@ func (s *ssafn) AllocFrame(f *ssa.Func) {
 		n.SetFrameOffset(-s.stksize)
 	}
 
-	s.stksize = types.Rnd(s.stksize, int64(types.RegSize))
-	s.stkptrsize = types.Rnd(s.stkptrsize, int64(types.RegSize))
+	s.stksize = types.Rnd(s.stksize, s.stkalign)
+	s.stkptrsize = types.Rnd(s.stkptrsize, s.stkalign)
 }
 
 const maxStackSize = 1 << 30
@@ -225,13 +229,13 @@ func StackOffset(slot ssa.LocalSlot) int32 {
 	switch n.Class {
 	case ir.PPARAM, ir.PPARAMOUT:
 		if !n.IsOutputParamInRegisters() {
-			off = n.FrameOffset() + base.Ctxt.FixedFrameSize()
+			off = n.FrameOffset() + base.Ctxt.Arch.FixedFrameSize
 			break
 		}
 		fallthrough // PPARAMOUT in registers allocates like an AUTO
 	case ir.PAUTO:
 		off = n.FrameOffset()
-		if base.Ctxt.FixedFrameSize() == 0 {
+		if base.Ctxt.Arch.FixedFrameSize == 0 {
 			off -= int64(types.PtrSize)
 		}
 		if buildcfg.FramePointerEnabled {

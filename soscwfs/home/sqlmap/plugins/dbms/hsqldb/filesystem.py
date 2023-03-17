@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -41,7 +41,7 @@ class Filesystem(GenericFilesystem):
             warnMsg += "to be written hexadecimal value is %d " % fcEncodedStrLen
             warnMsg += "bytes, this might cause errors in the file "
             warnMsg += "writing process"
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
         debugMsg = "exporting the %s file content to file '%s'" % (fileType, remoteFile)
         logger.debug(debugMsg)

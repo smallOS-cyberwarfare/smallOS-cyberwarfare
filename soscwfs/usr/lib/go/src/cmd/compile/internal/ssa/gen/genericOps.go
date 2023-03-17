@@ -355,7 +355,9 @@ var genericOps = []opData{
 	{name: "Load", argLength: 2},                          // Load from arg0.  arg1=memory
 	{name: "Dereference", argLength: 2},                   // Load from arg0.  arg1=memory.  Helper op for arg/result passing, result is an otherwise not-SSA-able "value".
 	{name: "Store", argLength: 3, typ: "Mem", aux: "Typ"}, // Store arg1 to arg0.  arg2=memory, aux=type.  Returns memory.
-	// The source and destination of Move may overlap in some cases. See e.g.
+	// Normally we require that the source and destination of Move do not overlap.
+	// There is an exception when we know all the loads will happen before all
+	// the stores. In that case, overlap is ok. See
 	// memmove inlining in generic.rules. When inlineablememmovesize (in ../rewrite.go)
 	// returns true, we must do all loads before all stores, when lowering Move.
 	// The type of Move is used for the write barrier pass to insert write barriers
@@ -639,12 +641,13 @@ var genericOps = []opData{
 //    First                []   [always, never]
 
 var genericBlocks = []blockData{
-	{name: "Plain"},               // a single successor
-	{name: "If", controls: 1},     // if Controls[0] goto Succs[0] else goto Succs[1]
-	{name: "Defer", controls: 1},  // Succs[0]=defer queued, Succs[1]=defer recovered. Controls[0] is call op (of memory type)
-	{name: "Ret", controls: 1},    // no successors, Controls[0] value is memory result
-	{name: "RetJmp", controls: 1}, // no successors, Controls[0] value is a tail call
-	{name: "Exit", controls: 1},   // no successors, Controls[0] value generates a panic
+	{name: "Plain"},                  // a single successor
+	{name: "If", controls: 1},        // if Controls[0] goto Succs[0] else goto Succs[1]
+	{name: "Defer", controls: 1},     // Succs[0]=defer queued, Succs[1]=defer recovered. Controls[0] is call op (of memory type)
+	{name: "Ret", controls: 1},       // no successors, Controls[0] value is memory result
+	{name: "RetJmp", controls: 1},    // no successors, Controls[0] value is a tail call
+	{name: "Exit", controls: 1},      // no successors, Controls[0] value generates a panic
+	{name: "JumpTable", controls: 1}, // multiple successors, the integer Controls[0] selects which one
 
 	// transient block state used for dead code removal
 	{name: "First"}, // 2 successors, always takes the first one (second is dead)

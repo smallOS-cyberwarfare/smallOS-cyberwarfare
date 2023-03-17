@@ -15,7 +15,6 @@
 package liveness
 
 import (
-	"crypto/sha1"
 	"fmt"
 	"os"
 	"sort"
@@ -30,6 +29,7 @@ import (
 	"cmd/compile/internal/ssa"
 	"cmd/compile/internal/typebits"
 	"cmd/compile/internal/types"
+	"cmd/internal/notsha256"
 	"cmd/internal/obj"
 	"cmd/internal/objabi"
 	"cmd/internal/src"
@@ -244,8 +244,10 @@ func (lv *liveness) initcache() {
 // liveness effects on a variable.
 //
 // The possible flags are:
+//
 //	uevar - used by the instruction
 //	varkill - killed by the instruction (set)
+//
 // A kill happens after the use (for an instruction that updates a value, for example).
 type liveEffect int
 
@@ -432,7 +434,7 @@ func (lv *liveness) pointerMap(liveout bitvec.BitVec, vars []*ir.Name, args, loc
 				if node.FrameOffset() < 0 {
 					lv.f.Fatalf("Node %v has frameoffset %d\n", node.Sym().Name, node.FrameOffset())
 				}
-				typebits.Set(node.Type(), node.FrameOffset(), args)
+				typebits.SetNoCheck(node.Type(), node.FrameOffset(), args)
 				break
 			}
 			fallthrough // PPARAMOUT in registers acts memory-allocates like an AUTO
@@ -957,7 +959,7 @@ func (lv *liveness) enableClobber() {
 		// Clobber only functions where the hash of the function name matches a pattern.
 		// Useful for binary searching for a miscompiled function.
 		hstr := ""
-		for _, b := range sha1.Sum([]byte(lv.f.Name)) {
+		for _, b := range notsha256.Sum256([]byte(lv.f.Name)) {
 			hstr += fmt.Sprintf("%08b", b)
 		}
 		if !strings.HasSuffix(hstr, h) {
@@ -1460,14 +1462,14 @@ func (lv *liveness) emitStackObjects() *obj.LSym {
 // isfat reports whether a variable of type t needs multiple assignments to initialize.
 // For example:
 //
-// 	type T struct { x, y int }
-// 	x := T{x: 0, y: 1}
+//	type T struct { x, y int }
+//	x := T{x: 0, y: 1}
 //
 // Then we need:
 //
-// 	var t T
-// 	t.x = 0
-// 	t.y = 1
+//	var t T
+//	t.x = 0
+//	t.y = 1
 //
 // to fully initialize t.
 func isfat(t *types.Type) bool {
@@ -1505,7 +1507,7 @@ func WriteFuncMap(fn *ir.Func, abiInfo *abi.ABIParamResultInfo) {
 	bv := bitvec.New(int32(nptr) * 2)
 
 	for _, p := range abiInfo.InParams() {
-		typebits.Set(p.Type, p.FrameOffset(abiInfo), bv)
+		typebits.SetNoCheck(p.Type, p.FrameOffset(abiInfo), bv)
 	}
 
 	nbitmap := 1
@@ -1520,7 +1522,7 @@ func WriteFuncMap(fn *ir.Func, abiInfo *abi.ABIParamResultInfo) {
 	if fn.Type().NumResults() > 0 {
 		for _, p := range abiInfo.OutParams() {
 			if len(p.Registers) == 0 {
-				typebits.Set(p.Type, p.FrameOffset(abiInfo), bv)
+				typebits.SetNoCheck(p.Type, p.FrameOffset(abiInfo), bv)
 			}
 		}
 		off = objw.BitVec(lsym, off, bv)

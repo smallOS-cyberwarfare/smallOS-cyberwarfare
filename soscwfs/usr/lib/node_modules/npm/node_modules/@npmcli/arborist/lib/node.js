@@ -69,6 +69,8 @@ const consistentResolve = require('./consistent-resolve.js')
 const printableTree = require('./printable.js')
 const CaseInsensitiveMap = require('./case-insensitive-map.js')
 
+const querySelectorAll = require('./query-selector-all.js')
+
 class Node {
   constructor (options) {
     // NB: path can be null if it's a link target
@@ -101,6 +103,9 @@ class Node {
       dummy = false,
       sourceReference = null,
     } = options
+    // this object gives querySelectorAll somewhere to stash context about a node
+    // while processing a query
+    this.queryContext = {}
 
     // true if part of a global install
     this[_global] = global
@@ -332,6 +337,10 @@ class Node {
     return `${myname}@${alias}${version}`
   }
 
+  get overridden () {
+    return !!(this.overrides && this.overrides.value && this.overrides.name === this.name)
+  }
+
   get package () {
     return this[_package]
   }
@@ -558,7 +567,8 @@ class Node {
     // this allows us to do new Node({...}) and then set the root later.
     // just make the assignment so we don't lose it, and move on.
     if (!this.path || !root.realpath || !root.path) {
-      return this[_root] = root
+      this[_root] = root
+      return
     }
 
     // temporarily become a root node
@@ -824,7 +834,7 @@ class Node {
     }
 
     for (const [name, path] of this[_workspaces].entries()) {
-      new Edge({ from: this, name, spec: `file:${path}`, type: 'workspace' })
+      new Edge({ from: this, name, spec: `file:${path.replace(/#/g, '%23')}`, type: 'workspace' })
     }
   }
 
@@ -1444,6 +1454,12 @@ class Node {
     const dir = dirname(nm)
     const base = scoped ? `${basename(d)}/${basename(rp)}` : basename(rp)
     return base === name && basename(nm) === 'node_modules' ? dir : false
+  }
+
+  // maybe accept both string value or array of strings
+  // seems to be what dom API does
+  querySelectorAll (query, opts) {
+    return querySelectorAll(this, query, opts)
   }
 
   toJSON () {

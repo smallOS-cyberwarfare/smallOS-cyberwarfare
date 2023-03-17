@@ -1,0 +1,10 @@
+./at.go
+./at_fstatat.go
+./at_sysnum_fstatat_linux.go
+./at_sysnum_linux.go
+./copy_file_range_linux.go
+./getrandom.go
+./getrandom_linux.go
+./net.go
+./nonblocking.go
+./sysnum_linux_generic.go

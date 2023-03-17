@@ -91,6 +91,11 @@ func Info(fnsym *obj.LSym, infosym *obj.LSym, curfn interface{}) ([]dwarf.Scope,
 				continue
 			}
 			apdecls = append(apdecls, n)
+			if n.Type().Kind() == types.TSSA {
+				// Can happen for TypeInt128 types. This only happens for
+				// spill locations, so not a huge deal.
+				continue
+			}
 			fnsym.Func().RecordAutoType(reflectdata.TypeLinksym(n.Type()))
 		}
 	}
@@ -339,7 +344,7 @@ func createSimpleVar(fnsym *obj.LSym, n *ir.Name) *dwarf.Var {
 
 	localAutoOffset := func() int64 {
 		offs = n.FrameOffset()
-		if base.Ctxt.FixedFrameSize() == 0 {
+		if base.Ctxt.Arch.FixedFrameSize == 0 {
 			offs -= int64(types.PtrSize)
 		}
 		if buildcfg.FramePointerEnabled {
@@ -357,7 +362,7 @@ func createSimpleVar(fnsym *obj.LSym, n *ir.Name) *dwarf.Var {
 		if n.IsOutputParamInRegisters() {
 			offs = localAutoOffset()
 		} else {
-			offs = n.FrameOffset() + base.Ctxt.FixedFrameSize()
+			offs = n.FrameOffset() + base.Ctxt.Arch.FixedFrameSize
 		}
 
 	default:
@@ -547,7 +552,7 @@ func RecordFlags(flags ...string) {
 		fmt.Fprintf(&cmd, " -%s=%v", f.Name, getter.Get())
 	}
 
-	// Adds flag to producer string singalling whether regabi is turned on or
+	// Adds flag to producer string signaling whether regabi is turned on or
 	// off.
 	// Once regabi is turned on across the board and the relative GOEXPERIMENT
 	// knobs no longer exist this code should be removed.

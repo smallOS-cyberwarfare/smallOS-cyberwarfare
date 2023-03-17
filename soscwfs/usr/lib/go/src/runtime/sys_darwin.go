@@ -6,6 +6,7 @@ package runtime
 
 import (
 	"internal/abi"
+	"runtime/internal/atomic"
 	"unsafe"
 )
 
@@ -170,6 +171,7 @@ func pthread_kill_trampoline()
 // mmap is used to do low-level memory allocation via mmap. Don't allow stack
 // splits, since this function (used by sysAlloc) is called in a lot of low-level
 // parts of the runtime and callers often assume it won't acquire any locks.
+//
 //go:nosplit
 func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uint32) (unsafe.Pointer, int) {
 	args := struct {
@@ -232,10 +234,10 @@ func closefd(fd int32) int32 {
 }
 func close_trampoline()
 
+// This is exported via linkname to assembly in runtime/cgo.
+//
 //go:nosplit
 //go:cgo_unsafe_args
-//
-// This is exported via linkname to assembly in runtime/cgo.
 //go:linkname exit
 func exit(code int32) {
 	libcCall(unsafe.Pointer(abi.FuncPCABI0(exit_trampoline)), unsafe.Pointer(&code))
@@ -473,7 +475,7 @@ func pthread_cond_signal(c *pthreadcond) int32 {
 func pthread_cond_signal_trampoline()
 
 // Not used on Darwin, but must be defined.
-func exitThread(wait *uint32) {
+func exitThread(wait *atomic.Uint32) {
 }
 
 //go:nosplit

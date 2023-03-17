@@ -1,0 +1,7 @@
+./ahocorasick.go
+./automaton.go
+./byte_frequencies.go
+./classes.go
+./dfa.go
+./nfa.go
+./prefilter.go

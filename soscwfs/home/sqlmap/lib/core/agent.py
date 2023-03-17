@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -134,7 +134,7 @@ class Agent(object):
                 origValue = extractRegexResult(r"%s\s*:\s*(?P<result>\d+)\Z" % quote, origValue) or extractRegexResult(r"(?P<result>[^%s]*)\Z" % quote, origValue)
             else:
                 _ = extractRegexResult(r"(?s)(?P<result>[^\s<>{}();'\"&]+\Z)", origValue) or ""
-                origValue = _.split('=', 1)[1] if '=' in _ else ""
+                origValue = _.split('=', 1)[1] if '=' in _ else _
         elif place == PLACE.CUSTOM_HEADER:
             paramString = origValue
             origValue = origValue[origValue.find(',') + 1:]
@@ -196,9 +196,9 @@ class Agent(object):
         if place in (PLACE.URI, PLACE.CUSTOM_POST, PLACE.CUSTOM_HEADER):
             _ = "%s%s" % (origValue, kb.customInjectionMark)
 
-            if kb.postHint == POST_HINT.JSON and not isNumber(newValue) and '"%s"' % _ not in paramString:
+            if kb.postHint == POST_HINT.JSON and isNumber(origValue) and not isNumber(newValue) and '"%s"' % _ not in paramString:
                 newValue = '"%s"' % self.addPayloadDelimiters(newValue)
-            elif kb.postHint == POST_HINT.JSON_LIKE and not isNumber(newValue) and re.search(r"['\"]%s['\"]" % re.escape(_), paramString) is None:
+            elif kb.postHint == POST_HINT.JSON_LIKE and isNumber(origValue) and not isNumber(newValue) and re.search(r"['\"]%s['\"]" % re.escape(_), paramString) is None:
                 newValue = "'%s'" % self.addPayloadDelimiters(newValue)
             else:
                 newValue = self.addPayloadDelimiters(newValue)
@@ -418,6 +418,11 @@ class Agent(object):
                 payload = re.sub(r"(?i)\bMID\(", "SUBSTR(", payload)
                 payload = re.sub(r"(?i)\bNCHAR\b", "CHAR", payload)
 
+            # NOTE: https://github.com/sqlmapproject/sqlmap/issues/5057
+            match = re.search(r"(=0x)(303a303a)3(\d{2,})", payload)
+            if match:
+                payload = payload.replace(match.group(0), "%s%s%s" % (match.group(1), match.group(2).upper(), "".join("3%s" % _ for _ in match.group(3))))
+
         return payload
 
     def getComment(self, request):
@@ -484,7 +489,7 @@ class Agent(object):
         if field and Backend.getIdentifiedDbms():
             rootQuery = queries[Backend.getIdentifiedDbms()]
 
-            if field.startswith("(CASE") or field.startswith("(IIF") or conf.noCast:
+            if field.startswith("(CASE") or field.startswith("(IIF") or conf.noCast and not (field.startswith("COUNT(") and getTechnique() in (PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.UNION) and Backend.getIdentifiedDbms() == DBMS.MSSQL):
                 nulledCastedField = field
             else:
                 if not (Backend.isDbms(DBMS.SQLITE) and not isDBMSVersionAtLeast('3')):
@@ -576,7 +581,7 @@ class Agent(object):
         """
 
         prefixRegex = r"(?:\s+(?:FIRST|SKIP|LIMIT(?: \d+)?)\s+\d+)*"
-        fieldsSelectTop = re.search(r"\ASELECT\s+TOP(\s+[\d]|\s*\([^)]+\))\s+(.+?)\s+FROM", query, re.I)
+        fieldsSelectTop = re.search(r"\ASELECT\s+TOP(\s+\d+|\s*\([^)]+\))\s+(.+?)\s+FROM", query, re.I)
         fieldsSelectRownum = re.search(r"\ASELECT\s+([^()]+?),\s*ROWNUM AS LIMIT FROM", query, re.I)
         fieldsSelectDistinct = re.search(r"\ASELECT%s\s+DISTINCT\((.+?)\)\s+FROM" % prefixRegex, query, re.I)
         fieldsSelectCase = re.search(r"\ASELECT%s\s+(\(CASE WHEN\s+.+\s+END\))" % prefixRegex, query, re.I)
@@ -590,6 +595,9 @@ class Agent(object):
         _ = zeroDepthSearch(query, " FROM ")
         if not _:
             fieldsSelectFrom = None
+
+        if re.search(r"\bWHERE\b.+(MIN|MAX)", query, re.I):
+            fieldsMinMaxstr = None
 
         fieldsToCastStr = fieldsNoSelect
 
@@ -724,7 +732,7 @@ class Agent(object):
                 concatenatedQuery = concatenatedQuery.replace("SELECT ", "'%s'+" % kb.chars.start, 1)
                 concatenatedQuery += "+'%s'" % kb.chars.stop
             elif fieldsSelectTop:
-                topNum = re.search(r"\ASELECT\s+TOP(\s+[\d]|\s*\([^)]+\))\s+", concatenatedQuery, re.I).group(1)
+                topNum = re.search(r"\ASELECT\s+TOP(\s+\d+|\s*\([^)]+\))\s+", concatenatedQuery, re.I).group(1)
                 concatenatedQuery = concatenatedQuery.replace("SELECT TOP%s " % topNum, "TOP%s '%s'+" % (topNum, kb.chars.start), 1)
                 concatenatedQuery = concatenatedQuery.replace(" FROM ", "+'%s' FROM " % kb.chars.stop, 1)
             elif fieldsSelectCase:
@@ -1019,8 +1027,8 @@ class Agent(object):
             limitStr = queries[Backend.getIdentifiedDbms()].limit.query % (num + 1, 1)
             limitedQuery += " %s" % limitStr
 
-        elif Backend.getIdentifiedDbms() in (DBMS.DERBY, DBMS.CRATEDB):
-            limitStr = queries[Backend.getIdentifiedDbms()].limit.query % (1, num)
+        elif Backend.getIdentifiedDbms() in (DBMS.DERBY, DBMS.CRATEDB, DBMS.CLICKHOUSE):
+            limitStr = queries[Backend.getIdentifiedDbms()].limit.query % (num, 1)
             limitedQuery += " %s" % limitStr
 
         elif Backend.getIdentifiedDbms() in (DBMS.FRONTBASE, DBMS.VIRTUOSO):

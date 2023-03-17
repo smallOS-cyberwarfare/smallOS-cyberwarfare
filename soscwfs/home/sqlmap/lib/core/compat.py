@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -9,9 +9,11 @@ from __future__ import division
 
 import binascii
 import functools
+import inspect
 import math
 import os
 import random
+import re
 import sys
 import time
 import uuid
@@ -277,7 +279,54 @@ else:
     xrange = xrange
     buffer = buffer
 
-try:
-    from pkg_resources import parse_version as LooseVersion
-except ImportError:
-    from distutils.version import LooseVersion
+def LooseVersion(version):
+    """
+    >>> LooseVersion("1.0") == LooseVersion("1.0")
+    True
+    >>> LooseVersion("1.0.1") > LooseVersion("1.0")
+    True
+    >>> LooseVersion("1.0.1-") == LooseVersion("1.0.1")
+    True
+    >>> LooseVersion("1.0.11") < LooseVersion("1.0.111")
+    True
+    >>> LooseVersion("foobar") > LooseVersion("1.0")
+    False
+    >>> LooseVersion("1.0") > LooseVersion("foobar")
+    False
+    >>> LooseVersion("3.22-mysql") == LooseVersion("3.22-mysql-ubuntu0.3")
+    True
+    >>> LooseVersion("8.0.22-0ubuntu0.20.04.2")
+    8.000022
+    """
+
+    match = re.search(r"\A(\d[\d.]*)", version or "")
+
+    if match:
+        result = 0
+        value = match.group(1)
+        weight = 1.0
+        for part in value.strip('.').split('.'):
+            if part.isdigit():
+                result += int(part) * weight
+            weight *= 1e-3
+    else:
+        result = float("NaN")
+
+    return result
+
+# Reference: https://github.com/bottlepy/bottle/blob/df67999584a0e51ec5b691146c7fa4f3c87f5aac/bottle.py
+if not hasattr(inspect, "getargspec") and hasattr(inspect, "getfullargspec"):
+    from inspect import getfullargspec
+
+    def makelist(data):
+        if isinstance(data, (tuple, list, set, dict)):
+            return list(data)
+        elif data:
+            return [data]
+        else:
+            return []
+
+    def getargspec(func):
+        spec = getfullargspec(func)
+        kwargs = makelist(spec[0]) + makelist(spec.kwonlyargs)
+        return kwargs, spec[1], spec[2], spec[3]

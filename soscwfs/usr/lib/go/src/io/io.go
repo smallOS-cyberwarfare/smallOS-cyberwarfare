@@ -111,7 +111,8 @@ type Closer interface {
 // interpreted according to whence:
 // SeekStart means relative to the start of the file,
 // SeekCurrent means relative to the current offset, and
-// SeekEnd means relative to the end.
+// SeekEnd means relative to the end
+// (for example, offset = -2 specifies the penultimate byte of the file).
 // Seek returns the new offset relative to the start of the
 // file or an error, if any.
 //
@@ -621,7 +622,12 @@ func (discard) ReadFrom(r Reader) (n int64, err error) {
 
 // NopCloser returns a ReadCloser with a no-op Close method wrapping
 // the provided Reader r.
+// If r implements WriterTo, the returned ReadCloser will implement WriterTo
+// by forwarding calls to r.
 func NopCloser(r Reader) ReadCloser {
+	if _, ok := r.(WriterTo); ok {
+		return nopCloserWriterTo{r}
+	}
 	return nopCloser{r}
 }
 
@@ -630,6 +636,16 @@ type nopCloser struct {
 }
 
 func (nopCloser) Close() error { return nil }
+
+type nopCloserWriterTo struct {
+	Reader
+}
+
+func (nopCloserWriterTo) Close() error { return nil }
+
+func (c nopCloserWriterTo) WriteTo(w Writer) (n int64, err error) {
+	return c.Reader.(WriterTo).WriteTo(w)
+}
 
 // ReadAll reads from r until an error or EOF and returns the data it read.
 // A successful call returns err == nil, not err == EOF. Because ReadAll is

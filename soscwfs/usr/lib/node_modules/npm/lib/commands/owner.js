@@ -27,9 +27,9 @@ class Owner extends BaseCommand {
   ]
 
   static usage = [
-    'add <user> [<@scope>/]<pkg>',
-    'rm <user> [<@scope>/]<pkg>',
-    'ls [<@scope>/]<pkg>',
+    'add <user> <package-spec>',
+    'rm <user> <package-spec>',
+    'ls <package-spec>',
   ]
 
   static ignoreImplicitWorkspace = false
@@ -50,7 +50,7 @@ class Owner extends BaseCommand {
 
     // reaches registry in order to autocomplete rm
     if (argv[2] === 'rm') {
-      if (this.npm.config.get('global')) {
+      if (this.npm.global) {
         return []
       }
       const { name } = await readJson(resolve(this.npm.prefix, 'package.json'))
@@ -126,7 +126,7 @@ class Owner extends BaseCommand {
 
   async getPkg (prefix, pkg) {
     if (!pkg) {
-      if (this.npm.config.get('global')) {
+      if (this.npm.global) {
         throw this.usageError()
       }
       const { name } = await readJson(resolve(prefix, 'package.json'))
@@ -202,7 +202,7 @@ class Owner extends BaseCommand {
 
     const dataPath = `/${spec.escapedName}/-rev/${encodeURIComponent(data._rev)}`
     try {
-      const res = await otplease(this.npm.flatOptions, opts => {
+      const res = await otplease(this.npm, this.npm.flatOptions, opts => {
         return npmFetch.json(dataPath, {
           ...opts,
           method: 'PUT',

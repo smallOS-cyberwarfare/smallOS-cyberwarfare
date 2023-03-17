@@ -20,8 +20,9 @@ class Install extends ArboristWorkspaceCmd {
     'save',
     'save-exact',
     'global',
-    'global-style',
+    'install-strategy',
     'legacy-bundling',
+    'global-style',
     'omit',
     'strict-peer-deps',
     'package-lock',
@@ -34,18 +35,7 @@ class Install extends ArboristWorkspaceCmd {
     ...super.params,
   ]
 
-  static usage = [
-    '[<@scope>/]<pkg>',
-    '[<@scope>/]<pkg>@<tag>',
-    '[<@scope>/]<pkg>@<version>',
-    '[<@scope>/]<pkg>@<version range>',
-    '<alias>@npm:<name>',
-    '<folder>',
-    '<tarball file>',
-    '<tarball url>',
-    '<git:// url>',
-    '<github username>/<github project>',
-  ]
+  static usage = ['[<package-spec> ...]']
 
   async completion (opts) {
     const { partialWord } = opts
@@ -106,7 +96,7 @@ class Install extends ArboristWorkspaceCmd {
     // the /path/to/node_modules/..
     const globalTop = resolve(this.npm.globalDir, '..')
     const ignoreScripts = this.npm.config.get('ignore-scripts')
-    const isGlobalInstall = this.npm.config.get('global')
+    const isGlobalInstall = this.npm.global
     const where = isGlobalInstall ? globalTop : this.npm.prefix
     const forced = this.npm.config.get('force')
     const scriptShell = this.npm.config.get('script-shell') || undefined
@@ -171,7 +161,6 @@ class Install extends ArboristWorkspaceCmd {
           args: [],
           scriptShell,
           stdio: 'inherit',
-          stdioString: true,
           banner: !this.npm.silent,
           event,
         })

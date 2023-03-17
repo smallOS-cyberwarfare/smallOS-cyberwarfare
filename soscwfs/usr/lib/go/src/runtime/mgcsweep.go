@@ -263,7 +263,7 @@ func finishsweep_m() {
 	// Sweeping is done, so if the scavenger isn't already awake,
 	// wake it up. There's definitely work for it to do at this
 	// point.
-	wakeScavenger()
+	scavenger.wake()
 
 	nextMarkBitArenaEpoch()
 }
@@ -387,7 +387,7 @@ func sweepone() uintptr {
 		// concurrent sweeps running, but we're at least very
 		// close to done sweeping.
 
-		// Move the scavenge gen forward (signalling
+		// Move the scavenge gen forward (signaling
 		// that there's new work to do) and wake the scavenger.
 		//
 		// The scavenger is signaled by the last sweeper because once
@@ -398,15 +398,16 @@ func sweepone() uintptr {
 		// between sweep done and sweep termination (e.g. not enough
 		// allocations to trigger a GC) which would be nice to fill in
 		// with scavenging work.
-		systemstack(func() {
-			lock(&mheap_.lock)
-			mheap_.pages.scavengeStartGen()
-			unlock(&mheap_.lock)
-		})
-		// Since we might sweep in an allocation path, it's not possible
-		// for us to wake the scavenger directly via wakeScavenger, since
-		// it could allocate. Ask sysmon to do it for us instead.
-		readyForScavenger()
+		if debug.scavtrace > 0 {
+			systemstack(func() {
+				lock(&mheap_.lock)
+				released := atomic.Loaduintptr(&mheap_.pages.scav.released)
+				printScavTrace(released, false)
+				atomic.Storeuintptr(&mheap_.pages.scav.released, 0)
+				unlock(&mheap_.lock)
+			})
+		}
+		scavenger.ready()
 	}
 
 	gp.m.locks--
@@ -424,6 +425,7 @@ func isSweepDone() bool {
 }
 
 // Returns only when span s has been swept.
+//
 //go:nowritebarrier
 func (s *mspan) ensureSwept() {
 	// Caller must disable preemption.
@@ -623,6 +625,7 @@ func (sl *sweepLocked) sweep(preserve bool) bool {
 
 	s.allocCount = nalloc
 	s.freeindex = 0 // reset allocation index to start of span.
+	s.freeIndexForScan = 0
 	if trace.enabled {
 		getg().m.p.ptr().traceReclaimed += uintptr(nfreed) * s.elemsize
 	}
@@ -666,8 +669,11 @@ func (sl *sweepLocked) sweep(preserve bool) bool {
 			// free slots zeroed.
 			s.needzero = 1
 			stats := memstats.heapStats.acquire()
-			atomic.Xadduintptr(&stats.smallFreeCount[spc.sizeclass()], uintptr(nfreed))
+			atomic.Xadd64(&stats.smallFreeCount[spc.sizeclass()], int64(nfreed))
 			memstats.heapStats.release()
+
+			// Count the frees in the inconsistent, internal stats.
+			gcController.totalFree.Add(int64(nfreed) * int64(s.elemsize))
 		}
 		if !preserve {
 			// The caller may not have removed this span from whatever
@@ -712,10 +718,16 @@ func (sl *sweepLocked) sweep(preserve bool) bool {
 			} else {
 				mheap_.freeSpan(s)
 			}
+
+			// Count the free in the consistent, external stats.
 			stats := memstats.heapStats.acquire()
-			atomic.Xadduintptr(&stats.largeFreeCount, 1)
-			atomic.Xadduintptr(&stats.largeFree, size)
+			atomic.Xadd64(&stats.largeFreeCount, 1)
+			atomic.Xadd64(&stats.largeFree, int64(size))
 			memstats.heapStats.release()
+
+			// Count the free in the inconsistent, internal stats.
+			gcController.totalFree.Add(int64(size))
+
 			return true
 		}
 
@@ -803,11 +815,30 @@ func deductSweepCredit(spanBytes uintptr, callerSweepPages uintptr) {
 		traceGCSweepStart()
 	}
 
+	// Fix debt if necessary.
 retry:
 	sweptBasis := mheap_.pagesSweptBasis.Load()
-
-	// Fix debt if necessary.
-	newHeapLive := uintptr(atomic.Load64(&gcController.heapLive)-mheap_.sweepHeapLiveBasis) + spanBytes
+	live := atomic.Load64(&gcController.heapLive)
+	liveBasis := mheap_.sweepHeapLiveBasis
+	newHeapLive := spanBytes
+	if liveBasis < live {
+		// Only do this subtraction when we don't overflow. Otherwise, pagesTarget
+		// might be computed as something really huge, causing us to get stuck
+		// sweeping here until the next mark phase.
+		//
+		// Overflow can happen here if gcPaceSweeper is called concurrently with
+		// sweeping (i.e. not during a STW, like it usually is) because this code
+		// is intentionally racy. A concurrent call to gcPaceSweeper can happen
+		// if a GC tuning parameter is modified and we read an older value of
+		// heapLive than what was used to set the basis.
+		//
+		// This state should be transient, so it's fine to just let newHeapLive
+		// be a relatively small number. We'll probably just skip this attempt to
+		// sweep.
+		//
+		// See issue #57523.
+		newHeapLive += uintptr(live - liveBasis)
+	}
 	pagesTarget := int64(mheap_.sweepPagesPerByte*float64(newHeapLive)) - int64(callerSweepPages)
 	for pagesTarget > int64(mheap_.pagesSwept.Load()-sweptBasis) {
 		if sweepone() == ^uintptr(0) {

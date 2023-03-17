@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -31,19 +31,19 @@ class Enumeration(GenericEnumeration):
 
     def getPrivileges(self, *args, **kwargs):
         warnMsg = "on HSQLDB it is not possible to enumerate the user privileges"
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
 
         return {}
 
     def getHostname(self):
         warnMsg = "on HSQLDB it is not possible to enumerate the hostname"
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
 
     def getCurrentDb(self):
         return HSQLDB_DEFAULT_SCHEMA
 
     def getStatements(self):
         warnMsg = "on HSQLDB it is not possible to enumerate the SQL statements"
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
 
         return []

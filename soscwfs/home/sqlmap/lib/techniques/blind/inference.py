@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -26,6 +26,7 @@ from lib.core.common import goGoodSamaritan
 from lib.core.common import hashDBRetrieve
 from lib.core.common import hashDBWrite
 from lib.core.common import incrementCounter
+from lib.core.common import isDigit
 from lib.core.common import isListLike
 from lib.core.common import safeStringFormat
 from lib.core.common import singleTimeWarnMessage
@@ -61,6 +62,7 @@ from lib.request.connect import Connect as Request
 from lib.utils.progress import ProgressBar
 from lib.utils.safe2bin import safecharencode
 from lib.utils.xrange import xrange
+from thirdparty import six
 
 def bisection(payload, expression, length=None, charsetType=None, firstChar=None, lastChar=None, dump=False):
     """
@@ -163,7 +165,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
         else:
             expressionUnescaped = unescaper.escape(expression)
 
-        if hasattr(length, "isdigit") and length.isdigit() or isinstance(length, int):
+        if isinstance(length, six.string_types) and isDigit(length) or isinstance(length, int):
             length = int(length)
         else:
             length = None
@@ -274,9 +276,11 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
 
             originalTbl = type(charTbl)(charTbl)
 
-            if continuousOrder and shiftTable is None:
+            if kb.disableShiftTable:
+                shiftTable = None
+            elif continuousOrder and shiftTable is None:
                 # Used for gradual expanding into unicode charspace
-                shiftTable = [2, 2, 3, 3, 5, 4]
+                shiftTable = [2, 2, 3, 3, 3]
 
             if "'%s'" % CHAR_INFERENCE_MARK in payload:
                 for char in ('\n', '\r'):
@@ -358,6 +362,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                             kb.responseTimePayload = None
 
                     result = Request.queryPage(forgedPayload, timeBasedCompare=timeBasedCompare, raise404=False)
+
                     incrementCounter(getTechnique())
 
                     if not timeBasedCompare and getTechniqueData() is not None:
@@ -405,6 +410,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                                 maxChar = maxValue = charTbl[-1]
                                 minValue = charTbl[0]
                             else:
+                                kb.disableShiftTable = True
                                 return None
                         else:
                             retVal = minValue + 1
@@ -423,7 +429,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                                             if kb.adjustTimeDelay is not ADJUST_TIME_DELAY.DISABLE:
                                                 conf.timeSec += 1
                                                 warnMsg = "increasing time delay to %d second%s" % (conf.timeSec, 's' if conf.timeSec > 1 else '')
-                                                logger.warn(warnMsg)
+                                                logger.warning(warnMsg)
 
                                             if kb.adjustTimeDelay is ADJUST_TIME_DELAY.YES:
                                                 dbgMsg = "turning off time auto-adjustment mechanism"

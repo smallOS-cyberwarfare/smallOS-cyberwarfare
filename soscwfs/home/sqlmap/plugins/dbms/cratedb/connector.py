@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -46,7 +46,7 @@ class Connector(GenericConnector):
         try:
             return self.cursor.fetchall()
         except psycopg2.ProgrammingError as ex:
-            logger.warn(getSafeExString(ex))
+            logger.warning(getSafeExString(ex))
             return None
 
     def execute(self, query):
@@ -56,7 +56,7 @@ class Connector(GenericConnector):
             self.cursor.execute(query)
             retVal = True
         except (psycopg2.OperationalError, psycopg2.ProgrammingError) as ex:
-            logger.warn(("(remote) '%s'" % getSafeExString(ex)).strip())
+            logger.warning(("(remote) '%s'" % getSafeExString(ex)).strip())
         except psycopg2.InternalError as ex:
             raise SqlmapConnectionException(getSafeExString(ex))
 

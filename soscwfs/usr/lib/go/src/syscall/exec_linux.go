@@ -43,9 +43,13 @@ type SysProcAttr struct {
 	// the descriptor of the controlling TTY.
 	// Unlike Setctty, in this case Ctty must be a descriptor
 	// number in the parent process.
-	Foreground   bool
-	Pgid         int            // Child's process group ID if Setpgid.
-	Pdeathsig    Signal         // Signal that the process will get when its parent dies (Linux and FreeBSD only)
+	Foreground bool
+	Pgid       int // Child's process group ID if Setpgid.
+	// Pdeathsig, if non-zero, is a signal that the kernel will send to
+	// the child process when the creating thread dies. Note that the signal
+	// is sent on thread termination, which may happen before process termination.
+	// There are more details at https://go.dev/issue/27505.
+	Pdeathsig    Signal
 	Cloneflags   uintptr        // Flags for clone calls (Linux only)
 	Unshareflags uintptr        // Flags for unshare calls (Linux only)
 	UidMappings  []SysProcIDMap // User ID mappings for user namespaces.
@@ -77,6 +81,7 @@ func runtime_AfterForkInChild()
 // For the same reason compiler does not race instrument it.
 // The calls to RawSyscall are okay because they are assembly
 // functions that do not grow the stack.
+//
 //go:norace
 func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr *ProcAttr, sys *SysProcAttr, pipe int) (pid int, err Errno) {
 	// Set up and fork. This returns immediately in the parent or

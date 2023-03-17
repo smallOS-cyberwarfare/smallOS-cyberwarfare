@@ -329,7 +329,7 @@ func asmbPlan9Sym(ctxt *Link) {
 		if ldr.AttrNotInSymbolTable(s) {
 			return false
 		}
-		name := ldr.RawSymName(s) // TODO: try not to read the name
+		name := ldr.SymName(s) // TODO: try not to read the name
 		if name == "" || name[0] == '.' {
 			return false
 		}
@@ -475,16 +475,19 @@ func (ctxt *Link) symtab(pcln *pclntab) []sym.SymKind {
 			s = ldr.CreateSymForUpdate("type.*", 0)
 			s.SetType(sym.STYPE)
 			s.SetSize(0)
+			s.SetAlign(int32(ctxt.Arch.PtrSize))
 			symtype = s.Sym()
 
 			s = ldr.CreateSymForUpdate("typerel.*", 0)
 			s.SetType(sym.STYPERELRO)
 			s.SetSize(0)
+			s.SetAlign(int32(ctxt.Arch.PtrSize))
 			symtyperel = s.Sym()
 		} else {
 			s = ldr.CreateSymForUpdate("type.*", 0)
 			s.SetType(sym.STYPE)
 			s.SetSize(0)
+			s.SetAlign(int32(ctxt.Arch.PtrSize))
 			symtype = s.Sym()
 			symtyperel = s.Sym()
 		}
@@ -496,6 +499,7 @@ func (ctxt *Link) symtab(pcln *pclntab) []sym.SymKind {
 		s := ldr.CreateSymForUpdate(name, 0)
 		s.SetType(t)
 		s.SetSize(0)
+		s.SetAlign(int32(ctxt.Arch.PtrSize))
 		s.SetLocal(true)
 		setCarrierSym(t, s.Sym())
 		return s.Sym()
@@ -857,7 +861,7 @@ func mangleABIName(ctxt *Link, ldr *loader.Loader, x loader.Sym, name string) st
 		return name
 	}
 
-	if !ldr.IsExternal(x) && ldr.SymType(x) == sym.STEXT && ldr.SymVersion(x) != sym.SymVerABIInternal {
+	if ldr.SymType(x) == sym.STEXT && ldr.SymVersion(x) != sym.SymVerABIInternal && ldr.SymVersion(x) < sym.SymVerStatic {
 		if s2 := ldr.Lookup(name, sym.SymVerABIInternal); s2 != 0 && ldr.SymType(s2) == sym.STEXT {
 			name = fmt.Sprintf("%s.abi%d", name, ldr.SymVersion(x))
 		}

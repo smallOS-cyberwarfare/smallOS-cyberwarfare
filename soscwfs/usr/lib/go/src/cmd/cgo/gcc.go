@@ -114,12 +114,11 @@ func (p *Package) addToFlag(flag string, args []string) {
 //
 // For example, the following string:
 //
-//     `a b:"c d" 'e''f'  "g\""`
+//	`a b:"c d" 'e''f'  "g\""`
 //
 // Would be parsed as:
 //
-//     []string{"a", "b:c d", "ef", `g"`}
-//
+//	[]string{"a", "b:c d", "ef", `g"`}
 func splitQuoted(s string) (r []string, err error) {
 	var args []string
 	arg := make([]rune, len(s))
@@ -489,7 +488,7 @@ func (p *Package) guessKinds(f *File) []*Name {
 		// Check if compiling the preamble by itself causes any errors,
 		// because the messages we've printed out so far aren't helpful
 		// to users debugging preamble mistakes. See issue 8442.
-		preambleErrors := p.gccErrors([]byte(f.Preamble))
+		preambleErrors := p.gccErrors([]byte(builtinProlog + f.Preamble))
 		if len(preambleErrors) > 0 {
 			error_(token.NoPos, "\n%s errors for preamble:\n%s", gccBaseCmd[0], preambleErrors)
 		}
@@ -577,8 +576,23 @@ func (p *Package) loadDWARF(f *File, conv *typeConv, names []*Name) {
 		switch e.Tag {
 		case dwarf.TagVariable:
 			name, _ := e.Val(dwarf.AttrName).(string)
+			// As of https://reviews.llvm.org/D123534, clang
+			// now emits DW_TAG_variable DIEs that have
+			// no name (so as to be able to describe the
+			// type and source locations of constant strings
+			// like the second arg in the call below:
+			//
+			//     myfunction(42, "foo")
+			//
+			// If a var has no name we won't see attempts to
+			// refer to it via "C.<name>", so skip these vars
+			//
+			// See issue 53000 for more context.
+			if name == "" {
+				break
+			}
 			typOff, _ := e.Val(dwarf.AttrType).(dwarf.Offset)
-			if name == "" || typOff == 0 {
+			if typOff == 0 {
 				if e.Val(dwarf.AttrSpecification) != nil {
 					// Since we are reading all the DWARF,
 					// assume we will see the variable elsewhere.
@@ -812,6 +826,7 @@ func (p *Package) rewriteCall(f *File, call *Call) (string, bool) {
 
 	params := name.FuncType.Params
 	args := call.Call.Args
+	end := call.Call.End()
 
 	// Avoid a crash if the number of arguments doesn't match
 	// the number of parameters.
@@ -959,7 +974,7 @@ func (p *Package) rewriteCall(f *File, call *Call) (string, bool) {
 	if nu {
 		needsUnsafe = true
 	}
-	sb.WriteString(gofmtLine(m))
+	sb.WriteString(gofmtPos(m, end))
 
 	sb.WriteString("(")
 	for i := range params {
@@ -1138,13 +1153,19 @@ func (p *Package) mangle(f *File, arg *ast.Expr, addPosition bool) (ast.Expr, bo
 
 // checkIndex checks whether arg has the form &a[i], possibly inside
 // type conversions. If so, then in the general case it writes
-//    _cgoIndexNN := a
-//    _cgoNN := &cgoIndexNN[i] // with type conversions, if any
+//
+//	_cgoIndexNN := a
+//	_cgoNN := &cgoIndexNN[i] // with type conversions, if any
+//
 // to sb, and writes
-//    _cgoCheckPointer(_cgoNN, _cgoIndexNN)
+//
+//	_cgoCheckPointer(_cgoNN, _cgoIndexNN)
+//
 // to sbCheck, and returns true. If a is a simple variable or field reference,
 // it writes
-//    _cgoIndexNN := &a
+//
+//	_cgoIndexNN := &a
+//
 // and dereferences the uses of _cgoIndexNN. Taking the address avoids
 // making a copy of an array.
 //
@@ -1192,10 +1213,14 @@ func (p *Package) checkIndex(sb, sbCheck *bytes.Buffer, arg ast.Expr, i int) boo
 
 // checkAddr checks whether arg has the form &x, possibly inside type
 // conversions. If so, it writes
-//    _cgoBaseNN := &x
-//    _cgoNN := _cgoBaseNN // with type conversions, if any
+//
+//	_cgoBaseNN := &x
+//	_cgoNN := _cgoBaseNN // with type conversions, if any
+//
 // to sb, and writes
-//    _cgoCheckPointer(_cgoBaseNN, true)
+//
+//	_cgoCheckPointer(_cgoBaseNN, true)
+//
 // to sbCheck, and returns true. This tells _cgoCheckPointer to check
 // just the contents of the pointer being passed, not any other part
 // of the memory allocation. This is run after checkIndex, which looks
@@ -1613,6 +1638,8 @@ func (p *Package) gccMachine() []string {
 		} else if gomips == "softfloat" {
 			return []string{"-mabi=32", "-msoft-float"}
 		}
+	case "loong64":
+		return []string{"-mabi=lp64d"}
 	}
 	return nil
 }
@@ -1804,6 +1831,23 @@ func (p *Package) gccDebug(stdin []byte, nnames int) (d *dwarf.Data, ints []int6
 		bo := f.ByteOrder
 		symtab, err := f.Symbols()
 		if err == nil {
+			// Check for use of -fsanitize=hwaddress (issue 53285).
+			removeTag := func(v uint64) uint64 { return v }
+			if goarch == "arm64" {
+				for i := range symtab {
+					if symtab[i].Name == "__hwasan_init" {
+						// -fsanitize=hwaddress on ARM
+						// uses the upper byte of a
+						// memory address as a hardware
+						// tag. Remove it so that
+						// we can find the associated
+						// data.
+						removeTag = func(v uint64) uint64 { return v &^ (0xff << (64 - 8)) }
+						break
+					}
+				}
+			}
+
 			for i := range symtab {
 				s := &symtab[i]
 				switch {
@@ -1811,9 +1855,10 @@ func (p *Package) gccDebug(stdin []byte, nnames int) (d *dwarf.Data, ints []int6
 					// Found it. Now find data section.
 					if i := int(s.Section); 0 <= i && i < len(f.Sections) {
 						sect := f.Sections[i]
-						if sect.Addr <= s.Value && s.Value < sect.Addr+sect.Size {
+						val := removeTag(s.Value)
+						if sect.Addr <= val && val < sect.Addr+sect.Size {
 							if sdat, err := sect.Data(); err == nil {
-								data := sdat[s.Value-sect.Addr:]
+								data := sdat[val-sect.Addr:]
 								ints = make([]int64, len(data)/8)
 								for i := range ints {
 									ints[i] = int64(bo.Uint64(data[i*8:]))
@@ -1825,9 +1870,10 @@ func (p *Package) gccDebug(stdin []byte, nnames int) (d *dwarf.Data, ints []int6
 					// Found it. Now find data section.
 					if i := int(s.Section); 0 <= i && i < len(f.Sections) {
 						sect := f.Sections[i]
-						if sect.Addr <= s.Value && s.Value < sect.Addr+sect.Size {
+						val := removeTag(s.Value)
+						if sect.Addr <= val && val < sect.Addr+sect.Size {
 							if sdat, err := sect.Data(); err == nil {
-								data := sdat[s.Value-sect.Addr:]
+								data := sdat[val-sect.Addr:]
 								floats = make([]float64, len(data)/8)
 								for i := range floats {
 									floats[i] = math.Float64frombits(bo.Uint64(data[i*8:]))
@@ -1840,9 +1886,10 @@ func (p *Package) gccDebug(stdin []byte, nnames int) (d *dwarf.Data, ints []int6
 						// Found it. Now find data section.
 						if i := int(s.Section); 0 <= i && i < len(f.Sections) {
 							sect := f.Sections[i]
-							if sect.Addr <= s.Value && s.Value < sect.Addr+sect.Size {
+							val := removeTag(s.Value)
+							if sect.Addr <= val && val < sect.Addr+sect.Size {
 								if sdat, err := sect.Data(); err == nil {
-									data := sdat[s.Value-sect.Addr:]
+									data := sdat[val-sect.Addr:]
 									strdata[n] = string(data)
 								}
 							}
@@ -1853,9 +1900,10 @@ func (p *Package) gccDebug(stdin []byte, nnames int) (d *dwarf.Data, ints []int6
 						// Found it. Now find data section.
 						if i := int(s.Section); 0 <= i && i < len(f.Sections) {
 							sect := f.Sections[i]
-							if sect.Addr <= s.Value && s.Value < sect.Addr+sect.Size {
+							val := removeTag(s.Value)
+							if sect.Addr <= val && val < sect.Addr+sect.Size {
 								if sdat, err := sect.Data(); err == nil {
-									data := sdat[s.Value-sect.Addr:]
+									data := sdat[val-sect.Addr:]
 									strlen := bo.Uint64(data[:8])
 									if strlen > (1<<(uint(p.IntSize*8)-1) - 1) { // greater than MaxInt?
 										fatalf("string literal too big")
@@ -2215,6 +2263,8 @@ var dwarfToName = map[string]string{
 	"long long unsigned int": "ulonglong",
 	"signed char":            "schar",
 	"unsigned char":          "uchar",
+	"unsigned long":          "ulong",     // Used by Clang 14; issue 53013.
+	"unsigned long long":     "ulonglong", // Used by Clang 14; issue 53013.
 }
 
 const signedDelta = 64
@@ -2501,6 +2551,11 @@ func (c *typeConv) loadType(dtype dwarf.Type, pos token.Pos, parent string) *Typ
 		t.Go = name // publish before recursive calls
 		goIdent[name.Name] = name
 		if dt.ByteSize < 0 {
+			// Don't override old type
+			if _, ok := typedef[name.Name]; ok {
+				break
+			}
+
 			// Size calculation in c.Struct/c.Opaque will die with size=-1 (unknown),
 			// so execute the basic things that the struct case would do
 			// other than try to determine a Go representation.

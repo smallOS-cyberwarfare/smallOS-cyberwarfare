@@ -33,7 +33,7 @@ class View extends BaseCommand {
 
   static ignoreImplicitWorkspace = false
 
-  static usage = ['[<@scope>/]<pkg>[@<version>] [<field>[.subfield]...]']
+  static usage = ['[<package-spec>] [<field>[.subfield]...]']
 
   async completion (opts) {
     if (opts.conf.argv.remain.length <= 2) {
@@ -91,7 +91,7 @@ class View extends BaseCommand {
     const local = /^\.@/.test(pkg) || pkg === '.'
 
     if (local) {
-      if (this.npm.config.get('global')) {
+      if (this.npm.global) {
         throw new Error('Cannot use view command in global mode.')
       }
       const dir = this.npm.prefix
@@ -196,15 +196,16 @@ class View extends BaseCommand {
     // get the data about this package
     let version = this.npm.config.get('tag')
     // rawSpec is the git url if this is from git
-    if (spec.type !== 'git' && spec.type !== 'directory' && spec.rawSpec) {
+    if (spec.type !== 'git' && spec.type !== 'directory' && spec.rawSpec !== '*') {
       version = spec.rawSpec
     }
 
     const pckmnt = await packument(spec, opts)
 
-    if (pckmnt['dist-tags'] && pckmnt['dist-tags'][version]) {
+    if (pckmnt['dist-tags']?.[version]) {
       version = pckmnt['dist-tags'][version]
     }
+
     if (pckmnt.time && pckmnt.time.unpublished) {
       const u = pckmnt.time.unpublished
       const er = new Error(`Unpublished on ${u.time}`)
@@ -235,6 +236,15 @@ class View extends BaseCommand {
         })
       }
     })
+
+    // No data has been pushed because no data is matching the specified version
+    if (data.length === 0 && version !== 'latest') {
+      const er = new Error(`No match found for version ${version}`)
+      er.statusCode = 404
+      er.code = 'E404'
+      er.pkgid = `${pckmnt._id}@${version}`
+      throw er
+    }
 
     if (
       !this.npm.config.get('json') &&

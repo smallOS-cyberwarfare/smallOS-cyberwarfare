@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -351,7 +351,7 @@ class Backend(object):
         elif kb.dbms is not None and kb.dbms != dbms:
             warnMsg = "there appears to be a high probability that "
             warnMsg += "this could be a false positive case"
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
             msg = "sqlmap previously fingerprinted back-end DBMS as "
             msg += "%s. However now it has been fingerprinted " % kb.dbms
@@ -371,7 +371,7 @@ class Backend(object):
                     break
                 else:
                     warnMsg = "invalid value"
-                    logger.warn(warnMsg)
+                    logger.warning(warnMsg)
 
         elif kb.dbms is None:
             kb.dbms = aliasToDbmsEnum(dbms)
@@ -429,7 +429,7 @@ class Backend(object):
                     break
                 else:
                     warnMsg = "invalid value"
-                    logger.warn(warnMsg)
+                    logger.warning(warnMsg)
 
         elif kb.os is None and isinstance(os, six.string_types):
             kb.os = os.capitalize()
@@ -466,7 +466,7 @@ class Backend(object):
                 break
             else:
                 warnMsg = "invalid value. Valid values are 1 and 2"
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
 
         return kb.arch
 
@@ -590,7 +590,7 @@ class Backend(object):
     def isVersionGreaterOrEqualThan(version):
         retVal = False
 
-        if Backend.getVersion() is not None and version is not None:
+        if all(_ not in (None, UNKNOWN_DBMS_VERSION) for _ in (Backend.getVersion(), version)):
             _version = unArrayizeValue(Backend.getVersion())
             _version = re.sub(r"[<>= ]", "", _version)
 
@@ -663,7 +663,7 @@ def paramToDict(place, parameters=None):
                         warnMsg += "chars/statements from manual SQL injection test(s). "
                         warnMsg += "Please, always use only valid parameter values "
                         warnMsg += "so sqlmap could be able to run properly"
-                        logger.warn(warnMsg)
+                        logger.warning(warnMsg)
 
                         message = "are you really sure that you want to continue (sqlmap could have problems)? [y/N] "
 
@@ -673,7 +673,7 @@ def paramToDict(place, parameters=None):
                         warnMsg = "provided value for parameter '%s' is empty. " % parameter
                         warnMsg += "Please, always use only valid parameter values "
                         warnMsg += "so sqlmap could be able to run properly"
-                        logger.warn(warnMsg)
+                        logger.warning(warnMsg)
 
                 if place in (PLACE.POST, PLACE.GET):
                     for regex in (r"\A((?:<[^>]+>)+\w+)((?:<[^>]+>)+)\Z", r"\A([^\w]+.*\w+)([^\w]+)\Z"):
@@ -738,7 +738,7 @@ def paramToDict(place, parameters=None):
             if len(conf.testParameter) > 1:
                 warnMsg = "provided parameters '%s' " % paramStr
                 warnMsg += "are not inside the %s" % place
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
             else:
                 parameter = conf.testParameter[0]
 
@@ -763,7 +763,7 @@ def paramToDict(place, parameters=None):
                         if len(decoded) > MIN_ENCODED_LEN_CHECK and all(_ in getBytes(string.printable) for _ in decoded):
                             warnMsg = "provided parameter '%s' " % parameter
                             warnMsg += "appears to be '%s' encoded" % encoding
-                            logger.warn(warnMsg)
+                            logger.warning(warnMsg)
                             break
                     except:
                         pass
@@ -814,7 +814,7 @@ def getManualDirectories():
     else:
         warnMsg = "unable to automatically retrieve the web server "
         warnMsg += "document root"
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
 
         directories = []
 
@@ -900,7 +900,7 @@ def getAutoDirectories():
                 retVal.add(directory)
     else:
         warnMsg = "unable to automatically parse any web server path"
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
 
     return list(retVal)
 
@@ -1034,7 +1034,10 @@ def dataToStdout(data, forceOutput=False, bold=False, contentType=None, status=C
             except UnicodeEncodeError:
                 sys.stdout.write(re.sub(r"[^ -~]", '?', clearColors(data)))
             finally:
-                sys.stdout.flush()
+                try:
+                    sys.stdout.flush()
+                except IOError:
+                    raise SystemExit
 
             if multiThreadMode:
                 logging._releaseLock()
@@ -1637,7 +1640,7 @@ def parseTargetDirect():
                     if remote:
                         warnMsg = "direct connection over the network for "
                         warnMsg += "%s DBMS is not supported" % dbmsName
-                        logger.warn(warnMsg)
+                        logger.warning(warnMsg)
 
                         conf.hostname = "localhost"
                         conf.port = 0
@@ -1819,7 +1822,7 @@ def expandAsteriskForColumns(expression):
     the SQL query string (expression)
     """
 
-    match = re.search(r"(?i)\ASELECT(\s+TOP\s+[\d]+)?\s+\*\s+FROM\s+((`[^`]+`|[^\s]+)+)", expression)
+    match = re.search(r"(?i)\ASELECT(\s+TOP\s+[\d]+)?\s+\*\s+FROM\s+(([`'\"][^`'\"]+[`'\"]|[\w.]+)+)(\s|\Z)", expression)
 
     if match:
         infoMsg = "you did not provide the fields in your query. "
@@ -1900,7 +1903,7 @@ def parseUnionPage(page):
     if re.search(r"(?si)\A%s.*%s\Z" % (kb.chars.start, kb.chars.stop), page):
         if len(page) > LARGE_OUTPUT_THRESHOLD:
             warnMsg = "large output detected. This might take a while"
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
         data = BigArray()
         keys = set()
@@ -2789,7 +2792,7 @@ def wasLastResponseDelayed():
         if len(kb.responseTimes[kb.responseTimeMode]) < MIN_TIME_RESPONSES:
             warnMsg = "time-based standard deviation method used on a model "
             warnMsg += "with less than %d response times" % MIN_TIME_RESPONSES
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
         lowerStdLimit = average(kb.responseTimes[kb.responseTimeMode]) + TIME_STDEV_COEFF * deviation
         retVal = (threadData.lastQueryDuration >= max(MIN_VALID_DELAYED_RESPONSE, lowerStdLimit))
@@ -3399,19 +3402,39 @@ def parseSqliteTableSchema(value):
     >>> kb.data.cachedColumns = {}
     >>> parseSqliteTableSchema("CREATE TABLE users(\\n\\t\\tid INTEGER,\\n\\t\\tname TEXT\\n);")
     True
-    >>> repr(kb.data.cachedColumns).count(',') == 1
+    >>> tuple(kb.data.cachedColumns[conf.db][conf.tbl].items()) == (('id', 'INTEGER'), ('name', 'TEXT'))
+    True
+    >>> parseSqliteTableSchema("CREATE TABLE dummy(`foo bar` BIGINT, \\"foo\\" VARCHAR, 'bar' TEXT)");
+    True
+    >>> tuple(kb.data.cachedColumns[conf.db][conf.tbl].items()) == (('foo bar', 'BIGINT'), ('foo', 'VARCHAR'), ('bar', 'TEXT'))
+    True
+    >>> parseSqliteTableSchema("CREATE TABLE suppliers(\\n\\tsupplier_id INTEGER PRIMARY KEY DESC,\\n\\tname TEXT NOT NULL\\n);");
+    True
+    >>> tuple(kb.data.cachedColumns[conf.db][conf.tbl].items()) == (('supplier_id', 'INTEGER'), ('name', 'TEXT'))
+    True
+    >>> parseSqliteTableSchema("CREATE TABLE country_languages (\\n\\tcountry_id INTEGER NOT NULL,\\n\\tlanguage_id INTEGER NOT NULL,\\n\\tPRIMARY KEY (country_id, language_id),\\n\\tFOREIGN KEY (country_id) REFERENCES countries (country_id) ON DELETE CASCADE ON UPDATE NO ACTION,\\tFOREIGN KEY (language_id) REFERENCES languages (language_id) ON DELETE CASCADE ON UPDATE NO ACTION);");
+    True
+    >>> tuple(kb.data.cachedColumns[conf.db][conf.tbl].items()) == (('country_id', 'INTEGER'), ('language_id', 'INTEGER'))
     True
     """
 
     retVal = False
 
+    value = extractRegexResult(r"(?s)\((?P<result>.+)\)", value)
+
     if value:
         table = {}
-        columns = {}
+        columns = OrderedDict()
 
-        for match in re.finditer(r"[(,]\s*[\"'`]?(\w+)[\"'`]?(?:\s+(INT|INTEGER|TINYINT|SMALLINT|MEDIUMINT|BIGINT|UNSIGNED BIG INT|INT2|INT8|INTEGER|CHARACTER|VARCHAR|VARYING CHARACTER|NCHAR|NATIVE CHARACTER|NVARCHAR|TEXT|CLOB|LONGTEXT|BLOB|NONE|REAL|DOUBLE|DOUBLE PRECISION|FLOAT|REAL|NUMERIC|DECIMAL|BOOLEAN|DATE|DATETIME|NUMERIC)\b)?", decodeStringEscape(value), re.I):
+        value = re.sub(r"\(.+?\)", "", value).strip()
+
+        for match in re.finditer(r"(?:\A|,)\s*(([\"'`]).+?\2|\w+)(?:\s+(INT|INTEGER|TINYINT|SMALLINT|MEDIUMINT|BIGINT|UNSIGNED BIG INT|INT2|INT8|INTEGER|CHARACTER|VARCHAR|VARYING CHARACTER|NCHAR|NATIVE CHARACTER|NVARCHAR|TEXT|CLOB|LONGTEXT|BLOB|NONE|REAL|DOUBLE|DOUBLE PRECISION|FLOAT|REAL|NUMERIC|DECIMAL|BOOLEAN|DATE|DATETIME|NUMERIC)\b)?", decodeStringEscape(value), re.I):
+            column = match.group(1).strip(match.group(2) or "")
+            if re.search(r"(?i)\A(CONSTRAINT|PRIMARY|UNIQUE|CHECK|FOREIGN)\b", column.strip()):
+                continue
             retVal = True
-            columns[match.group(1)] = match.group(2) or "TEXT"
+
+            columns[column] = match.group(3) or "TEXT"
 
         table[safeSQLIdentificatorNaming(conf.tbl, True)] = columns
         kb.data.cachedColumns[conf.db] = table
@@ -3593,7 +3616,7 @@ def initTechnique(technique=None):
         else:
             warnMsg = "there is no injection data available for technique "
             warnMsg += "'%s'" % enumValueToNameLookup(PAYLOAD.TECHNIQUE, technique)
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
     except SqlmapDataException:
         errMsg = "missing data in old session file(s). "
@@ -3708,7 +3731,7 @@ def getSortedInjectionTests():
         if test.stype == PAYLOAD.TECHNIQUE.UNION:
             retVal = SORT_ORDER.LAST
 
-        elif "details" in test and "dbms" in test.details:
+        elif "details" in test and "dbms" in (test.details or {}):
             if intersect(test.details.dbms, Backend.getIdentifiedDbms()):
                 retVal = SORT_ORDER.SECOND
             else:
@@ -3744,7 +3767,7 @@ def showHttpErrorCodes():
     if kb.httpErrorCodes:
         warnMsg = "HTTP error codes detected during run:\n"
         warnMsg += ", ".join("%d (%s) - %d times" % (code, _http_client.responses[code] if code in _http_client.responses else '?', count) for code, count in kb.httpErrorCodes.items())
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
         if any((str(_).startswith('4') or str(_).startswith('5')) and _ != _http_client.INTERNAL_SERVER_ERROR and _ != kb.originalCode for _ in kb.httpErrorCodes):
             msg = "too many 4xx and/or 5xx HTTP error codes "
             msg += "could mean that some kind of protection is involved (e.g. WAF)"
@@ -3972,7 +3995,7 @@ def createGithubIssue(errMsg, excMsg):
                 if closed:
                     warnMsg += " and resolved. Please update to the latest "
                     warnMsg += "development version from official GitHub repository at '%s'" % GIT_PAGE
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
                 return
         except:
             pass
@@ -4002,7 +4025,7 @@ def createGithubIssue(errMsg, excMsg):
                 warnMsg += " ('%s')" % _excMsg
             if "Unauthorized" in warnMsg:
                 warnMsg += ". Please update to the latest revision"
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
 def maskSensitiveData(msg):
     """
@@ -4010,7 +4033,7 @@ def maskSensitiveData(msg):
 
     >>> maskSensitiveData('python sqlmap.py -u "http://www.test.com/vuln.php?id=1" --banner') == 'python sqlmap.py -u *********************************** --banner'
     True
-    >>> maskSensitiveData('sqlmap.py -u test.com/index.go?id=index') == 'sqlmap.py -u **************************'
+    >>> maskSensitiveData('sqlmap.py -u test.com/index.go?id=index --auth-type=basic --auth-creds=foo:bar\\ndummy line') == 'sqlmap.py -u ************************** --auth-type=***** --auth-creds=*******\\ndummy line'
     True
     """
 
@@ -4026,7 +4049,7 @@ def maskSensitiveData(msg):
             retVal = retVal.replace(value, '*' * len(value))
 
     # Just in case (for problematic parameters regarding user encoding)
-    for match in re.finditer(r"(?i)[ -]-(u|url|data|cookie|auth-\w+|proxy|host|referer|headers?|H)( |=)(.*?)(?= -?-[a-z]|\Z)", retVal):
+    for match in re.finditer(r"(?im)[ -]-(u|url|data|cookie|auth-\w+|proxy|host|referer|headers?|H)( |=)(.*?)(?= -?-[a-z]|$)", retVal):
         retVal = retVal.replace(match.group(3), '*' * len(match.group(3)))
 
     # Fail-safe substitutions
@@ -4269,7 +4292,8 @@ def safeSQLIdentificatorNaming(name, isTable=False):
                             retVal = "[%s]" % retVal
 
         if _ and DEFAULT_MSSQL_SCHEMA not in retVal and '.' not in re.sub(r"\[[^]]+\]", "", retVal):
-            retVal = "%s.%s" % (DEFAULT_MSSQL_SCHEMA, retVal)
+            if (conf.db or "").lower() != "information_schema":     # NOTE: https://github.com/sqlmapproject/sqlmap/issues/5192
+                retVal = "%s.%s" % (DEFAULT_MSSQL_SCHEMA, retVal)
 
     return retVal
 
@@ -4395,7 +4419,7 @@ def expandMnemonics(mnemonics, parser, args):
 
             if not options:
                 warnMsg = "mnemonic '%s' can't be resolved" % name
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
             elif name in options:
                 found = name
                 debugMsg = "mnemonic '%s' resolved to %s). " % (name, found)
@@ -4404,7 +4428,7 @@ def expandMnemonics(mnemonics, parser, args):
                 found = sorted(options.keys(), key=len)[0]
                 warnMsg = "detected ambiguity (mnemonic '%s' can be resolved to any of: %s). " % (name, ", ".join("'%s'" % key for key in options))
                 warnMsg += "Resolved to shortest of those ('%s')" % found
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
 
             if found:
                 found = options[found]
@@ -4693,7 +4717,7 @@ def findPageForms(content, url, raise_=False, addToTargets=False):
         else:
             url = urldecode(request.get_full_url(), kb.pageEncoding)
             method = request.get_method()
-            data = request.data
+            data = unArrayizeValue(request.data)
             data = urldecode(data, kb.pageEncoding, spaceplus=False)
 
             if not data and method and method.upper() == HTTPMETHOD.POST:
@@ -4810,7 +4834,7 @@ def checkOldOptions(args):
             warnMsg = "switch/option '%s' is deprecated" % _
             if DEPRECATED_OPTIONS[_]:
                 warnMsg += " (hint: %s)" % DEPRECATED_OPTIONS[_]
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
 def checkSystemEncoding():
     """
@@ -4828,7 +4852,7 @@ def checkSystemEncoding():
             logger.critical(errMsg)
 
             warnMsg = "temporary switching to charset 'cp1256'"
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
             _reload_module(sys)
             sys.setdefaultencoding("cp1256")
@@ -5303,6 +5327,7 @@ def parseRequestFile(reqFile, checkParams=True):
                     continue
 
             getPostReq = False
+            forceBody = False
             url = None
             host = None
             method = None
@@ -5323,7 +5348,7 @@ def parseRequestFile(reqFile, checkParams=True):
                 line = line.strip('\r')
                 match = re.search(r"\A([A-Z]+) (.+) HTTP/[\d.]+\Z", line) if not method else None
 
-                if len(line.strip()) == 0 and method and method != HTTPMETHOD.GET and data is None:
+                if len(line.strip()) == 0 and method and (method != HTTPMETHOD.GET or forceBody) and data is None:
                     data = ""
                     params = True
 
@@ -5370,6 +5395,7 @@ def parseRequestFile(reqFile, checkParams=True):
                     # headers and consider the following lines as
                     # POSTed data
                     if key.upper() == HTTP_HEADER.CONTENT_LENGTH.upper():
+                        forceBody = True
                         params = True
 
                     # Avoid proxy and connection type related headers
@@ -5407,6 +5433,12 @@ def parseRequestFile(reqFile, checkParams=True):
 
     if conf.scope:
         logger.info("using regular expression '%s' for filtering targets" % conf.scope)
+
+        try:
+            re.compile(conf.scope)
+        except Exception as ex:
+            errMsg = "invalid regular expression '%s' ('%s')" % (conf.scope, getSafeExString(ex))
+            raise SqlmapSyntaxException(errMsg)
 
     for target in _parseBurpLog(content):
         yield target

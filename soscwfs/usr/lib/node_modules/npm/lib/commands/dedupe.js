@@ -8,8 +8,9 @@ class Dedupe extends ArboristWorkspaceCmd {
   static description = 'Reduce duplication in the package tree'
   static name = 'dedupe'
   static params = [
-    'global-style',
+    'install-strategy',
     'legacy-bundling',
+    'global-style',
     'strict-peer-deps',
     'package-lock',
     'omit',
@@ -22,7 +23,7 @@ class Dedupe extends ArboristWorkspaceCmd {
   ]
 
   async exec (args) {
-    if (this.npm.config.get('global')) {
+    if (this.npm.global) {
       const er = new Error('`npm dedupe` does not work in global mode.')
       er.code = 'EDEDUPEGLOBAL'
       throw er

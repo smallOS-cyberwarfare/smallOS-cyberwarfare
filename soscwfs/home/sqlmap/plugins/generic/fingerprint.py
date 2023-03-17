@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -40,7 +40,7 @@ class Fingerprint(object):
     def userChooseDbmsOs(self):
         warnMsg = "for some reason sqlmap was unable to fingerprint "
         warnMsg += "the back-end DBMS operating system"
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
 
         msg = "do you want to provide the OS? [(W)indows/(l)inux]"
 
@@ -55,4 +55,4 @@ class Fingerprint(object):
                 break
             else:
                 warnMsg = "invalid value"
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)

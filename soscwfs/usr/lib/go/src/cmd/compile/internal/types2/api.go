@@ -21,7 +21,6 @@
 // Type inference computes the type (Type) of every expression (syntax.Expr)
 // and checks for compliance with the language specification.
 // Use Info.Types[expr].Type for the results of type inference.
-//
 package types2
 
 import (
@@ -129,9 +128,8 @@ type Config struct {
 	//          Do not use casually!
 	FakeImportC bool
 
-	// If IgnoreLabels is set, correct label use is not checked.
-	// TODO(gri) Consolidate label checking and remove this flag.
-	IgnoreLabels bool
+	// If IgnoreBranchErrors is set, branch/label errors are ignored.
+	IgnoreBranchErrors bool
 
 	// If CompilerErrorMessages is set, errors are reported using
 	// cmd/compile error strings to match $GOROOT/test errors.
@@ -285,7 +283,6 @@ type Info struct {
 
 // TypeOf returns the type of expression e, or nil if not found.
 // Precondition: the Types, Uses and Defs maps are populated.
-//
 func (info *Info) TypeOf(e syntax.Expr) Type {
 	if t, ok := info.Types[e]; ok {
 		return t.Type
@@ -305,7 +302,6 @@ func (info *Info) TypeOf(e syntax.Expr) Type {
 // it defines, not the type (*TypeName) it uses.
 //
 // Precondition: the Uses and Defs maps are populated.
-//
 func (info *Info) ObjectOf(id *syntax.Name) Object {
 	if obj := info.Defs[id]; obj != nil {
 		return obj
@@ -422,10 +418,11 @@ func (conf *Config) Check(path string, files []*syntax.File, info *Info) (*Packa
 
 // AssertableTo reports whether a value of type V can be asserted to have type T.
 //
-// The behavior of AssertableTo is undefined in two cases:
-//  - if V is a generalized interface; i.e., an interface that may only be used
-//    as a type constraint in Go code
-//  - if T is an uninstantiated generic type
+// The behavior of AssertableTo is unspecified in three cases:
+//   - if T is Typ[Invalid]
+//   - if V is a generalized interface; i.e., an interface that may only be used
+//     as a type constraint in Go code
+//   - if T is an uninstantiated generic type
 func AssertableTo(V *Interface, T Type) bool {
 	// Checker.newAssertableTo suppresses errors for invalid types, so we need special
 	// handling here.
@@ -438,8 +435,8 @@ func AssertableTo(V *Interface, T Type) bool {
 // AssignableTo reports whether a value of type V is assignable to a variable
 // of type T.
 //
-// The behavior of AssignableTo is undefined if V or T is an uninstantiated
-// generic type.
+// The behavior of AssignableTo is unspecified if V or T is Typ[Invalid] or an
+// uninstantiated generic type.
 func AssignableTo(V, T Type) bool {
 	x := operand{mode: value, typ: V}
 	ok, _ := x.assignableTo(nil, T, nil) // check not needed for non-constant x
@@ -449,8 +446,8 @@ func AssignableTo(V, T Type) bool {
 // ConvertibleTo reports whether a value of type V is convertible to a value of
 // type T.
 //
-// The behavior of ConvertibleTo is undefined if V or T is an uninstantiated
-// generic type.
+// The behavior of ConvertibleTo is unspecified if V or T is Typ[Invalid] or an
+// uninstantiated generic type.
 func ConvertibleTo(V, T Type) bool {
 	x := operand{mode: value, typ: V}
 	return x.convertibleTo(nil, T, nil) // check not needed for non-constant x
@@ -458,8 +455,8 @@ func ConvertibleTo(V, T Type) bool {
 
 // Implements reports whether type V implements interface T.
 //
-// The behavior of Implements is undefined if V is an uninstantiated generic
-// type.
+// The behavior of Implements is unspecified if V is Typ[Invalid] or an uninstantiated
+// generic type.
 func Implements(V Type, T *Interface) bool {
 	if T.Empty() {
 		// All types (even Typ[Invalid]) implement the empty interface.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -26,7 +26,7 @@ def purge(directory):
 
     if not os.path.isdir(directory):
         warnMsg = "skipping purging of directory '%s' as it does not exist" % directory
-        logger.warn(warnMsg)
+        logger.warning(warnMsg)
         return
 
     infoMsg = "purging content of directory '%s'..." % directory

@@ -200,4 +200,4 @@ _main:
     ret
 
 ; see http://t.co/nIrRbn5 for a detailed explanation
-; full package mirror: https://github.com/offensive-security/exploitdb-bin-sploits/raw/master/bin-sploits/17564.tgz (osx.rop.24072011.tgz)
+; full package mirror: https://gitlab.com/exploit-database/exploitdb-bin-sploits/-/raw/main/bin-sploits/17564.tgz (osx.rop.24072011.tgz)

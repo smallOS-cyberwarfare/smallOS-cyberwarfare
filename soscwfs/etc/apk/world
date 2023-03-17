@@ -5,9 +5,14 @@ bash
 bind-tools
 busybox
 coreutils
+curl
 git
 go
 libc-utils
+libcrypto1.1
+libcrypto3
+libcurl
+libssl1.1
 lynx
 ncurses
 nmap
@@ -15,6 +20,7 @@ nmap-ncat
 nmap-scripts
 npm
 openssh
+openssl
 p7zip
 py3-pip
 python3

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -72,7 +72,7 @@ class ICMPsh(object):
                 raise SqlmapDataException("local host address is missing")
             elif address and not valid:
                 warnMsg = "invalid local host address"
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
 
         return address
 

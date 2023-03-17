@@ -9,6 +9,7 @@ package http
 import (
 	"errors"
 	"fmt"
+	"internal/safefilepath"
 	"io"
 	"io/fs"
 	"mime"
@@ -69,14 +70,15 @@ func mapOpenError(originalErr error, name string, sep rune, stat func(string) (f
 // Open implements FileSystem using os.Open, opening files for reading rooted
 // and relative to the directory d.
 func (d Dir) Open(name string) (File, error) {
-	if filepath.Separator != '/' && strings.ContainsRune(name, filepath.Separator) {
-		return nil, errors.New("http: invalid character in file path")
+	path, err := safefilepath.FromFS(path.Clean("/" + name))
+	if err != nil {
+		return nil, errors.New("http: invalid or unsafe file path")
 	}
 	dir := string(d)
 	if dir == "" {
 		dir = "."
 	}
-	fullName := filepath.Join(dir, filepath.FromSlash(path.Clean("/"+name)))
+	fullName := filepath.Join(dir, path)
 	f, err := os.Open(fullName)
 	if err != nil {
 		return nil, mapOpenError(err, fullName, filepath.Separator, os.Stat)
@@ -541,6 +543,7 @@ func writeNotModified(w ResponseWriter) {
 	h := w.Header()
 	delete(h, "Content-Type")
 	delete(h, "Content-Length")
+	delete(h, "Content-Encoding")
 	if h.Get("Etag") != "" {
 		delete(h, "Last-Modified")
 	}
@@ -831,12 +834,11 @@ func FS(fsys fs.FS) FileSystem {
 // To use the operating system's file system implementation,
 // use http.Dir:
 //
-//     http.Handle("/", http.FileServer(http.Dir("/tmp")))
+//	http.Handle("/", http.FileServer(http.Dir("/tmp")))
 //
 // To use an fs.FS implementation, use http.FS to convert it:
 //
 //	http.Handle("/", http.FileServer(http.FS(fsys)))
-//
 func FileServer(root FileSystem) Handler {
 	return &fileHandler{root}
 }

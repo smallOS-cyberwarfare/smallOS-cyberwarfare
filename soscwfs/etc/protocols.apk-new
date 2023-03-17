@@ -62,3 +62,7 @@ hip	139	HIP		# Host Identity Protocol
 shim6	140	Shim6		# Shim6 Protocol [RFC5533]
 wesp	141	WESP		# Wrapped Encapsulating Security Payload
 rohc	142	ROHC		# Robust Header Compression
+ethernet 143	Ethernet	# Ethernet encapsulation for SRv6 [RFC8986]
+# The following entries have not been assigned by IANA but are used
+# internally by the Linux kernel.
+mptcp	262	MPTCP		# Multipath TCP connection

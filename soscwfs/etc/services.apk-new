@@ -1,9 +1,5 @@
 # Network services, Internet style
 #
-# Note that it is presently the policy of IANA to assign a single well-known
-# port number for both TCP and UDP; hence, officially ports have two entries
-# even if the protocol doesn't support UDP operations.
-#
 # Updated from https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml .
 #
 # New ports will be added on request if they have been officially assigned
@@ -217,6 +213,7 @@ sieve		4190/tcp			# ManageSieve Protocol
 epmd		4369/tcp			# Erlang Port Mapper Daemon
 remctl		4373/tcp		# Remote Authenticated Command Service
 f5-iquery	4353/tcp			# F5 iQuery
+ntske		4460/tcp	# Network Time Security Key Establishment
 ipsec-nat-t	4500/udp			# IPsec NAT-Traversal [RFC3947]
 iax		4569/udp			# Inter-Asterisk eXchange
 mtn		4691/tcp			# monotone Netsync Protocol

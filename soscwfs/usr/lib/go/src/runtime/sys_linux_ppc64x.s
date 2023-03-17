@@ -20,7 +20,6 @@
 #define SYS_close		  6
 #define SYS_getpid		 20
 #define SYS_kill		 37
-#define SYS_pipe		 42
 #define SYS_brk			 45
 #define SYS_fcntl		 55
 #define SYS_mmap		 90
@@ -55,7 +54,7 @@ TEXT runtime·exit(SB),NOSPLIT|NOFRAME,$0-4
 	SYSCALL	$SYS_exit_group
 	RET
 
-// func exitThread(wait *uint32)
+// func exitThread(wait *atomic.Uint32)
 TEXT runtime·exitThread(SB),NOSPLIT|NOFRAME,$0-8
 	MOVD	wait+0(FP), R1
 	// We're done using the stack.
@@ -104,13 +103,6 @@ TEXT runtime·read(SB),NOSPLIT|NOFRAME,$0-28
 	MOVW	R3, ret+24(FP)
 	RET
 
-// func pipe() (r, w int32, errno int32)
-TEXT runtime·pipe(SB),NOSPLIT|NOFRAME,$0-12
-	ADD	$FIXED_FRAME, R1, R3
-	SYSCALL	$SYS_pipe
-	MOVW	R3, errno+8(FP)
-	RET
-
 // func pipe2(flags int32) (r, w int32, errno int32)
 TEXT runtime·pipe2(SB),NOSPLIT|NOFRAME,$0-20
 	ADD	$FIXED_FRAME+8, R1, R3
@@ -119,16 +111,23 @@ TEXT runtime·pipe2(SB),NOSPLIT|NOFRAME,$0-20
 	MOVW	R3, errno+16(FP)
 	RET
 
+// func usleep(usec uint32)
 TEXT runtime·usleep(SB),NOSPLIT,$16-4
 	MOVW	usec+0(FP), R3
-	MOVD	R3, R5
-	MOVW	$1000000, R4
-	DIVD	R4, R3
-	MOVD	R3, 8(R1)
-	MOVW	$1000, R4
-	MULLD	R3, R4
-	SUB	R4, R5
-	MOVD	R5, 16(R1)
+
+	// Use magic constant 0x8637bd06 and shift right 51
+	// to perform usec/1000000.
+	ORIS	$0x8637, R0, R4	// Note, R0 always contains 0 here.
+	OR	$0xbd06, R4, R4
+	MULLD	R3, R4, R4	// Convert usec to S.
+	SRD	$51, R4, R4
+	MOVD	R4, 8(R1)	// Store to tv_sec
+
+	MOVD	$1000000, R5
+	MULLW	R4, R5, R5	// Convert tv_sec back into uS
+	SUB	R5, R3, R5	// Compute remainder uS.
+	MULLD	$1000, R5, R5	// Convert to nsec
+	MOVD	R5, 16(R1)	// Store to tv_nsec
 
 	// nanosleep(&ts, 0)
 	ADD	$8, R1, R3
@@ -467,7 +466,7 @@ TEXT runtime·sigtramp(SB),NOSPLIT|NOFRAME,$0
 	DWORD	$sigtramp<>(SB)
 	DWORD	$0
 	DWORD	$0
-TEXT sigtramp<>(SB),NOSPLIT|NOFRAME,$0
+TEXT sigtramp<>(SB),NOSPLIT|NOFRAME|TOPFRAME,$0
 #endif
 	// Start with standard C stack frame layout and linkage.
 	MOVD    LR, R0
@@ -930,18 +929,6 @@ TEXT runtime·closeonexec(SB),NOSPLIT|NOFRAME,$0
 	MOVW    fd+0(FP), R3  // fd
 	MOVD    $2, R4  // F_SETFD
 	MOVD    $1, R5  // FD_CLOEXEC
-	SYSCALL	$SYS_fcntl
-	RET
-
-// func runtime·setNonblock(int32 fd)
-TEXT runtime·setNonblock(SB),NOSPLIT|NOFRAME,$0-4
-	MOVW	fd+0(FP), R3 // fd
-	MOVD	$3, R4	// F_GETFL
-	MOVD	$0, R5
-	SYSCALL	$SYS_fcntl
-	OR	$0x800, R3, R5 // O_NONBLOCK
-	MOVW	fd+0(FP), R3 // fd
-	MOVD	$4, R4	// F_SETFL
 	SYSCALL	$SYS_fcntl
 	RET
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -34,7 +34,7 @@ class Fingerprint(GenericFingerprint):
 
         if not result:
             warnMsg = "unable to perform %s version check" % DBMS.MAXDB
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
             return None
 
@@ -112,7 +112,7 @@ class Fingerprint(GenericFingerprint):
 
             if not result:
                 warnMsg = "the back-end DBMS is not %s" % DBMS.MAXDB
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
 
                 return False
 
@@ -123,7 +123,7 @@ class Fingerprint(GenericFingerprint):
             return True
         else:
             warnMsg = "the back-end DBMS is not %s" % DBMS.MAXDB
-            logger.warn(warnMsg)
+            logger.warning(warnMsg)
 
             return False
 

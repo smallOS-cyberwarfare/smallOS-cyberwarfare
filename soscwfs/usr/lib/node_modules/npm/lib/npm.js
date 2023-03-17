@@ -1,9 +1,10 @@
+const Arborist = require('@npmcli/arborist')
 const EventEmitter = require('events')
 const { resolve, dirname, join } = require('path')
 const Config = require('@npmcli/config')
 const chalk = require('chalk')
 const which = require('which')
-const fs = require('@npmcli/fs')
+const fs = require('fs/promises')
 
 // Patch the global fs module here at the app level
 require('graceful-fs').gracefulify(require('fs'))
@@ -32,12 +33,14 @@ class Npm extends EventEmitter {
   loadErr = null
   argv = []
 
+  #runId = new Date().toISOString().replace(/[.:]/g, '_')
   #loadPromise = null
   #tmpFolder = null
   #title = 'npm'
   #argvClean = []
   #chalk = null
 
+  #outputBuffer = []
   #logFile = new LogFile()
   #display = new Display()
   #timers = new Timers({
@@ -85,6 +88,21 @@ class Npm extends EventEmitter {
   // would be needed to change this
   async cmd (cmd) {
     await this.load()
+
+    // when location isn't set and global isn't true
+    // check for a package.json at the localPrefix
+    // and set the location to project if found
+    // TODO: this logic can move to the config module loadLocalPrefix to
+    // avoid double stat calls and consolidate logic
+    if (this.config.isDefault('location') && !this.config.get('global')) {
+      const hasPackageJson = await fs.stat(resolve(this.config.localPrefix, 'package.json'))
+        .then((st) => st.isFile())
+        .catch(() => false)
+      if (hasPackageJson) {
+        this.config.set('location', 'project')
+      }
+    }
+
     const command = this.deref(cmd)
     if (!command) {
       throw Object.assign(new Error(`Unknown command ${cmd}`), {
@@ -112,6 +130,7 @@ class Npm extends EventEmitter {
     // this is async but we dont await it, since its ok if it doesnt
     // finish before the command finishes running. it uses command and argv
     // so it must be initiated here, after the command name is set
+    // eslint-disable-next-line promise/catch-or-return
     updateNotifier(this).then((msg) => (this.updateNotification = msg))
 
     // Options are prefixed by a hyphen-minus (-, \u2d).
@@ -129,7 +148,6 @@ class Npm extends EventEmitter {
         })
     }
 
-    const isGlobal = this.config.get('global')
     const workspacesEnabled = this.config.get('workspaces')
     // if cwd is a workspace, the default is set to [that workspace]
     const implicitWorkspace = this.config.get('workspace', 'default').length > 0
@@ -160,7 +178,7 @@ class Npm extends EventEmitter {
       execPromise = Promise.reject(
         new Error('Can not use --no-workspaces and --workspace at the same time'))
     } else if (filterByWorkspaces) {
-      if (isGlobal) {
+      if (this.global) {
         execPromise = Promise.reject(new Error('Workspaces not supported for global packages'))
       } else {
         execPromise = command.execWorkspaces(args, workspacesFilters)
@@ -174,16 +192,15 @@ class Npm extends EventEmitter {
 
   async load () {
     if (!this.#loadPromise) {
-      this.#loadPromise = this.time('npm:load', () => this[_load]().catch(er => er).then((er) => {
-        this.loadErr = er
-        if (!er) {
-          if (this.config.get('force')) {
-            log.warn('using --force', 'Recommended protections disabled.')
-          }
-        } else {
+      this.#loadPromise = this.time('npm:load', async () => {
+        await this[_load]().catch((er) => {
+          this.loadErr = er
           throw er
+        })
+        if (this.config.get('force')) {
+          log.warn('using --force', 'Recommended protections disabled.')
         }
-      }))
+      })
     }
     return this.#loadPromise
   }
@@ -207,11 +224,8 @@ class Npm extends EventEmitter {
 
   writeTimingFile () {
     this.#timers.writeFile({
+      id: this.#runId,
       command: this.#argvClean,
-      // We used to only ever report a single log file
-      // so to be backwards compatible report the last logfile
-      // XXX: remove this in npm 9 or just keep it forever
-      logfile: this.logFiles[this.logFiles.length - 1],
       logfiles: this.logFiles,
       version: this.version,
     })
@@ -230,7 +244,9 @@ class Npm extends EventEmitter {
     const node = this.time('npm:load:whichnode', () => {
       try {
         return which.sync(process.argv[0])
-      } catch {} // TODO should we throw here?
+      } catch {
+        // TODO should we throw here?
+      }
     })
 
     if (node && node.toUpperCase() !== process.execPath.toUpperCase()) {
@@ -242,16 +258,18 @@ class Npm extends EventEmitter {
     await this.time('npm:load:configload', () => this.config.load())
 
     // mkdir this separately since the logs dir can be set to
-    // a different location. an error here should be surfaced
-    // right away since it will error in cacache later
+    // a different location. if this fails, then we don't have
+    // a cache dir, but we don't want to fail immediately since
+    // the command might not need a cache dir (like `npm --version`)
     await this.time('npm:load:mkdirpcache', () =>
-      fs.mkdir(this.cache, { recursive: true, owner: 'inherit' }))
+      fs.mkdir(this.cache, { recursive: true })
+        .catch((e) => log.verbose('cache', `could not create cache: ${e}`)))
 
     // its ok if this fails. user might have specified an invalid dir
     // which we will tell them about at the end
     await this.time('npm:load:mkdirplogs', () =>
-      fs.mkdir(this.logsDir, { recursive: true, owner: 'inherit' })
-        .catch((e) => log.warn('logfile', `could not create logs-dir: ${e}`)))
+      fs.mkdir(this.logsDir, { recursive: true })
+        .catch((e) => log.verbose('logfile', `could not create logs-dir: ${e}`)))
 
     // note: this MUST be shorter than the actual argv length, because it
     // uses the same memory, so node will truncate it if it's too long.
@@ -287,7 +305,7 @@ class Npm extends EventEmitter {
 
     this.time('npm:load:logFile', () => {
       this.#logFile.load({
-        dir: this.logsDir,
+        path: this.logPath,
         logsMax: this.config.get('logs-max'),
       })
       log.verbose('logfile', this.#logFile.files[0] || 'no logfile created')
@@ -295,7 +313,7 @@ class Npm extends EventEmitter {
 
     this.time('npm:load:timers', () =>
       this.#timers.load({
-        dir: this.config.get('timing') ? this.timingDir : null,
+        path: this.config.get('timing') ? this.logPath : null,
       })
     )
 
@@ -309,6 +327,12 @@ class Npm extends EventEmitter {
 
   get flatOptions () {
     const { flat } = this.config
+    // the Arborist constructor is used almost everywhere we call pacote, it's
+    // easiest to attach it to flatOptions so it goes everywhere without having
+    // to touch every call
+    flat.Arborist = Arborist
+    flat.nodeVersion = process.version
+    flat.npmVersion = pkg.version
     if (this.command) {
       flat.npmCommand = this.command
     }
@@ -331,6 +355,10 @@ class Npm extends EventEmitter {
       this.#chalk = new chalk.Instance({ level })
     }
     return this.#chalk
+  }
+
+  get global () {
+    return this.config.get('global') || this.config.get('location') === 'global'
   }
 
   get logColor () {
@@ -365,13 +393,12 @@ class Npm extends EventEmitter {
     return this.config.get('logs-dir') || join(this.cache, '_logs')
   }
 
-  get timingFile () {
-    return this.#timers.file
+  get logPath () {
+    return resolve(this.logsDir, `${this.#runId}-`)
   }
 
-  get timingDir () {
-    // XXX(npm9): make this always in logs-dir
-    return this.config.get('logs-dir') || this.cache
+  get timingFile () {
+    return this.#timers.file
   }
 
   get cache () {
@@ -409,7 +436,7 @@ class Npm extends EventEmitter {
   }
 
   get dir () {
-    return this.config.get('global') ? this.globalDir : this.localDir
+    return this.global ? this.globalDir : this.localDir
   }
 
   get globalBin () {
@@ -422,15 +449,15 @@ class Npm extends EventEmitter {
   }
 
   get bin () {
-    return this.config.get('global') ? this.globalBin : this.localBin
+    return this.global ? this.globalBin : this.localBin
   }
 
   get prefix () {
-    return this.config.get('global') ? this.globalPrefix : this.localPrefix
+    return this.global ? this.globalPrefix : this.localPrefix
   }
 
   set prefix (r) {
-    const k = this.config.get('global') ? 'globalPrefix' : 'localPrefix'
+    const k = this.global ? 'globalPrefix' : 'localPrefix'
     this[k] = r
   }
 
@@ -453,6 +480,37 @@ class Npm extends EventEmitter {
     // eslint-disable-next-line no-console
     console.log(...msg)
     log.showProgress()
+  }
+
+  outputBuffer (item) {
+    this.#outputBuffer.push(item)
+  }
+
+  flushOutput (jsonError) {
+    if (!jsonError && !this.#outputBuffer.length) {
+      return
+    }
+
+    if (this.config.get('json')) {
+      const jsonOutput = this.#outputBuffer.reduce((acc, item) => {
+        if (typeof item === 'string') {
+          // try to parse it as json in case its a string
+          try {
+            item = JSON.parse(item)
+          } catch {
+            return acc
+          }
+        }
+        return { ...acc, ...item }
+      }, {})
+      this.output(JSON.stringify({ ...jsonOutput, ...jsonError }, null, 2))
+    } else {
+      for (const item of this.#outputBuffer) {
+        this.output(item)
+      }
+    }
+
+    this.#outputBuffer.length = 0
   }
 
   outputError (...msg) {

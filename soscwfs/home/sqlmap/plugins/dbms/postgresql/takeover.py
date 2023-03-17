@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -114,8 +114,8 @@ class Takeover(GenericTakeover):
                 output = flattenValue(output)
                 output = filterNone(output)
 
-            if not isNoneValue(output):
-                output = os.linesep.join(output)
+                if not isNoneValue(output):
+                    output = os.linesep.join(output)
 
             self._cleanupCmd = "DROP TABLE %s" % self.cmdTblName
             inject.goStacked(self._cleanupCmd)

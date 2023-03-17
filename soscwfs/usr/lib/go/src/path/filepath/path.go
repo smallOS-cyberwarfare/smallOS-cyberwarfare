@@ -15,6 +15,7 @@ import (
 	"errors"
 	"io/fs"
 	"os"
+	"runtime"
 	"sort"
 	"strings"
 )
@@ -67,13 +68,13 @@ const (
 // by purely lexical processing. It applies the following rules
 // iteratively until no further processing can be done:
 //
-//	1. Replace multiple Separator elements with a single one.
-//	2. Eliminate each . path name element (the current directory).
-//	3. Eliminate each inner .. path name element (the parent directory)
-//	   along with the non-.. element that precedes it.
-//	4. Eliminate .. elements that begin a rooted path:
-//	   that is, replace "/.." by "/" at the beginning of a path,
-//	   assuming Separator is '/'.
+//  1. Replace multiple Separator elements with a single one.
+//  2. Eliminate each . path name element (the current directory).
+//  3. Eliminate each inner .. path name element (the parent directory)
+//     along with the non-.. element that precedes it.
+//  4. Eliminate .. elements that begin a rooted path:
+//     that is, replace "/.." by "/" at the beginning of a path,
+//     assuming Separator is '/'.
 //
 // The returned path ends in a slash only if it represents a root directory,
 // such as "/" on Unix or `C:\` on Windows.
@@ -83,8 +84,8 @@ const (
 // If the result of this process is an empty string, Clean
 // returns the string ".".
 //
-// See also Rob Pike, ``Lexical File Names in Plan 9 or
-// Getting Dot-Dot Right,''
+// See also Rob Pike, “Lexical File Names in Plan 9 or
+// Getting Dot-Dot Right,”
 // https://9p.io/sys/doc/lexnames.html
 func Clean(path string) string {
 	originalPath := path
@@ -144,6 +145,18 @@ func Clean(path string) string {
 			// add slash if needed
 			if rooted && out.w != 1 || !rooted && out.w != 0 {
 				out.append(Separator)
+			}
+			// If a ':' appears in the path element at the start of a Windows path,
+			// insert a .\ at the beginning to avoid converting relative paths
+			// like a/../c: into c:.
+			if runtime.GOOS == "windows" && out.w == 0 && out.volLen == 0 && r != 0 {
+				for i := r; i < n && !os.IsPathSeparator(path[i]); i++ {
+					if path[i] == ':' {
+						out.append('.')
+						out.append(Separator)
+						break
+					}
+				}
 			}
 			// copy element
 			for ; r < n && !os.IsPathSeparator(path[r]); r++ {
@@ -396,6 +409,9 @@ func walkDir(path string, d fs.DirEntry, walkDirFn fs.WalkDirFunc) error {
 		// Second call, to report ReadDir error.
 		err = walkDirFn(path, d, err)
 		if err != nil {
+			if err == SkipDir && d.IsDir() {
+				err = nil
+			}
 			return err
 		}
 	}

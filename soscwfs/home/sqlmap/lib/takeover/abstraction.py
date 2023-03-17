@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -211,7 +211,7 @@ class Abstraction(Web, UDF, XP_cmdshell):
                     warnMsg += "were able to extract and crack a DBA "
                     warnMsg += "password by any mean"
 
-                logger.warn(warnMsg)
+                logger.warning(warnMsg)
 
             if any((conf.osCmd, conf.osShell)) and Backend.isDbms(DBMS.PGSQL) and self.checkCopyExec():
                 success = True

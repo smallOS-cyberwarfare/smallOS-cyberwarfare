@@ -8,13 +8,13 @@ package macOS
 
 import (
 	"errors"
-	"fmt"
 	"internal/abi"
 	"strconv"
 	"unsafe"
 )
 
 // Security.framework linker flags for the external linker. See Issue 42459.
+//
 //go:cgo_ldflag "-framework"
 //go:cgo_ldflag "Security"
 
@@ -49,6 +49,15 @@ const (
 	SecTrustSettingsDomainUser SecTrustSettingsDomain = iota
 	SecTrustSettingsDomainAdmin
 	SecTrustSettingsDomainSystem
+)
+
+const (
+	// various macOS error codes that can be returned from
+	// SecTrustEvaluateWithError that we can map to Go cert
+	// verification error types.
+	ErrSecCertificateExpired = -67818
+	ErrSecHostNameMismatch   = -67602
+	ErrSecNotTrusted         = -67843
 )
 
 type OSStatus struct {
@@ -131,11 +140,16 @@ func x509_SecTrustCreateWithCertificates_trampoline()
 
 //go:cgo_import_dynamic x509_SecCertificateCreateWithData SecCertificateCreateWithData "/System/Library/Frameworks/Security.framework/Versions/A/Security"
 
-func SecCertificateCreateWithData(b []byte) CFRef {
+func SecCertificateCreateWithData(b []byte) (CFRef, error) {
 	data := BytesToCFData(b)
+	defer CFRelease(data)
 	ret := syscall(abi.FuncPCABI0(x509_SecCertificateCreateWithData_trampoline), kCFAllocatorDefault, uintptr(data), 0, 0, 0, 0)
-	CFRelease(data)
-	return CFRef(ret)
+	// Returns NULL if the data passed in the data parameter is not a valid
+	// DER-encoded X.509 certificate.
+	if ret == 0 {
+		return 0, errors.New("SecCertificateCreateWithData: invalid certificate")
+	}
+	return CFRef(ret), nil
 }
 func x509_SecCertificateCreateWithData_trampoline()
 
@@ -190,17 +204,18 @@ func x509_SecTrustGetResult_trampoline()
 
 //go:cgo_import_dynamic x509_SecTrustEvaluateWithError SecTrustEvaluateWithError "/System/Library/Frameworks/Security.framework/Versions/A/Security"
 
-func SecTrustEvaluateWithError(trustObj CFRef) error {
+func SecTrustEvaluateWithError(trustObj CFRef) (int, error) {
 	var errRef CFRef
 	ret := syscall(abi.FuncPCABI0(x509_SecTrustEvaluateWithError_trampoline), uintptr(trustObj), uintptr(unsafe.Pointer(&errRef)), 0, 0, 0, 0)
 	if int32(ret) != 1 {
 		errStr := CFErrorCopyDescription(errRef)
-		err := fmt.Errorf("x509: %s", CFStringToString(errStr))
+		err := errors.New(CFStringToString(errStr))
+		errCode := CFErrorGetCode(errRef)
 		CFRelease(errRef)
 		CFRelease(errStr)
-		return err
+		return errCode, err
 	}
-	return nil
+	return 0, nil
 }
 func x509_SecTrustEvaluateWithError_trampoline()
 

@@ -15,7 +15,7 @@ const ArboristWorkspaceCmd = require('../arborist-cmd.js')
 class Outdated extends ArboristWorkspaceCmd {
   static description = 'Check for outdated packages'
   static name = 'outdated'
-  static usage = ['[[<@scope>/]<pkg> ...]']
+  static usage = ['[<package-spec> ...]']
   static params = [
     'all',
     'json',
@@ -27,7 +27,7 @@ class Outdated extends ArboristWorkspaceCmd {
 
   async exec (args) {
     const global = path.resolve(this.npm.globalDir, '..')
-    const where = this.npm.config.get('global')
+    const where = this.npm.global
       ? global
       : this.npm.prefix
 
@@ -140,7 +140,7 @@ class Outdated extends ArboristWorkspaceCmd {
 
   getEdgesOut (node) {
     // TODO: normalize usage of edges and avoid looping through nodes here
-    if (this.npm.config.get('global')) {
+    if (this.npm.global) {
       for (const child of node.children.values()) {
         this.trackEdge(child)
       }
@@ -166,7 +166,7 @@ class Outdated extends ArboristWorkspaceCmd {
   }
 
   getWorkspacesEdges (node) {
-    if (this.npm.config.get('global')) {
+    if (this.npm.global) {
       return
     }
 
@@ -196,6 +196,7 @@ class Outdated extends ArboristWorkspaceCmd {
     try {
       alias = npa(edge.spec).subSpec
     } catch (err) {
+      // ignore errors, no alias
     }
     const spec = npa(alias ? alias.name : edge.name)
     const node = edge.to || edge

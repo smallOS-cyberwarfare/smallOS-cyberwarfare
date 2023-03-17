@@ -30,8 +30,8 @@ MODLIBS=           $(LOCALMODLIBS) $(BASEMODLIBS)
 VERSION=	3.10
 srcdir=		.
 
-abs_srcdir=	/home/buildozer/aports/main/python3/src/Python-3.10.4
-abs_builddir=	/home/buildozer/aports/main/python3/src/Python-3.10.4
+abs_srcdir=	/home/buildozer/aports/main/python3/src/Python-3.10.10
+abs_builddir=	/home/buildozer/aports/main/python3/src/Python-3.10.10
 
 
 CC=		gcc
@@ -52,7 +52,7 @@ LLVM_PROF_MERGER=true
 LLVM_PROF_FILE=
 LLVM_PROF_ERR=no
 DTRACE=         
-DFLAGS=         
+DFLAGS=         -Os -g
 DTRACE_HEADERS= 
 DTRACE_OBJS=    
 
@@ -81,17 +81,17 @@ MAKESETUP=      $(srcdir)/Modules/makesetup
 OPT=		-DNDEBUG -g -fwrapv -O3 -Wall
 BASECFLAGS=	 -Wno-unused-result -Wsign-compare
 BASECPPFLAGS=	
-CONFIGURE_CFLAGS=	 -g
+CONFIGURE_CFLAGS=	-Os -g -O2
 # CFLAGS_NODIST is used for building the interpreter and stdlib C extensions.
 # Use it when a compiler flag should _not_ be part of the distutils CFLAGS
 # once Python is installed (Issue #21121).
-CONFIGURE_CFLAGS_NODIST= -fno-semantic-interposition -flto=4 -fuse-linker-plugin -ffat-lto-objects -flto-partition=none -g -std=c99 -Wextra -Wno-unused-result -Wno-unused-parameter -Wno-missing-field-initializers -Wstrict-prototypes -Werror=implicit-function-declaration -fvisibility=hidden
+CONFIGURE_CFLAGS_NODIST= -fno-semantic-interposition -flto -fuse-linker-plugin -ffat-lto-objects -flto-partition=none -g -std=c99 -Wextra -Wno-unused-result -Wno-unused-parameter -Wno-missing-field-initializers -Wstrict-prototypes -Werror=implicit-function-declaration -fvisibility=hidden
 # LDFLAGS_NODIST is used in the same manner as CFLAGS_NODIST.
 # Use it when a linker flag should _not_ be part of the distutils LDFLAGS
 # once Python is installed (bpo-35257)
-CONFIGURE_LDFLAGS_NODIST= -fno-semantic-interposition -flto=4 -fuse-linker-plugin -ffat-lto-objects -flto-partition=none -g
-CONFIGURE_CPPFLAGS=	-Os
-CONFIGURE_LDFLAGS=	
+CONFIGURE_LDFLAGS_NODIST= -fno-semantic-interposition -flto -fuse-linker-plugin -ffat-lto-objects -flto-partition=none -g
+CONFIGURE_CPPFLAGS=	-Os -O2
+CONFIGURE_LDFLAGS=	-Wl,--as-needed,-O1,--sort-common
 # Avoid assigning CFLAGS, LDFLAGS, etc. so users can use them on the
 # command line to append to these values without stomping the pre-set
 # values.
@@ -196,14 +196,14 @@ LIPO_INTEL64_FLAGS=
 OTHER_LIBTOOL_OPT=
 
 # Environment to run shared python without installed libraries
-RUNSHARED=       LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.10.4
+RUNSHARED=       LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.10.10
 
 # ensurepip options
 ENSUREPIP=      no
 
 # OpenSSL options for setup.py so sysconfig can pick up AC_SUBST() vars.
 OPENSSL_INCLUDES=
-OPENSSL_LIBS=-lssl -lcrypto 
+OPENSSL_LIBS=-lssl -lcrypto
 OPENSSL_LDFLAGS=
 OPENSSL_RPATH=
 
@@ -217,7 +217,7 @@ EXEMODE=	755
 FILEMODE=	644
 
 # configure script arguments
-CONFIG_ARGS=	 '--build=aarch64-alpine-linux-musl' '--host=aarch64-alpine-linux-musl' '--prefix=/usr' '--enable-ipv6' '--enable-loadable-sqlite-extensions' '--enable-optimizations' '--enable-shared' '--with-lto' '--with-computed-gotos' '--with-dbmliborder=gdbm:ndbm' '--with-system-expat' '--with-system-ffi' '--with-system-libmpdec' '--without-ensurepip' '--with-bluetoothdir=/home/buildozer/aports/main/python3/src/bluez-5.64' 'build_alias=aarch64-alpine-linux-musl' 'host_alias=aarch64-alpine-linux-musl' 'CC=gcc' 'CFLAGS= -g' 'CPPFLAGS=-Os'
+CONFIG_ARGS=	 '--build=aarch64-alpine-linux-musl' '--host=aarch64-alpine-linux-musl' '--prefix=/usr' '--enable-ipv6' '--enable-loadable-sqlite-extensions' '--enable-optimizations' '--enable-shared' '--with-lto' '--with-computed-gotos' '--with-dbmliborder=gdbm:ndbm' '--with-system-expat' '--with-system-ffi' '--with-system-libmpdec' '--without-ensurepip' '--with-bluetoothdir=/home/buildozer/aports/main/python3/src/bluez-5.65' 'build_alias=aarch64-alpine-linux-musl' 'host_alias=aarch64-alpine-linux-musl' 'CC=gcc' 'CFLAGS=-Os -g -O2' 'LDFLAGS=-Wl,--as-needed,-O1,--sort-common' 'CPPFLAGS=-Os -O2'
 
 
 # Subdirectories with code
@@ -260,7 +260,7 @@ LIBOBJS=
 PYTHON=		python$(EXE)
 BUILDPYTHON=	python$(BUILDEXE)
 
-PYTHON_FOR_REGEN?=python3
+PYTHON_FOR_REGEN?=python3.10
 UPDATE_FILE=$(PYTHON_FOR_REGEN) $(srcdir)/Tools/scripts/update_file.py
 PYTHON_FOR_BUILD=./$(BUILDPYTHON) -E
 _PYTHON_HOST_PLATFORM=
@@ -1533,6 +1533,7 @@ TESTSUBDIRS=	ctypes/test \
 		test/test_warnings test/test_warnings/data \
 		test/test_zoneinfo test/test_zoneinfo/data \
 		test/tracedmodules \
+		test/typinganndata \
 		test/xmltestdata test/xmltestdata/c14n-20 \
 		test/ziptestdata \
 		tkinter/test tkinter/test/test_tkinter \
@@ -1909,8 +1910,7 @@ rmtestturds:
 	-rm -f gb-18030-2000.xml
 
 docclean:
-	-rm -rf Doc/build
-	-rm -rf Doc/tools/sphinx Doc/tools/pygments Doc/tools/docutils
+	$(MAKE) -C $(srcdir)/Doc clean
 
 # like the 'clean' target but retain the profile guided optimization (PGO)
 # data.  The PGO data is only valid if source code remains unchanged.
@@ -1954,7 +1954,7 @@ clobber: clean
 # Make things extra clean, before making a distribution:
 # remove all generated files, even Makefile[.pre]
 # Keep configure and Python-ast.[ch], it's possible they can't be generated
-distclean: clobber
+distclean: clobber docclean
 	for file in $(srcdir)/Lib/test/data/* ; do \
 	    if test "$$file" != "$(srcdir)/Lib/test/data/README"; then rm "$$file"; fi; \
 	done

@@ -15,6 +15,8 @@ Find files and directories. Multi threaded application designed to brute force p
 - [domsinkfinder](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/domsinkfinder/README.md)  
 Find DOM sinks in source code by url. Helps to manually find DOM XSS  
   
+- [gitleaks](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/gitleaks/README.md)
+
 - [impulse](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/impulse/README.md)  
 Denial Of Service (DOS) ToolKit  
   
