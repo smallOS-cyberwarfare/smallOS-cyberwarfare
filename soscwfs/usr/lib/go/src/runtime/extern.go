@@ -42,6 +42,12 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	clobber the memory content of an object with bad content when it frees
 	the object.
 
+	cpu.*: cpu.all=off disables the use of all optional instruction set extensions.
+	cpu.extension=off disables use of instructions from the specified instruction set extension.
+	extension is the lower case name for the instruction set extension such as sse41 or avx
+	as listed in internal/cpu package. As an example cpu.avx=off disables runtime detection
+	and thereby use of AVX instructions.
+
 	cgocheck: setting cgocheck=0 disables all checks for packages
 	using cgo to incorrectly pass Go pointers to non-Go code.
 	Setting cgocheck=1 (the default) enables relatively cheap
@@ -73,7 +79,7 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	error at each collection, summarizing the amount of memory collected and the
 	length of the pause. The format of this line is subject to change.
 	Currently, it is:
-		gc # @#s #%: #+#+# ms clock, #+#/#/#+# ms cpu, #->#-># MB, # MB goal, # P
+		gc # @#s #%: #+#+# ms clock, #+#/#/#+# ms cpu, #->#-># MB, # MB goal, # MB stacks, #MB globals, # P
 	where the fields are as follows:
 		gc #         the GC number, incremented at each GC
 		@#s          time in seconds since program start
@@ -112,11 +118,21 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	madvdontneed: setting madvdontneed=0 will use MADV_FREE
 	instead of MADV_DONTNEED on Linux when returning memory to the
 	kernel. This is more efficient, but means RSS numbers will
-	drop only when the OS is under memory pressure.
+	drop only when the OS is under memory pressure. On the BSDs and
+	Illumos/Solaris, setting madvdontneed=1 will use MADV_DONTNEED instead
+	of MADV_FREE. This is less efficient, but causes RSS numbers to drop
+	more quickly.
 
 	memprofilerate: setting memprofilerate=X will update the value of runtime.MemProfileRate.
 	When set to 0 memory profiling is disabled.  Refer to the description of
 	MemProfileRate for the default value.
+
+	pagetrace: setting pagetrace=/path/to/file will write out a trace of page events
+	that can be viewed, analyzed, and visualized using the x/debug/cmd/pagetrace tool.
+	Build your program with GOEXPERIMENT=pagetrace to enable this functionality. Do not
+	enable this functionality if your program is a setuid binary as it introduces a security
+	risk in that scenario. Currently not supported on Windows, plan9 or js/wasm. Setting this
+	option for some applications can produce large traces, so use with care.
 
 	invalidptr: invalidptr=1 (the default) causes the garbage collector and stack
 	copier to crash the program if an invalid pointer value (for example, 1)
@@ -200,6 +216,25 @@ the set of Go environment variables. They influence the building of Go programs
 GOARCH, GOOS, and GOROOT are recorded at compile time and made available by
 constants or functions in this package, but they do not influence the execution
 of the run-time system.
+
+# Security
+
+On Unix platforms, Go's runtime system behaves slightly differently when a
+binary is setuid/setgid or executed with setuid/setgid-like properties, in order
+to prevent dangerous behaviors. On Linux this is determined by checking for the
+AT_SECURE flag in the auxiliary vector, on the BSDs and Solaris/Illumos it is
+determined by checking the issetugid syscall, and on AIX it is determined by
+checking if the uid/gid match the effective uid/gid.
+
+When the runtime determines the binary is setuid/setgid-like, it does three main
+things:
+  - The standard input/output file descriptors (0, 1, 2) are checked to be open.
+    If any of them are closed, they are opened pointing at /dev/null.
+  - The value of the GOTRACEBACK environment variable is set to 'none'.
+  - When a signal is received that terminates the program, or the program
+    encounters an unrecoverable panic that would otherwise override the value
+    of GOTRACEBACK, the goroutine stack, registers, and other memory related
+    information are omitted.
 */
 package runtime
 

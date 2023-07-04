@@ -71,7 +71,7 @@ func typecheckrangeExpr(n *ir.RangeStmt) {
 
 	do := func(nn ir.Node, t *types.Type) {
 		if nn != nil {
-			if ir.DeclaredBy(nn, n) {
+			if ir.DeclaredBy(nn, n) && nn.Type() == nil {
 				nn.SetType(t)
 			} else if nn.Type() != nil {
 				if op, why := Assignop(t, nn.Type()); op == ir.OXXX {
@@ -258,9 +258,6 @@ func tcFor(n *ir.ForStmt) ir.Node {
 		}
 	}
 	n.Post = Stmt(n.Post)
-	if n.Op() == ir.OFORUNTIL {
-		Stmts(n.Late)
-	}
 	Stmts(n.Body)
 	return n
 }
@@ -607,8 +604,8 @@ func tcSwitchType(n *ir.SwitchStmt) {
 			}
 			if !n1.Type().IsInterface() && !implements(n1.Type(), t, &missing, &have, &ptr) {
 				if have != nil {
-					base.ErrorfAt(ncase.Pos(), "impossible type switch case: %L cannot have dynamic type %v"+
-						" (wrong type for %v method)\n\thave %v%S\n\twant %v%S", guard.X, n1.Type(), missing.Sym, have.Sym, have.Type, missing.Sym, missing.Type)
+					base.ErrorfAt(ncase.Pos(), "impossible type switch case: %L cannot have dynamic type %v %s", guard.X, n1.Type(),
+						wrongTypeFor(have.Sym, have.Type, missing.Sym, missing.Type))
 				} else if ptr != 0 {
 					base.ErrorfAt(ncase.Pos(), "impossible type switch case: %L cannot have dynamic type %v"+
 						" (%v method has pointer receiver)", guard.X, n1.Type(), missing.Sym)

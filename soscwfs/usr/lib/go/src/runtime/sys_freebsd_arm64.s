@@ -34,11 +34,11 @@
 #define SYS_fcntl		92
 #define SYS___sysctl		202
 #define SYS_nanosleep		240
+#define SYS_issetugid		253
 #define SYS_clock_gettime	232
 #define SYS_sched_yield		331
 #define SYS_sigprocmask		340
 #define SYS_kqueue		362
-#define SYS_kevent		363
 #define SYS_sigaction		416
 #define SYS_thr_exit		431
 #define SYS_thr_self		432
@@ -48,6 +48,7 @@
 #define SYS_mmap		477
 #define SYS_cpuset_getaffinity	487
 #define SYS_pipe2 		542
+#define SYS_kevent		560
 
 TEXT emptyfunc<>(SB),0,$0-0
 	RET
@@ -444,6 +445,23 @@ ok:
 	MOVW	R0, ret+48(FP)
 	RET
 
+// func fcntl(fd, cmd, arg int32) (int32, int32)
+TEXT runtime·fcntl(SB),NOSPLIT,$0
+	MOVW	fd+0(FP), R0
+	MOVW	cmd+4(FP), R1
+	MOVW	arg+8(FP), R2
+	MOVD	$SYS_fcntl, R8
+	SVC
+	BCC	noerr
+	MOVW	$-1, R1
+	MOVW	R1, ret+16(FP)
+	MOVW	R0, errno+20(FP)
+	RET
+noerr:
+	MOVW	R0, ret+16(FP)
+	MOVW	$0, errno+20(FP)
+	RET
+
 // func closeonexec(fd int32)
 TEXT runtime·closeonexec(SB),NOSPLIT|NOFRAME,$0
 	MOVW	fd+0(FP), R0
@@ -460,11 +478,18 @@ TEXT runtime·getCntxct(SB),NOSPLIT,$0
 	BEQ	3(PC)
 
 	// get CNTPCT (Physical Count Register) into R0
-	MRS	CNTPCT_EL0, R0 // SIGILL
+	MRS	CNTPCT_EL0, R0
 	B	2(PC)
 
 	// get CNTVCT (Virtual Count Register) into R0
 	MRS	CNTVCT_EL0, R0
 
 	MOVW	R0, ret+8(FP)
+	RET
+
+// func issetugid() int32
+TEXT runtime·issetugid(SB),NOSPLIT|NOFRAME,$0
+	MOVD $SYS_issetugid, R8
+	SVC
+	MOVW	R0, ret+0(FP)
 	RET

@@ -42,6 +42,7 @@ func Setenv(key, value string) error {
 	if e != nil {
 		return e
 	}
+	runtimeSetenv(key, value)
 	return nil
 }
 
@@ -50,7 +51,12 @@ func Unsetenv(key string) error {
 	if err != nil {
 		return err
 	}
-	return SetEnvironmentVariable(keyp, nil)
+	e := SetEnvironmentVariable(keyp, nil)
+	if e != nil {
+		return e
+	}
+	runtimeUnsetenv(key)
+	return nil
 }
 
 func Clearenv() {
@@ -80,13 +86,12 @@ func Environ() []string {
 		// find NUL terminator
 		end := unsafe.Pointer(envp)
 		for *(*uint16)(end) != 0 {
-			end = unsafe.Pointer(uintptr(end) + size)
+			end = unsafe.Add(end, size)
 		}
 
-		n := (uintptr(end) - uintptr(unsafe.Pointer(envp))) / size
-		entry := (*[(1 << 30) - 1]uint16)(unsafe.Pointer(envp))[:n:n]
+		entry := unsafe.Slice(envp, (uintptr(end)-uintptr(unsafe.Pointer(envp)))/size)
 		r = append(r, string(utf16.Decode(entry)))
-		envp = (*uint16)(unsafe.Pointer(uintptr(end) + size))
+		envp = (*uint16)(unsafe.Add(end, size))
 	}
 	return r
 }

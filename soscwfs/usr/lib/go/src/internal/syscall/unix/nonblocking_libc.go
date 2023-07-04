@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build aix || darwin || solaris
+//go:build aix || darwin || (openbsd && !mips64) || solaris
 
 package unix
 
@@ -17,6 +17,10 @@ func IsNonblock(fd int) (nonblocking bool, err error) {
 		return false, e1
 	}
 	return flag&syscall.O_NONBLOCK != 0, nil
+}
+
+func HasNonblockFlag(flag int) bool {
+	return flag&syscall.O_NONBLOCK != 0
 }
 
 // Implemented in the syscall package.

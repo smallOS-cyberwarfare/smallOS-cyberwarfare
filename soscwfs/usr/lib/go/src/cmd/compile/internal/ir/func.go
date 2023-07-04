@@ -147,9 +147,10 @@ func NewFunc(pos src.XPos) *Func {
 
 func (f *Func) isStmt() {}
 
-func (n *Func) copy() Node                         { panic(n.no("copy")) }
-func (n *Func) doChildren(do func(Node) bool) bool { return doNodes(n.Body, do) }
-func (n *Func) editChildren(edit func(Node) Node)  { editNodes(n.Body, edit) }
+func (n *Func) copy() Node                                  { panic(n.no("copy")) }
+func (n *Func) doChildren(do func(Node) bool) bool          { return doNodes(n.Body, do) }
+func (n *Func) editChildren(edit func(Node) Node)           { editNodes(n.Body, edit) }
+func (n *Func) editChildrenWithHidden(edit func(Node) Node) { editNodes(n.Body, edit) }
 
 func (f *Func) Type() *types.Type                { return f.Nname.Type() }
 func (f *Func) Sym() *types.Sym                  { return f.Nname.Sym() }
@@ -268,13 +269,6 @@ func PkgFuncName(f *Func) string {
 	s := f.Sym()
 	pkg := s.Pkg
 
-	// TODO(mdempsky): Remove after submitting CL 393715? This matches
-	// how PkgFuncName has historically handled local functions, but
-	// drchase points out it contradicts the documentation.
-	if pkg == types.LocalPkg {
-		return s.Name
-	}
-
 	return pkg.Path + "." + s.Name
 }
 
@@ -306,7 +300,7 @@ func MarkFunc(n *Name) {
 }
 
 // ClosureDebugRuntimeCheck applies boilerplate checks for debug flags
-// and compiling runtime
+// and compiling runtime.
 func ClosureDebugRuntimeCheck(clo *ClosureExpr) {
 	if base.Debug.Closure > 0 {
 		if clo.Esc() == EscHeap {

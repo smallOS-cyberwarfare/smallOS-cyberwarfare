@@ -66,6 +66,8 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 		i      int
 	)
 
+	rlim, rlimOK := origRlimitNofile.Load().(Rlimit)
+
 	// Record parent PID so child can test if it has died.
 	ppid, _, _ := RawSyscall(SYS_GETPID, 0, 0, 0)
 
@@ -205,7 +207,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 		r1, _, _ = RawSyscall(SYS_GETPPID, 0, 0, 0)
 		if r1 != ppid {
 			pid, _, _ := RawSyscall(SYS_GETPID, 0, 0, 0)
-			_, _, err1 := RawSyscall(SYS_KILL, pid, uintptr(sys.Pdeathsig), 0)
+			_, _, err1 = RawSyscall(SYS_KILL, pid, uintptr(sys.Pdeathsig), 0)
 			if err1 != 0 {
 				goto childerror
 			}
@@ -223,7 +225,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 		nextfd++
 	}
 	for i = 0; i < len(fd); i++ {
-		if fd[i] >= 0 && fd[i] < int(i) {
+		if fd[i] >= 0 && fd[i] < i {
 			if nextfd == pipe { // don't stomp on pipe
 				nextfd++
 			}
@@ -242,7 +244,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 			RawSyscall(SYS_CLOSE, uintptr(i), 0, 0)
 			continue
 		}
-		if fd[i] == int(i) {
+		if fd[i] == i {
 			// dup2(i, i) won't clear close-on-exec flag on Linux,
 			// probably not elsewhere either.
 			_, _, err1 = RawSyscall(SYS_FCNTL, uintptr(fd[i]), F_SETFD, 0)
@@ -281,6 +283,11 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 		if err1 != 0 {
 			goto childerror
 		}
+	}
+
+	// Restore original rlimit.
+	if rlimOK && rlim.Cur != 0 {
+		RawSyscall(SYS_SETRLIMIT, uintptr(RLIMIT_NOFILE), uintptr(unsafe.Pointer(&rlim)), 0)
 	}
 
 	// Time to exec.

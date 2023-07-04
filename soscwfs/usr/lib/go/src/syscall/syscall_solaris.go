@@ -14,12 +14,12 @@ package syscall
 
 import "unsafe"
 
+const _F_DUP2FD_CLOEXEC = F_DUP2FD_CLOEXEC
+
 func Syscall(trap, a1, a2, a3 uintptr) (r1, r2 uintptr, err Errno)
 func Syscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2 uintptr, err Errno)
 func RawSyscall(trap, a1, a2, a3 uintptr) (r1, r2 uintptr, err Errno)
 func RawSyscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2 uintptr, err Errno)
-
-const _F_DUP2FD_CLOEXEC = F_DUP2FD_CLOEXEC
 
 // Implemented in asm_solaris_amd64.s.
 func rawSysvicall6(trap, nargs, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2 uintptr, err Errno)
@@ -474,7 +474,7 @@ func sendmsgN(fd int, p, oob []byte, ptr unsafe.Pointer, salen _Socklen, flags i
 //sys	Setpriority(which int, who int, prio int) (err error)
 //sysnb	Setregid(rgid int, egid int) (err error)
 //sysnb	Setreuid(ruid int, euid int) (err error)
-//sysnb	Setrlimit(which int, lim *Rlimit) (err error)
+//sysnb	setrlimit(which int, lim *Rlimit) (err error)
 //sysnb	Setsid() (pid int, err error)
 //sysnb	Setuid(uid int) (err error)
 //sys	Shutdown(s int, how int) (err error) = libsocket.shutdown
@@ -495,6 +495,7 @@ func sendmsgN(fd int, p, oob []byte, ptr unsafe.Pointer, salen _Socklen, flags i
 //sys	socket(domain int, typ int, proto int) (fd int, err error) = libsocket.__xnet_socket
 //sysnb	socketpair(domain int, typ int, proto int, fd *[2]int32) (err error) = libsocket.__xnet_socketpair
 //sys	write(fd int, p []byte) (n int, err error)
+//sys	writev(fd int, iovecs []Iovec) (n uintptr, err error)
 //sys	getsockopt(s int, level int, name int, val unsafe.Pointer, vallen *_Socklen) (err error) = libsocket.__xnet_getsockopt
 //sysnb	getpeername(fd int, rsa *RawSockaddrAny, addrlen *_Socklen) (err error) = libsocket.getpeername
 //sys	getsockname(fd int, rsa *RawSockaddrAny, addrlen *_Socklen) (err error) = libsocket.getsockname
@@ -534,6 +535,20 @@ func writelen(fd int, buf *byte, nbuf int) (n int, err error) {
 		err = e1
 	}
 	return
+}
+
+var mapper = &mmapper{
+	active: make(map[*byte][]byte),
+	mmap:   mmap,
+	munmap: munmap,
+}
+
+func Mmap(fd int, offset int64, length int, prot int, flags int) (data []byte, err error) {
+	return mapper.Mmap(fd, offset, length, prot, flags)
+}
+
+func Munmap(b []byte) (err error) {
+	return mapper.Munmap(b)
 }
 
 func Utimes(path string, tv []Timeval) error {

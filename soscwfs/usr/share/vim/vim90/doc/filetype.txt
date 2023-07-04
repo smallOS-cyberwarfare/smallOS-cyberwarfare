@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 9.0.  Last change: 2022 Apr 09
+*filetype.txt*  For Vim version 9.0.  Last change: 2023 Apr 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -164,6 +164,7 @@ variables can be used to overrule the filetype used for certain extensions:
 	*.sys		g:filetype_sys
 	*.sh		g:bash_is_sh	|ft-sh-syntax|
 	*.tex		g:tex_flavor	|ft-tex-plugin|
+	*.typ		g:filetype_typ
 	*.w		g:filetype_w	|ft-cweb-syntax|
 
 For a few filetypes the global variable is used only when the filetype could
@@ -659,8 +660,8 @@ page in a Vim window: >
 
 MANPAGER				      *manpager.vim*
 
-The |:Man| command allows you to turn Vim into a manpager (that syntax highlights
-manpages and follows linked manpages on hitting CTRL-]).
+The |:Man| command allows you to turn Vim into a manpager (that syntax
+highlights manpages and follows linked manpages on hitting CTRL-]).
 
 For bash,zsh,ksh or dash, add to the config file (.bashrc,.zshrc, ...)
 
@@ -679,7 +680,10 @@ MARKDOWN                                                *ft-markdown-plugin*
 
 To enable folding use this: >
 	let g:markdown_folding = 1
-<
+
+'expandtab' will be set by default.  If you do not want that use this: >
+	let g:markdown_recommended_style = 0
+
 
 PDF							*ft-pdf-plugin*
 

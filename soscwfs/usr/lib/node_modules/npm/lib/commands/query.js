@@ -1,7 +1,6 @@
 'use strict'
 
 const { resolve } = require('path')
-const Arborist = require('@npmcli/arborist')
 const BaseCommand = require('../base-command.js')
 
 class QuerySelectorItem {
@@ -41,6 +40,7 @@ class Query extends BaseCommand {
   static name = 'query'
   static usage = ['<selector>']
 
+  static workspaces = true
   static ignoreImplicitWorkspace = false
 
   static params = [
@@ -57,6 +57,7 @@ class Query extends BaseCommand {
   async exec (args) {
     // one dir up from wherever node_modules lives
     const where = resolve(this.npm.dir, '..')
+    const Arborist = require('@npmcli/arborist')
     const opts = {
       ...this.npm.flatOptions,
       path: where,
@@ -70,8 +71,9 @@ class Query extends BaseCommand {
     this.npm.output(this.parsedResponse)
   }
 
-  async execWorkspaces (args, filters) {
-    await this.setWorkspaces(filters)
+  async execWorkspaces (args) {
+    await this.setWorkspaces()
+    const Arborist = require('@npmcli/arborist')
     const opts = {
       ...this.npm.flatOptions,
       path: this.npm.prefix,

@@ -5,7 +5,6 @@ bash
 bind-tools
 busybox
 coreutils
-curl
 git
 go
 libc-utils

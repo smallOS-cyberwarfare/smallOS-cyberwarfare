@@ -8,6 +8,7 @@ import (
 	"cmd/internal/sys"
 	"fmt"
 	"internal/buildcfg"
+	"internal/platform"
 )
 
 // A BuildMode indicates the sort of object we are building.
@@ -185,7 +186,7 @@ func mustLinkExternal(ctxt *Link) (res bool, reason string) {
 		}()
 	}
 
-	if sys.MustLinkExternal(buildcfg.GOOS, buildcfg.GOARCH) {
+	if platform.MustLinkExternal(buildcfg.GOOS, buildcfg.GOARCH) {
 		return true, fmt.Sprintf("%s/%s requires external linking", buildcfg.GOOS, buildcfg.GOARCH)
 	}
 
@@ -280,7 +281,11 @@ func determineLinkMode(ctxt *Link) {
 			ctxt.LinkMode = LinkExternal
 			via = "via GO_EXTLINK_ENABLED "
 		default:
-			if extNeeded || (iscgo && externalobj) {
+			preferExternal := len(preferlinkext) != 0
+			if preferExternal && ctxt.Debugvlog > 0 {
+				ctxt.Logf("external linking prefer list is %v\n", preferlinkext)
+			}
+			if extNeeded || (iscgo && (externalobj || preferExternal)) {
 				ctxt.LinkMode = LinkExternal
 			} else {
 				ctxt.LinkMode = LinkInternal

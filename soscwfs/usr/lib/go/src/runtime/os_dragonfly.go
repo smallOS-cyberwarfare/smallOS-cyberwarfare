@@ -63,7 +63,10 @@ func kqueue() int32
 func kevent(kq int32, ch *keventt, nch int32, ev *keventt, nev int32, ts *timespec) int32
 
 func pipe2(flags int32) (r, w int32, errno int32)
+func fcntl(fd, cmd, arg int32) (ret int32, errno int32)
 func closeonexec(fd int32)
+
+func issetugid() int32
 
 // From DragonFly's <sys/sysctl.h>
 const (
@@ -162,7 +165,10 @@ func newosproc(mp *m) {
 	}
 
 	// TODO: Check for error.
-	lwp_create(&params)
+	retryOnEAGAIN(func() int32 {
+		lwp_create(&params)
+		return 0
+	})
 	sigprocmask(_SIG_SETMASK, &oset, nil)
 }
 
@@ -248,7 +254,7 @@ func getsig(i uint32) uintptr {
 	return sa.sa_sigaction
 }
 
-// setSignaltstackSP sets the ss_sp field of a stackt.
+// setSignalstackSP sets the ss_sp field of a stackt.
 //
 //go:nosplit
 func setSignalstackSP(s *stackt, sp uintptr) {
