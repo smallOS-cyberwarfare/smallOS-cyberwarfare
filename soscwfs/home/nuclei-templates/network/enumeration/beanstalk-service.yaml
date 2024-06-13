@@ -1,0 +1,36 @@
+id: beanstalk-service
+
+info:
+  name: Beanstalk Service - Detect
+  author: pussycat0x
+  severity: info
+  description: |
+    Beanstalk is a simple, fast work queue. Its interface is generic, but was originally designed for reducing the latency of page views in high-volume web applications by running time-consuming tasks asynchronously.
+  reference:
+    - https://jhadiary.wordpress.com/2016/05/18/beanstalk-helping-commands/
+  metadata:
+    verified: true
+    max-request: 1
+    shodan-query: port:11300 "cmd-peek"
+  tags: network,beanstalk,detect,enum,tcp
+tcp:
+  - inputs:
+      - data: "stats\r\n"
+        read: 8
+
+    host:
+      - "{{Hostname}}"
+    port: 11300
+
+    matchers:
+      - type: word
+        part: raw
+        words:
+          - "OK"
+
+    extractors:
+      - type: regex
+        name: stats
+        regex:
+          - '([a-z-A-Z: 0-9]+)'
+# digest: 4a0a00473045022100f13f7f2a167d41126ca8234ede8b238c55dd296174d15fcd9f1874c7dfecbaef022060ed737def913452bd34f3cbab1d1f3148af684f6100ba87a99ecfe5d602f147:922c64590222798bb761d5b6d8e72950

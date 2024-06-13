@@ -44,5 +44,6 @@ locate:x:245:
 abuild:x:300:
 utmp:x:406:utmp
 ping:x:999:
-nogroup:x:65533:
+nogroup:x:65533:tor
 nobody:x:65534:
+klogd:x:101:

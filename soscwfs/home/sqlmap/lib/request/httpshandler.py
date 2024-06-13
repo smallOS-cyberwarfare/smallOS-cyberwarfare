@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2024 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -27,7 +27,7 @@ try:
 except ImportError:
     pass
 
-_protocols = filterNone(getattr(ssl, _, None) for _ in ("PROTOCOL_TLSv1_2", "PROTOCOL_TLSv1_1", "PROTOCOL_TLSv1", "PROTOCOL_SSLv3", "PROTOCOL_SSLv23", "PROTOCOL_SSLv2"))
+_protocols = filterNone(getattr(ssl, _, None) for _ in ("PROTOCOL_TLS_CLIENT", "PROTOCOL_TLSv1_2", "PROTOCOL_TLSv1_1", "PROTOCOL_TLSv1", "PROTOCOL_SSLv3", "PROTOCOL_SSLv23", "PROTOCOL_SSLv2"))
 _lut = dict((getattr(ssl, _), _) for _ in dir(ssl) if _.startswith("PROTOCOL_"))
 _contexts = {}
 
@@ -69,6 +69,11 @@ class HTTPSConnection(_http_client.HTTPSConnection):
                     sock = create_sock()
                     if protocol not in _contexts:
                         _contexts[protocol] = ssl.SSLContext(protocol)
+
+                        # Disable certificate and hostname validation enabled by default with PROTOCOL_TLS_CLIENT
+                        _contexts[protocol].check_hostname = False
+                        _contexts[protocol].verify_mode = ssl.CERT_NONE
+
                         if getattr(self, "cert_file", None) and getattr(self, "key_file", None):
                             _contexts[protocol].load_cert_chain(certfile=self.cert_file, keyfile=self.key_file)
                         try:

@@ -1,7 +1,0 @@
-./client.go
-./conn.go
-./http.go
-./options.go
-./pipelineclient.go
-./pipelineoptions.go
-./util.go

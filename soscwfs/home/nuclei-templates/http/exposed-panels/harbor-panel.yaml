@@ -1,0 +1,40 @@
+id: harbor-panel
+
+info:
+  name: Harbor Login Panel - Detect
+  author: daffainfo
+  severity: info
+  description: Harbor login panel was detected.
+  reference:
+    - https://github.com/goharbor/harbor
+  classification:
+    cvss-metrics: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N
+    cwe-id: CWE-200
+    cpe: cpe:2.3:a:linuxfoundation:harbor:*:*:*:*:*:*:*:*
+  metadata:
+    verified: true
+    max-request: 1
+    vendor: linuxfoundation
+    product: harbor
+    shodan-query: http.favicon.hash:657337228
+    fofa-query: icon_hash=657337228
+  tags: panel,harbor,linuxfoundation
+
+http:
+  - method: GET
+    path:
+      - '{{BaseURL}}'
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "<title>Harbor</title>"
+          - "<harbor-app>"
+        condition: and
+
+      - type: status
+        status:
+          - 200
+# digest: 490a00463044022017b75473095676df8fef7f4acff39288a69114b9d63b22dc52dcc5a6a70855eb02202ef9347e10fc9b67f25b75dc3410045dbbd85c799927cf6f9e8c7ec88bfd6b9b:922c64590222798bb761d5b6d8e72950

@@ -1,9 +1,0 @@
-./account.go
-./authorization.go
-./certificate.go
-./challenge.go
-./client.go
-./http.go
-./jws.go
-./order.go
-./problem.go

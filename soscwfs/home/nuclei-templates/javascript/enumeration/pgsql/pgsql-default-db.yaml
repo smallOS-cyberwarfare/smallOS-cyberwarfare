@@ -1,0 +1,54 @@
+id: pgsql-default-db
+
+info:
+  name: Postgresql Default Database - Enumeration
+  author: pussycat0x
+  severity: high
+  description: |
+    postgres is the default database you will connect to before you have created any other databases.
+  reference:
+    - https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/SQL%20Injection/PostgreSQL%20Injection.md#postgresql-database-name
+  metadata:
+    verified: true
+    max-request: 40
+    shodan-query: "product:\"PostgreSQL\""
+  tags: js,network,postgresql,authenticated,enum
+javascript:
+  - code: |
+      const postgres = require('nuclei/postgres');
+      const client = new postgres.PGClient;
+      connected = client.ConnectWithDB(Host, Port, User, Pass, Db);
+      connected  ;
+
+    args:
+      Host: "{{Host}}"
+      Port: 5432
+      User: "{{usernames}}"
+      Pass: "{{password}}"
+      Db: "{{database}}"
+
+    payloads:
+      usernames:
+        - postgres
+        - admin
+      password:
+        - postgres
+        -
+        - 123
+        - amber
+      database:
+        - foresight
+        - postgres
+        - template0
+        - template1
+        - test
+
+    attack: clusterbomb
+
+    matchers:
+      - type: dsl
+        dsl:
+          - "success == true"
+          - "response == true"
+        condition: and
+# digest: 4a0a00473045022100ac0fd89555e8c98937d1cd9695b7997f87cfebc72da1822cab5388809cad5a8a02202dfed379847db4beee9a5847b6b38977c5d116c05ca02efd4e599252b08b93dc:922c64590222798bb761d5b6d8e72950

@@ -1,8 +1,0 @@
-./cluster.go
-./compile.go
-./doc.go
-./preprocessors.go
-./templates.go
-./templates_doc.go
-./templates_doc_examples.go
-./workflows.go

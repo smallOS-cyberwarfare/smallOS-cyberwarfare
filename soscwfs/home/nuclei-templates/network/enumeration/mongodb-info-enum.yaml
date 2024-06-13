@@ -1,26 +1,29 @@
 id: mongodb-info-enum
 
 info:
-  name: MongoDB Information Enumeration
+  name: MongoDB Information - Detect
   author: pussycat0x
   severity: info
   description: |
-    MongoDB is an open source NoSQL database management program. NoSQL is used as an alternative to traditional relational databases.
+    MongoDB build and server information was detected.
   reference:
     - https://nmap.org/nsedoc/scripts/mongodb-info.html
+  classification:
+    cvss-metrics: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N
+    cwe-id: CWE-200
   metadata:
-    verified: "true"
+    verified: true
+    max-request: 1
     shodan-query: mongodb server information
-  tags: network,mongodb,enum
-
-network:
+  tags: network,mongodb,enum,tcp
+tcp:
   - inputs:
       - data: 3b0000003c300000ffffffffd40700000000000061646d696e2e24636d640000000000ffffffff14000000106275696c64696e666f000100000000
         type: hex
 
     host:
       - "{{Hostname}}"
-      - "{{Host}}:27017"
+    port: 27017
     read-size: 2048
 
     matchers:
@@ -35,3 +38,4 @@ network:
       - type: regex
         regex:
           - "([A-Za-z:0-9.]+)"
+# digest: 490a0046304402206ea0ac96e41aa2af2bc21e5e6821c8b4ea472744f9a0c7c3ec8e44c656a9c06f022045186deda3a813636b26aa1d0443a6f3a608ffb5629e13a574b2248c1f95d3d7:922c64590222798bb761d5b6d8e72950

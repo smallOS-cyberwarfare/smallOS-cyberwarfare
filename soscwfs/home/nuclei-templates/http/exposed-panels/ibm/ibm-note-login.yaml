@@ -1,0 +1,35 @@
+id: ibm-note-login
+
+info:
+  name: IBM iNotes Login Panel - Detect
+  author: dhiyaneshDK
+  severity: info
+  description: IBM iNotes login panel was detected.
+  reference:
+    - https://www.exploit-db.com/ghdb/7122
+  classification:
+    cvss-metrics: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N
+    cwe-id: CWE-200
+    cpe: cpe:2.3:a:ibm:inotes:*:*:*:*:*:*:*:*
+  metadata:
+    max-request: 2
+    vendor: ibm
+    product: inotes
+  tags: ibm,edb,panel
+
+http:
+  - method: GET
+    path:
+      - '{{BaseURL}}'
+      - '{{BaseURL}}/names.nsf'
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - '<title>IBM iNotes Login</title>'
+
+      - type: status
+        status:
+          - 200
+# digest: 4a0a004730450220625a17ef31b35dda3592e49539d8304cc60542ca9c8d2ec4f5509568cd46f673022100f22616c9c57ba6f9ea927df6ff590fcbeb9eb33d5a1afcf66c6dd0afe77f2d7d:922c64590222798bb761d5b6d8e72950

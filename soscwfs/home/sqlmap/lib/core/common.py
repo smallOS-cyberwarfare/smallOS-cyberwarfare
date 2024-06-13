@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2024 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -136,6 +136,7 @@ from lib.core.settings import HTTP_CHUNKED_SPLIT_KEYWORDS
 from lib.core.settings import IGNORE_PARAMETERS
 from lib.core.settings import IGNORE_SAVE_OPTIONS
 from lib.core.settings import INFERENCE_UNKNOWN_CHAR
+from lib.core.settings import INJECT_HERE_REGEX
 from lib.core.settings import IP_ADDRESS_REGEX
 from lib.core.settings import ISSUES_PAGE
 from lib.core.settings import IS_TTY
@@ -251,6 +252,10 @@ class Format(object):
 
         if versions is None and Backend.getVersionList():
             versions = Backend.getVersionList()
+
+        # NOTE: preventing ugly (e.g.) "back-end DBMS: MySQL Unknown"
+        if isListLike(versions) and UNKNOWN_DBMS_VERSION in versions:
+            versions = None
 
         return Backend.getDbms() if versions is None else "%s %s" % (Backend.getDbms(), " and ".join(filterNone(versions)))
 
@@ -707,8 +712,16 @@ def paramToDict(place, parameters=None):
                                                 if value:
                                                     walk(head, value)
 
-                                deserialized = json.loads(testableParameters[parameter])
-                                walk(deserialized)
+                                # NOTE: for cases with custom injection marker(s) inside (e.g. https://github.com/sqlmapproject/sqlmap/issues/4137#issuecomment-2013783111) - p.s. doesn't care too much about the structure (e.g. injection into the flat array values)
+                                if CUSTOM_INJECTION_MARK_CHAR in testableParameters[parameter]:
+                                    for match in re.finditer(r'(\w+)[^\w]*"\s*:[^\w]*\w*%s' % re.escape(CUSTOM_INJECTION_MARK_CHAR), testableParameters[parameter]):
+                                        key = match.group(1)
+                                        value = testableParameters[parameter].replace(match.group(0), match.group(0).replace(CUSTOM_INJECTION_MARK_CHAR, BOUNDED_INJECTION_MARKER))
+                                        candidates["%s (%s)" % (parameter, key)] = re.sub(r"\b(%s\s*=\s*)%s" % (re.escape(parameter), re.escape(testableParameters[parameter])), r"\g<1>%s" % value, parameters)
+
+                                if not candidates:
+                                    deserialized = json.loads(testableParameters[parameter])
+                                    walk(deserialized)
 
                                 if candidates:
                                     message = "it appears that provided value for %sparameter '%s' " % ("%s " % place if place != parameter else "", parameter)
@@ -880,7 +893,7 @@ def getManualDirectories():
 def getAutoDirectories():
     """
     >>> pushValue(kb.absFilePaths)
-    >>> kb.absFilePaths = ["C:\\inetpub\\wwwroot\\index.asp", "/var/www/html"]
+    >>> kb.absFilePaths = [r"C:\\inetpub\\wwwroot\\index.asp", "/var/www/html"]
     >>> getAutoDirectories()
     ['C:/inetpub/wwwroot', '/var/www/html']
     >>> kb.absFilePaths = popValue()
@@ -1321,7 +1334,10 @@ def isZipFile(filename):
 
     checkFile(filename)
 
-    return openFile(filename, "rb", encoding=None).read(len(ZIP_HEADER)) == ZIP_HEADER
+    with openFile(filename, "rb", encoding=None) as f:
+        header = f.read(len(ZIP_HEADER))
+
+    return header == ZIP_HEADER
 
 def isDigit(value):
     """
@@ -1508,6 +1524,7 @@ def setPaths(rootPath):
     paths.COMMON_FILES = os.path.join(paths.SQLMAP_TXT_PATH, "common-files.txt")
     paths.COMMON_TABLES = os.path.join(paths.SQLMAP_TXT_PATH, "common-tables.txt")
     paths.COMMON_OUTPUTS = os.path.join(paths.SQLMAP_TXT_PATH, 'common-outputs.txt')
+    paths.DIGEST_FILE = os.path.join(paths.SQLMAP_TXT_PATH, "sha256sums.txt")
     paths.SQL_KEYWORDS = os.path.join(paths.SQLMAP_TXT_PATH, "keywords.txt")
     paths.SMALL_DICT = os.path.join(paths.SQLMAP_TXT_PATH, "smalldict.txt")
     paths.USER_AGENTS = os.path.join(paths.SQLMAP_TXT_PATH, "user-agents.txt")
@@ -1769,7 +1786,7 @@ def parseTargetUrl():
         errMsg = "invalid target URL port (%d)" % conf.port
         raise SqlmapSyntaxException(errMsg)
 
-    conf.url = getUnicode("%s://%s:%d%s" % (conf.scheme, ("[%s]" % conf.hostname) if conf.ipv6 else conf.hostname, conf.port, conf.path))
+    conf.url = getUnicode("%s://%s%s%s" % (conf.scheme, ("[%s]" % conf.hostname) if conf.ipv6 else conf.hostname, (":%d" % conf.port) if not (conf.port == 80 and conf.scheme == "http" or conf.port == 443 and conf.scheme == "https") else "", conf.path))
     conf.url = conf.url.replace(URI_QUESTION_MARKER, '?')
 
     if urlSplit.query:
@@ -2308,7 +2325,7 @@ def ntToPosixSlashes(filepath):
     Replaces all occurrences of NT backslashes in provided
     filepath with Posix slashes
 
-    >>> ntToPosixSlashes('C:\\Windows')
+    >>> ntToPosixSlashes(r'C:\\Windows')
     'C:/Windows'
     """
 
@@ -2520,21 +2537,22 @@ def initCommonOutputs():
     kb.commonOutputs = {}
     key = None
 
-    for line in openFile(paths.COMMON_OUTPUTS, 'r'):
-        if line.find('#') != -1:
-            line = line[:line.find('#')]
+    with openFile(paths.COMMON_OUTPUTS, 'r') as f:
+        for line in f:
+            if line.find('#') != -1:
+                line = line[:line.find('#')]
 
-        line = line.strip()
+            line = line.strip()
 
-        if len(line) > 1:
-            if line.startswith('[') and line.endswith(']'):
-                key = line[1:-1]
-            elif key:
-                if key not in kb.commonOutputs:
-                    kb.commonOutputs[key] = set()
+            if len(line) > 1:
+                if line.startswith('[') and line.endswith(']'):
+                    key = line[1:-1]
+                elif key:
+                    if key not in kb.commonOutputs:
+                        kb.commonOutputs[key] = set()
 
-                if line not in kb.commonOutputs[key]:
-                    kb.commonOutputs[key].add(line)
+                    if line not in kb.commonOutputs[key]:
+                        kb.commonOutputs[key].add(line)
 
 def getFileItems(filename, commentPrefix='#', unicoded=True, lowercase=False, unique=False):
     """
@@ -3182,7 +3200,14 @@ def isNumPosStrValue(value):
     False
     """
 
-    return ((hasattr(value, "isdigit") and value.isdigit() and int(value) > 0) or (isinstance(value, int) and value > 0)) and int(value) < MAX_INT
+    retVal = False
+
+    try:
+        retVal = ((hasattr(value, "isdigit") and value.isdigit() and int(value) > 0) or (isinstance(value, int) and value > 0)) and int(value) < MAX_INT
+    except ValueError:
+        pass
+
+    return retVal
 
 @cachedmethod
 def aliasToDbmsEnum(dbms):
@@ -3840,29 +3865,6 @@ def decodeIntToUnicode(value):
 
     return retVal
 
-def checkIntegrity():
-    """
-    Checks integrity of code files during the unhandled exceptions
-    """
-
-    if not paths:
-        return
-
-    logger.debug("running code integrity check")
-
-    retVal = True
-
-    baseTime = os.path.getmtime(paths.SQLMAP_SETTINGS_PATH) + 3600  # First hour free parking :)
-    for root, _, filenames in os.walk(paths.SQLMAP_ROOT_PATH):
-        for filename in filenames:
-            if re.search(r"(\.py|\.xml|_)\Z", filename):
-                filepath = os.path.join(root, filename)
-                if os.path.getmtime(filepath) > baseTime:
-                    logger.error("wrong modification time of '%s'" % filepath)
-                    retVal = False
-
-    return retVal
-
 def getDaysFromLastUpdate():
     """
     Get total number of days from last update
@@ -4261,6 +4263,9 @@ def safeSQLIdentificatorNaming(name, isTable=False):
     """
 
     retVal = name
+
+    if conf.unsafeNaming:
+        return retVal
 
     if isinstance(name, six.string_types):
         retVal = getUnicode(name)
@@ -4940,6 +4945,12 @@ def decodeDbmsHexValue(value, raw=False):
 
     >>> decodeDbmsHexValue('3132332031') == u'123 1'
     True
+    >>> decodeDbmsHexValue('31003200330020003100') == u'123 1'
+    True
+    >>> decodeDbmsHexValue('00310032003300200031') == u'123 1'
+    True
+    >>> decodeDbmsHexValue('0x31003200330020003100') == u'123 1'
+    True
     >>> decodeDbmsHexValue('313233203') == u'123 ?'
     True
     >>> decodeDbmsHexValue(['0x31', '0x32']) == [u'1', u'2']
@@ -4977,6 +4988,9 @@ def decodeDbmsHexValue(value, raw=False):
 
                 if not isinstance(retVal, six.text_type):
                     retVal = getUnicode(retVal, conf.encoding or UNICODE_ENCODING)
+
+                if u"\x00" in retVal:
+                    retVal = retVal.replace(u"\x00", u"")
 
         return retVal
 
@@ -5066,6 +5080,7 @@ def resetCookieJar(cookieJar):
                 logger.info(infoMsg)
 
                 content = readCachedFileContent(conf.loadCookies)
+                content = re.sub("(?im)^#httpOnly_", "", content)
                 lines = filterNone(line.strip() for line in content.split("\n") if not line.startswith('#'))
                 handle, filename = tempfile.mkstemp(prefix=MKSTEMP_PREFIX.COOKIE_JAR)
                 os.close(handle)
@@ -5344,6 +5359,8 @@ def parseRequestFile(reqFile, checkParams=True):
                 if not line.strip() and index == len(lines) - 1:
                     break
 
+                line = re.sub(INJECT_HERE_REGEX, CUSTOM_INJECTION_MARK_CHAR, line)
+
                 newline = "\r\n" if line.endswith('\r') else '\n'
                 line = line.strip('\r')
                 match = re.search(r"\A([A-Z]+) (.+) HTTP/[\d.]+\Z", line) if not method else None
@@ -5385,11 +5402,12 @@ def parseRequestFile(reqFile, checkParams=True):
                     elif key.upper() == HTTP_HEADER.HOST.upper():
                         if '://' in value:
                             scheme, value = value.split('://')[:2]
-                        splitValue = value.split(":")
-                        host = splitValue[0]
 
-                        if len(splitValue) > 1:
-                            port = filterStringValue(splitValue[1], "[0-9]")
+                        port = extractRegexResult(r":(?P<result>\d+)\Z", value)
+                        if port:
+                            value = value[:-(1 + len(port))]
+
+                        host = value
 
                     # Avoid to add a static content length header to
                     # headers and consider the following lines as
@@ -5564,5 +5582,29 @@ def chunkSplitPostData(data):
         retVal += "%s\r\n" % candidate
 
     retVal += "0\r\n\r\n"
+
+    return retVal
+
+def checkSums():
+    """
+    Validate the content of the digest file (i.e. sha256sums.txt)
+    >>> checkSums()
+    True
+    """
+
+    retVal = True
+
+    if paths.get("DIGEST_FILE"):
+        for entry in getFileItems(paths.DIGEST_FILE):
+            match = re.search(r"([0-9a-f]+)\s+([^\s]+)", entry)
+            if match:
+                expected, filename = match.groups()
+                filepath = os.path.join(paths.SQLMAP_ROOT_PATH, filename).replace('/', os.path.sep)
+                checkFile(filepath)
+                with open(filepath, "rb") as f:
+                    content = f.read()
+                if not hashlib.sha256(content).hexdigest() == expected:
+                    retVal &= False
+                    break
 
     return retVal

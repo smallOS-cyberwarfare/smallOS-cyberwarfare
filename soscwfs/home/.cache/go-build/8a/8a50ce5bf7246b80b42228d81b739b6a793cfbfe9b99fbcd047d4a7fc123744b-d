@@ -1,9 +1,0 @@
-./backoff.go
-./client.go
-./do.go
-./doc.go
-./http.go
-./methods.go
-./request.go
-./retry.go
-./util.go

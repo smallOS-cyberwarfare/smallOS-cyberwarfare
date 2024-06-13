@@ -1,4 +1,0 @@
-./rand.go
-./rand_getrandom.go
-./rand_unix.go
-./util.go

@@ -44,13 +44,3 @@ Automated SQL Inyections
   
 - [subdomainfinder](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/subdomainfinder/README.md)  
 Find Subdomains  
-  
-- [turbolist3r](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/turbolist3r/README.md)  
-Find Subdomains  
-
-- [webservicesfinder](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/webservicesfinder/README.md)  
-Find Accesible Web Services in a host  
-  
-- [webvulnsscanner](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/webvulnsscanner/README.md)  
-Find urls with arguments and inyect xss and openredirect payloads  
-  

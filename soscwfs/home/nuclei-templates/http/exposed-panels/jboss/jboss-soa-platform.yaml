@@ -1,0 +1,39 @@
+id: jboss-soa-platform
+
+info:
+  name: JBoss SOA Platform Login Panel - Detect
+  author: ritikchaddha
+  severity: info
+  description: JBoss SOA Platform login panel was detected.
+  classification:
+    cvss-metrics: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N
+    cwe-id: CWE-200
+    cpe: cpe:2.3:a:redhat:jboss_soa_platform:*:*:*:*:*:*:*:*
+  metadata:
+    verified: true
+    max-request: 1
+    vendor: redhat
+    product: jboss_soa_platform
+    shodan-query:
+      - http.title:"Welcome to the JBoss SOA Platform"
+      - http.title:"welcome to the jboss soa platform"
+    fofa-query: title="welcome to the jboss soa platform"
+    google-query: intitle:"welcome to the jboss soa platform"
+  tags: panel,jboss,soa,redhat
+
+http:
+  - method: GET
+    path:
+      - '{{BaseURL}}'
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+          - 'Welcome to the JBoss SOA Platform'
+
+      - type: status
+        status:
+          - 200
+# digest: 4a0a00473045022100aed0fadeeedc41d0cbf6c03ea9eadbf500bb65cc8aaa155885b8a0f9d4161a4502206c1f51535fa466810b6f1bb968d8bbaf1da7874dcd3e8c40b35cd91deb265564:922c64590222798bb761d5b6d8e72950

@@ -1,9 +1,0 @@
-./host.go
-./host_prefix.go
-./idempotency.go
-./jsonvalue.go
-./payload.go
-./protocol.go
-./timestamp.go
-./unmarshal.go
-./unmarshal_error.go

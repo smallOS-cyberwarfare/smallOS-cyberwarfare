@@ -1,8 +1,0 @@
-./coverage.go
-./doc.go
-./go1_2.go
-./language.go
-./match.go
-./parse.go
-./tables.go
-./tags.go

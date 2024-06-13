@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2024 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
 import codecs
+import collections
+import inspect
 import os
 import random
 import re
@@ -35,9 +37,12 @@ from lib.core.data import conf
 from lib.core.enums import PLACE
 from lib.core.option import _setHTTPHandlers
 from lib.core.option import setVerbosity
+from lib.core.settings import INVALID_UNICODE_PRIVATE_AREA
+from lib.core.settings import INVALID_UNICODE_CHAR_FORMAT
 from lib.core.settings import IS_WIN
 from lib.request.templates import getPageTemplate
 from thirdparty import six
+from thirdparty.six import unichr as _unichr
 from thirdparty.six.moves import http_client as _http_client
 
 _rand = 0
@@ -84,7 +89,7 @@ def dirtyPatches():
     if match and match.group(1).upper() != PLACE.POST:
         PLACE.CUSTOM_POST = PLACE.CUSTOM_POST.replace("POST", "%s (body)" % match.group(1))
 
-    # https://github.com/sqlmapproject/sqlmap/issues/4314
+    # Reference: https://github.com/sqlmapproject/sqlmap/issues/4314
     try:
         os.urandom(1)
     except NotImplementedError:
@@ -92,6 +97,43 @@ def dirtyPatches():
             os.urandom = lambda size: bytes(random.randint(0, 255) for _ in range(size))
         else:
             os.urandom = lambda size: "".join(chr(random.randint(0, 255)) for _ in xrange(size))
+
+    # Reference: https://github.com/sqlmapproject/sqlmap/issues/5727
+    # Reference: https://stackoverflow.com/a/14076841
+    try:
+        import pymysql
+        pymysql.install_as_MySQLdb()
+    except (ImportError, AttributeError):
+        pass
+
+    # Reference: https://github.com/bottlepy/bottle/blob/df67999584a0e51ec5b691146c7fa4f3c87f5aac/bottle.py
+    # Reference: https://python.readthedocs.io/en/v2.7.2/library/inspect.html#inspect.getargspec
+    if not hasattr(inspect, "getargspec") and hasattr(inspect, "getfullargspec"):
+        ArgSpec = collections.namedtuple("ArgSpec", ("args", "varargs", "keywords", "defaults"))
+
+        def makelist(data):
+            if isinstance(data, (tuple, list, set, dict)):
+                return list(data)
+            elif data:
+                return [data]
+            else:
+                return []
+
+        def getargspec(func):
+            spec = inspect.getfullargspec(func)
+            kwargs = makelist(spec[0]) + makelist(spec.kwonlyargs)
+            return ArgSpec(kwargs, spec[1], spec[2], spec[3])
+
+        inspect.getargspec = getargspec
+
+    # Installing "reversible" unicode (decoding) error handler
+    def _reversible(ex):
+        if INVALID_UNICODE_PRIVATE_AREA:
+            return (u"".join(_unichr(int('000f00%2x' % (_ if isinstance(_, int) else ord(_)), 16)) for _ in ex.object[ex.start:ex.end]), ex.end)
+        else:
+            return (u"".join(INVALID_UNICODE_CHAR_FORMAT % (_ if isinstance(_, int) else ord(_)) for _ in ex.object[ex.start:ex.end]), ex.end)
+
+    codecs.register_error("reversible", _reversible)
 
 def resolveCrossReferences():
     """

@@ -31,7 +31,7 @@ var (
 //go:cgo_import_dynamic libc__Errno _Errno "libc.a/shr_64.o"
 //go:cgo_import_dynamic libc_clock_gettime clock_gettime "libc.a/shr_64.o"
 //go:cgo_import_dynamic libc_close close "libc.a/shr_64.o"
-//go:cgo_import_dynamic libc_exit exit "libc.a/shr_64.o"
+//go:cgo_import_dynamic libc_exit _exit "libc.a/shr_64.o"
 //go:cgo_import_dynamic libc_getpid getpid "libc.a/shr_64.o"
 //go:cgo_import_dynamic libc_getsystemcfg getsystemcfg "libc.a/shr_64.o"
 //go:cgo_import_dynamic libc_kill kill "libc.a/shr_64.o"
@@ -428,7 +428,6 @@ func write1(fd uintptr, p unsafe.Pointer, n int32) int32 {
 	}
 	// Note that in this case we can't return a valid errno value.
 	return write2(fd, uintptr(p), n)
-
 }
 
 //go:nosplit
@@ -641,7 +640,6 @@ func sysconf(name int32) uintptr {
 		throw("syscall sysconf")
 	}
 	return r
-
 }
 
 // pthread functions returns its error code in the main return value

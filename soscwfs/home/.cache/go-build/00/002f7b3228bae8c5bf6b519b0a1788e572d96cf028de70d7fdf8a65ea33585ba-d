@@ -1,9 +1,0 @@
-./context.go
-./default.go
-./doc.go
-./entry.go
-./interface.go
-./levels.go
-./logger.go
-./pkg.go
-./stack.go

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2024 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -71,7 +71,7 @@ def update():
         logger.warning(warnMsg)
 
         if VERSION == getLatestRevision():
-            logger.info("already at the latest revision '%s'" % getRevisionNumber())
+            logger.info("already at the latest revision '%s'" % (getRevisionNumber() or VERSION))
             return
 
         message = "do you want to try to fetch the latest 'zipball' from repository and extract it (experimental) ? [y/N]"

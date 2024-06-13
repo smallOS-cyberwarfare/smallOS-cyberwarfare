@@ -1,9 +1,0 @@
-./dialer.go
-./doc.go
-./error.go
-./hostsfile.go
-./hostsfile_unix.go
-./options.go
-./resolverfile.go
-./resolverfile_unix.go
-./util.go

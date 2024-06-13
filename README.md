@@ -19,9 +19,6 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 - shodan (search machines)
 - sqlmap (automatic sqli)  
 - subdomainfinder (fast/basic subdomain finder)
-- turbolist3r (subdomain finder)  
-- webservicesfinder (detect webservices in indicated ports)
-- webvulnsscanner (xss/openredirect bruteforce scanner)
 
 ### Dictionaries  
 - https://raw.githubusercontent.com/daviddias/node-dirbuster/master/lists/directory-list-2.3-small.txt [dirstalk]

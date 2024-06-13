@@ -1,8 +1,0 @@
-./dns_server.go
-./ftp_server.go
-./http_server.go
-./ldap_server.go
-./responder_server.go
-./server.go
-./smb_server.go
-./smtp_server.go

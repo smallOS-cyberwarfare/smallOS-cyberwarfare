@@ -1,13 +1,13 @@
 module std
 
-go 1.20
+go 1.22
 
 require (
-	golang.org/x/crypto v0.3.1-0.20221117191849-2c476679df9a
-	golang.org/x/net v0.4.1-0.20230214201333-88ed8ca3307d
+	golang.org/x/crypto v0.16.1-0.20231129163542-152cdb1503eb
+	golang.org/x/net v0.19.1-0.20240412193750-db050b07227e
 )
 
 require (
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 )

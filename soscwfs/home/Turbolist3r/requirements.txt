@@ -1,3 +1,0 @@
-dnslib
-argparse
-requests

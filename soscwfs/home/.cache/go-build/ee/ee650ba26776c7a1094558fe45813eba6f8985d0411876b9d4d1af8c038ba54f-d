@@ -1,6 +1,0 @@
-./cidr.go
-./host.go
-./ip.go
-./networkpolicy.go
-./port.go
-./scheme.go

@@ -10,6 +10,10 @@
 # possible, but leave them commented.  Uncommented options override the
 # default value.
 
+# Include configuration snippets before processing this file to allow the
+# snippets to override directives set in this file.
+Include /etc/ssh/sshd_config.d/*.conf
+
 #Port 22
 #AddressFamily any
 #ListenAddress 0.0.0.0

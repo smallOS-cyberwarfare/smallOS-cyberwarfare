@@ -1,8 +1,0 @@
-./bwt.go
-./common.go
-./fuzz_off.go
-./mtf_rle2.go
-./prefix.go
-./reader.go
-./rle1.go
-./writer.go

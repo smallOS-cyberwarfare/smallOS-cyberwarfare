@@ -1,4 +1,0 @@
-./client.go
-./headers.go
-./request_cache.go
-./user_agent.go

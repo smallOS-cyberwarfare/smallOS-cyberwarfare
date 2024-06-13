@@ -6,6 +6,9 @@ const forwardedSignals = [
   'SIGTERM',
 ]
 
+// no-op, this is so receiving the signal doesn't cause us to exit immediately
+// instead, we exit after all children have exited when we re-send the signal
+// to ourselves. see the catch handler at the bottom of run-script-pkg.js
 const handleSignal = signal => {
   for (const proc of runningProcs) {
     proc.kill(signal)

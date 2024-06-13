@@ -1,4 +1,0 @@
-./bits_go1.13.go
-./mac_noasm.go
-./poly1305.go
-./sum_generic.go

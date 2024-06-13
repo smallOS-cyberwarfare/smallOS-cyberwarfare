@@ -1,0 +1,41 @@
+id: redis-require-auth
+
+info:
+  name: Redis Require Authentication - Detect
+  author: DhiyaneshDK
+  severity: info
+  description: |
+    IsAuthenticated checks if the redis server requires authentication
+  reference:
+    - https://docs.projectdiscovery.io/templates/protocols/javascript/modules/redis#isauthenticated
+  metadata:
+    max-request: 1
+    shodan-query:
+      - product:"redis"
+      - http.title:"airflow - dags" || http.html:"apache airflow"
+      - http.title:"sign in - airflow"
+    product: airflow
+    vendor: apache
+    fofa-query:
+      - apache airflow
+      - title="airflow - dags" || http.html:"apache airflow"
+      - title="sign in - airflow"
+    google-query:
+      - intitle:"airflow - dags" || http.html:"apache airflow"
+      - intitle:"sign in - airflow"
+  tags: js,redis,network,enum
+javascript:
+  - code: |
+      const redis = require('nuclei/redis');
+      const isAuthenticated = redis.IsAuthenticated(Host,Port);
+      Export(isAuthenticated);
+
+    args:
+      Host: "{{Host}}"
+      Port: "6379"
+
+    matchers:
+      - type: dsl
+        dsl:
+          - "success == true"
+# digest: 4a0a0047304502201ec8165e310799c9c7f1f1f71d9dde254c00e9a9c1b9d633407b971a0d3879e9022100fc3744d78e7237bdb59bb50138f0def84ac72c44b31d440cd8a5ef7e69bb68c9:922c64590222798bb761d5b6d8e72950

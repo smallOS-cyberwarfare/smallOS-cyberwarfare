@@ -1,7 +1,0 @@
-./file_normalized_string_slice.go
-./goflags.go
-./insertionorderedmap.go
-./normalized_string_slice.go
-./runtime_map.go
-./slice_common.go
-./string_slice.go

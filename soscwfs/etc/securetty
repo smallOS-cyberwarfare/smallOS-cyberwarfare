@@ -1,4 +1,5 @@
 console
+tty0
 tty1
 tty2
 tty3
@@ -13,5 +14,12 @@ tty11
 hvc0
 ttyS0
 ttyS1
+ttyS2
+ttyGS0
 ttyAMA0
 ttyAMA1
+ttyTCU0
+ttyTHS0
+ttyTHS1
+ttymxc0
+ttymxc2

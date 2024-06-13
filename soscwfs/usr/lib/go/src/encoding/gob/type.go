@@ -24,7 +24,7 @@ type userTypeInfo struct {
 	base        reflect.Type // the base type after all indirections
 	indir       int          // number of indirections to reach the base type
 	externalEnc int          // xGob, xBinary, or xText
-	externalDec int          // xGob, xBinary or xText
+	externalDec int          // xGob, xBinary, or xText
 	encIndir    int8         // number of indirections to reach the receiver type; may be negative
 	decIndir    int8         // number of indirections to reach the receiver type; may be negative
 }
@@ -103,12 +103,14 @@ func validUserType(rt reflect.Type) (*userTypeInfo, error) {
 }
 
 var (
-	gobEncoderInterfaceType        = reflect.TypeOf((*GobEncoder)(nil)).Elem()
-	gobDecoderInterfaceType        = reflect.TypeOf((*GobDecoder)(nil)).Elem()
-	binaryMarshalerInterfaceType   = reflect.TypeOf((*encoding.BinaryMarshaler)(nil)).Elem()
-	binaryUnmarshalerInterfaceType = reflect.TypeOf((*encoding.BinaryUnmarshaler)(nil)).Elem()
-	textMarshalerInterfaceType     = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
-	textUnmarshalerInterfaceType   = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
+	gobEncoderInterfaceType        = reflect.TypeFor[GobEncoder]()
+	gobDecoderInterfaceType        = reflect.TypeFor[GobDecoder]()
+	binaryMarshalerInterfaceType   = reflect.TypeFor[encoding.BinaryMarshaler]()
+	binaryUnmarshalerInterfaceType = reflect.TypeFor[encoding.BinaryUnmarshaler]()
+	textMarshalerInterfaceType     = reflect.TypeFor[encoding.TextMarshaler]()
+	textUnmarshalerInterfaceType   = reflect.TypeFor[encoding.TextUnmarshaler]()
+
+	wireTypeType = reflect.TypeFor[wireType]()
 )
 
 // implementsInterface reports whether the type implements the
@@ -160,7 +162,6 @@ func userType(rt reflect.Type) *userTypeInfo {
 // Internally, typeIds are used as keys to a map to recover the underlying type info.
 type typeId int32
 
-var nextId typeId       // incremented for each new type we build
 var typeLock sync.Mutex // set while building a type
 const firstUserId = 64  // lowest id number granted to user
 
@@ -172,25 +173,41 @@ type gobType interface {
 	safeString(seen map[typeId]bool) string
 }
 
-var types = make(map[reflect.Type]gobType)
-var idToType = make(map[typeId]gobType)
-var builtinIdToType map[typeId]gobType // set in init() after builtins are established
+var (
+	types                = make(map[reflect.Type]gobType, 32)
+	idToTypeSlice        = make([]gobType, 1, firstUserId)
+	builtinIdToTypeSlice [firstUserId]gobType // set in init() after builtins are established
+)
+
+func idToType(id typeId) gobType {
+	if id < 0 || int(id) >= len(idToTypeSlice) {
+		return nil
+	}
+	return idToTypeSlice[id]
+}
+
+func builtinIdToType(id typeId) gobType {
+	if id < 0 || int(id) >= len(builtinIdToTypeSlice) {
+		return nil
+	}
+	return builtinIdToTypeSlice[id]
+}
 
 func setTypeId(typ gobType) {
 	// When building recursive types, someone may get there before us.
 	if typ.id() != 0 {
 		return
 	}
-	nextId++
+	nextId := typeId(len(idToTypeSlice))
 	typ.setId(nextId)
-	idToType[nextId] = typ
+	idToTypeSlice = append(idToTypeSlice, typ)
 }
 
 func (t typeId) gobType() gobType {
 	if t == 0 {
 		return nil
 	}
-	return idToType[t]
+	return idToType(t)
 }
 
 // string returns the string representation of the type associated with the typeId.
@@ -237,51 +254,48 @@ var (
 	// Primordial types, needed during initialization.
 	// Always passed as pointers so the interface{} type
 	// goes through without losing its interfaceness.
-	tBool      = bootstrapType("bool", (*bool)(nil), 1)
-	tInt       = bootstrapType("int", (*int)(nil), 2)
-	tUint      = bootstrapType("uint", (*uint)(nil), 3)
-	tFloat     = bootstrapType("float", (*float64)(nil), 4)
-	tBytes     = bootstrapType("bytes", (*[]byte)(nil), 5)
-	tString    = bootstrapType("string", (*string)(nil), 6)
-	tComplex   = bootstrapType("complex", (*complex128)(nil), 7)
-	tInterface = bootstrapType("interface", (*any)(nil), 8)
+	tBool      = bootstrapType("bool", (*bool)(nil))
+	tInt       = bootstrapType("int", (*int)(nil))
+	tUint      = bootstrapType("uint", (*uint)(nil))
+	tFloat     = bootstrapType("float", (*float64)(nil))
+	tBytes     = bootstrapType("bytes", (*[]byte)(nil))
+	tString    = bootstrapType("string", (*string)(nil))
+	tComplex   = bootstrapType("complex", (*complex128)(nil))
+	tInterface = bootstrapType("interface", (*any)(nil))
 	// Reserve some Ids for compatible expansion
-	tReserved7 = bootstrapType("_reserved1", (*struct{ r7 int })(nil), 9)
-	tReserved6 = bootstrapType("_reserved1", (*struct{ r6 int })(nil), 10)
-	tReserved5 = bootstrapType("_reserved1", (*struct{ r5 int })(nil), 11)
-	tReserved4 = bootstrapType("_reserved1", (*struct{ r4 int })(nil), 12)
-	tReserved3 = bootstrapType("_reserved1", (*struct{ r3 int })(nil), 13)
-	tReserved2 = bootstrapType("_reserved1", (*struct{ r2 int })(nil), 14)
-	tReserved1 = bootstrapType("_reserved1", (*struct{ r1 int })(nil), 15)
+	tReserved7 = bootstrapType("_reserved1", (*struct{ r7 int })(nil))
+	tReserved6 = bootstrapType("_reserved1", (*struct{ r6 int })(nil))
+	tReserved5 = bootstrapType("_reserved1", (*struct{ r5 int })(nil))
+	tReserved4 = bootstrapType("_reserved1", (*struct{ r4 int })(nil))
+	tReserved3 = bootstrapType("_reserved1", (*struct{ r3 int })(nil))
+	tReserved2 = bootstrapType("_reserved1", (*struct{ r2 int })(nil))
+	tReserved1 = bootstrapType("_reserved1", (*struct{ r1 int })(nil))
 )
 
 // Predefined because it's needed by the Decoder
-var tWireType = mustGetTypeInfo(reflect.TypeOf(wireType{})).id
-var wireTypeUserInfo *userTypeInfo // userTypeInfo of (*wireType)
+var tWireType = mustGetTypeInfo(wireTypeType).id
+var wireTypeUserInfo *userTypeInfo // userTypeInfo of wireType
 
 func init() {
 	// Some magic numbers to make sure there are no surprises.
 	checkId(16, tWireType)
-	checkId(17, mustGetTypeInfo(reflect.TypeOf(arrayType{})).id)
-	checkId(18, mustGetTypeInfo(reflect.TypeOf(CommonType{})).id)
-	checkId(19, mustGetTypeInfo(reflect.TypeOf(sliceType{})).id)
-	checkId(20, mustGetTypeInfo(reflect.TypeOf(structType{})).id)
-	checkId(21, mustGetTypeInfo(reflect.TypeOf(fieldType{})).id)
-	checkId(23, mustGetTypeInfo(reflect.TypeOf(mapType{})).id)
+	checkId(17, mustGetTypeInfo(reflect.TypeFor[arrayType]()).id)
+	checkId(18, mustGetTypeInfo(reflect.TypeFor[CommonType]()).id)
+	checkId(19, mustGetTypeInfo(reflect.TypeFor[sliceType]()).id)
+	checkId(20, mustGetTypeInfo(reflect.TypeFor[structType]()).id)
+	checkId(21, mustGetTypeInfo(reflect.TypeFor[fieldType]()).id)
+	checkId(23, mustGetTypeInfo(reflect.TypeFor[mapType]()).id)
 
-	builtinIdToType = make(map[typeId]gobType)
-	for k, v := range idToType {
-		builtinIdToType[k] = v
-	}
+	copy(builtinIdToTypeSlice[:], idToTypeSlice)
 
 	// Move the id space upwards to allow for growth in the predefined world
 	// without breaking existing files.
-	if nextId > firstUserId {
+	if nextId := len(idToTypeSlice); nextId > firstUserId {
 		panic(fmt.Sprintln("nextId too large:", nextId))
 	}
-	nextId = firstUserId
+	idToTypeSlice = idToTypeSlice[:firstUserId]
 	registerBasics()
-	wireTypeUserInfo = userType(reflect.TypeOf((*wireType)(nil)))
+	wireTypeUserInfo = userType(wireTypeType)
 }
 
 // Array type
@@ -401,7 +415,7 @@ type fieldType struct {
 
 type structType struct {
 	CommonType
-	Field []*fieldType
+	Field []fieldType
 }
 
 func (s *structType) safeString(seen map[typeId]bool) string {
@@ -521,10 +535,10 @@ func newTypeObject(name string, ut *userTypeInfo, rt reflect.Type) (gobType, err
 	case reflect.Struct:
 		st := newStructType(name)
 		types[rt] = st
-		idToType[st.id()] = st
+		idToTypeSlice[st.id()] = st
 		for i := 0; i < t.NumField(); i++ {
 			f := t.Field(i)
-			if !isSent(&f) {
+			if !isSent(t, &f) {
 				continue
 			}
 			typ := userType(f.Type).base
@@ -544,7 +558,7 @@ func newTypeObject(name string, ut *userTypeInfo, rt reflect.Type) (gobType, err
 			if gt.id() == 0 {
 				setTypeId(gt)
 			}
-			st.Field = append(st.Field, &fieldType{f.Name, gt.id()})
+			st.Field = append(st.Field, fieldType{f.Name, gt.id()})
 		}
 		return st, nil
 
@@ -562,7 +576,7 @@ func isExported(name string) bool {
 // isSent reports whether this struct field is to be transmitted.
 // It will be transmitted only if it is exported and not a chan or func field
 // or pointer to chan or func.
-func isSent(field *reflect.StructField) bool {
+func isSent(struct_ reflect.Type, field *reflect.StructField) bool {
 	if !isExported(field.Name) {
 		return false
 	}
@@ -575,6 +589,17 @@ func isSent(field *reflect.StructField) bool {
 	if typ.Kind() == reflect.Chan || typ.Kind() == reflect.Func {
 		return false
 	}
+
+	// Special case for Go 1.22: the x509.Certificate.Policies
+	// field is unencodable but also unused by default.
+	// Ignore it, so that x509.Certificate continues to be encodeable.
+	// Go 1.23 will add the right methods so that gob can
+	// handle the Policies field, and then we can remove this check.
+	// See go.dev/issue/65633.
+	if field.Name == "Policies" && struct_.PkgPath() == "crypto/x509" && struct_.Name() == "Certificate" {
+		return false
+	}
+
 	return true
 }
 
@@ -611,7 +636,7 @@ func checkId(want, got typeId) {
 
 // used for building the basic types; called only from init().  the incoming
 // interface always refers to a pointer.
-func bootstrapType(name string, e any, expect typeId) typeId {
+func bootstrapType(name string, e any) typeId {
 	rt := reflect.TypeOf(e).Elem()
 	_, present := types[rt]
 	if present {
@@ -620,9 +645,7 @@ func bootstrapType(name string, e any, expect typeId) typeId {
 	typ := &CommonType{Name: name}
 	types[rt] = typ
 	setTypeId(typ)
-	checkId(expect, nextId)
-	userType(rt) // might as well cache it now
-	return nextId
+	return typ.id()
 }
 
 // Representation of the information we send and receive about this type.
@@ -674,7 +697,7 @@ type typeInfo struct {
 	id      typeId
 	encInit sync.Mutex // protects creation of encoder
 	encoder atomic.Pointer[encEngine]
-	wire    *wireType
+	wire    wireType
 }
 
 // typeInfoMap is an atomic pointer to map[reflect.Type]*typeInfo.
@@ -685,7 +708,16 @@ type typeInfo struct {
 // protected by a mutex.
 var typeInfoMap atomic.Value
 
+// typeInfoMapInit is used instead of typeInfoMap during init time,
+// as types are registered sequentially during init and we can save
+// the overhead of making map copies.
+// It is saved to typeInfoMap and set to nil before init finishes.
+var typeInfoMapInit = make(map[reflect.Type]*typeInfo, 16)
+
 func lookupTypeInfo(rt reflect.Type) *typeInfo {
+	if m := typeInfoMapInit; m != nil {
+		return m[rt]
+	}
 	m, _ := typeInfoMap.Load().(map[reflect.Type]*typeInfo)
 	return m[rt]
 }
@@ -726,33 +758,38 @@ func buildTypeInfo(ut *userTypeInfo, rt reflect.Type) (*typeInfo, error) {
 		gt := userType.id().gobType().(*gobEncoderType)
 		switch ut.externalEnc {
 		case xGob:
-			info.wire = &wireType{GobEncoderT: gt}
+			info.wire.GobEncoderT = gt
 		case xBinary:
-			info.wire = &wireType{BinaryMarshalerT: gt}
+			info.wire.BinaryMarshalerT = gt
 		case xText:
-			info.wire = &wireType{TextMarshalerT: gt}
+			info.wire.TextMarshalerT = gt
 		}
 		rt = ut.user
 	} else {
 		t := info.id.gobType()
 		switch typ := rt; typ.Kind() {
 		case reflect.Array:
-			info.wire = &wireType{ArrayT: t.(*arrayType)}
+			info.wire.ArrayT = t.(*arrayType)
 		case reflect.Map:
-			info.wire = &wireType{MapT: t.(*mapType)}
+			info.wire.MapT = t.(*mapType)
 		case reflect.Slice:
 			// []byte == []uint8 is a special case handled separately
 			if typ.Elem().Kind() != reflect.Uint8 {
-				info.wire = &wireType{SliceT: t.(*sliceType)}
+				info.wire.SliceT = t.(*sliceType)
 			}
 		case reflect.Struct:
-			info.wire = &wireType{StructT: t.(*structType)}
+			info.wire.StructT = t.(*structType)
 		}
 	}
 
+	if m := typeInfoMapInit; m != nil {
+		m[rt] = info
+		return info, nil
+	}
+
 	// Create new map with old contents plus new entry.
-	newm := make(map[reflect.Type]*typeInfo)
 	m, _ := typeInfoMap.Load().(map[reflect.Type]*typeInfo)
+	newm := make(map[reflect.Type]*typeInfo, len(m))
 	for k, v := range m {
 		newm[k] = v
 	}
@@ -802,7 +839,7 @@ var (
 	concreteTypeToName sync.Map // map[reflect.Type]string
 )
 
-// RegisterName is like Register but uses the provided name rather than the
+// RegisterName is like [Register] but uses the provided name rather than the
 // type's default.
 func RegisterName(name string, value any) {
 	if name == "" {
@@ -910,4 +947,9 @@ func registerBasics() {
 	Register([]uintptr(nil))
 	Register([]bool(nil))
 	Register([]string(nil))
+}
+
+func init() {
+	typeInfoMap.Store(typeInfoMapInit)
+	typeInfoMapInit = nil
 }
