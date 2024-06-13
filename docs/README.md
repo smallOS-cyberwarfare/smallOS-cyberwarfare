@@ -43,4 +43,7 @@ Search engine for devices
 Automated SQL Inyections  
   
 - [subdomainfinder](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/subdomainfinder/README.md)  
-Find Subdomains  
+Find Subdomains 
+
+- [userlookup](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/userlookup/README.md)
+Find user accounts by username
