@@ -1,0 +1,20 @@
+0 verbose cli /usr/bin/node /usr/bin/npm
+1 info using npm@10.8.0
+2 info using node@v21.7.3
+3 silly config load:file:/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/usr/local/lib/node_modules/observatory-cli/.npmrc
+5 silly config load:file:/home/.npmrc
+6 silly config load:file:/etc/npmrc
+7 verbose title npm ls punycode
+8 verbose argv "ls" "punycode"
+9 verbose logfile logs-max:10 dir:/home/.npm/_logs/2024-06-18T18_44_58_624Z-
+10 verbose logfile /home/.npm/_logs/2024-06-18T18_44_58_624Z-debug-0.log
+11 silly packumentCache heap:1979973632 maxSize:494993408 maxEntrySize:247496704
+12 silly logfile start cleaning logs, removing 1 files
+13 silly logfile done cleaning log files
+14 verbose cwd /usr/local/lib/node_modules/observatory-cli
+15 verbose os Linux 6.2.1-PRoot-Distro
+16 verbose node v21.7.3
+17 verbose npm  v10.8.0
+18 verbose exit 0
+19 info ok

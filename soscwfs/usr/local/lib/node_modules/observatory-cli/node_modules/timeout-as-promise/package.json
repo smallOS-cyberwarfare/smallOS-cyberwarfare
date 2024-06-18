@@ -1,0 +1,40 @@
+{
+  "name": "timeout-as-promise",
+  "version": "1.0.0",
+  "description": "setTimeout as a native Promise",
+  "main": "index.js",
+  "scripts": {
+    "coverage": "istanbul cover test.js",
+    "coveralls": "npm run coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "lint": "jshint .",
+    "test": "tape test.js | tap-spec",
+    "validate": "npm run lint && npm test && npm run coveralls"
+  },
+  "files": [
+    "index.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jimf/timeout-as-promise"
+  },
+  "keywords": [
+    "timeout",
+    "settimeout",
+    "promise",
+    "delay",
+    "wait"
+  ],
+  "author": "Jim Fitzpatrick",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jimf/timeout-as-promise/issues"
+  },
+  "homepage": "https://github.com/jimf/timeout-as-promise",
+  "devDependencies": {
+    "coveralls": "^2.11.6",
+    "istanbul": "^0.4.1",
+    "jshint": "^2.8.0",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.4.0"
+  }
+}

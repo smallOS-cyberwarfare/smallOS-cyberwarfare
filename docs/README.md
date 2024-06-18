@@ -7,8 +7,7 @@ Official Documentation of SmallOS-CyberWarfare Distro
 Domain Information Groper is a flexible tool for interrogating DNS name servers  
   
 - [dirfinder](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/dirfinder/README.md)  
-Find files and directories. Multiple options like use random user agents, change methods  
-  
+Find files and directories. Multiple options like use random user agents, change methods   
 - [dirstalk](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/dirstalk/README.md)  
 Find files and directories. Multi threaded application designed to brute force paths on web servers  
   
@@ -32,6 +31,9 @@ Open Ports without router. Share localhost services
   
 - [nuclei](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/nuclei/README.md)  
 Fast and customizable vulnerability scanner based on simple YAML based DSL  
+
+- [observatory](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/observatory/README.md)
+Get http headers info related to security 
 
 - [searchsploit](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/searchsploit/README.md)  
 Command line search tool for Exploit-DB 
