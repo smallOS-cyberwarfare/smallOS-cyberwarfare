@@ -5,11 +5,8 @@ Get http headers security related info from Mozilla Observatory
 https://github.com/mozilla/observatory-cli via npm install -g observatory-cli
 
 ### Usage  
-> observatory domain.tld [--format=FORMAT_TYPE] [--rescan] [--zero] [--attemps] [--quiet] 
+> observatory domain.tld [--format=FORMAT_TYPE] [--rescan] [--zero] [--attemps] [--quiet] [--help] 
   
-> name [other args] [other args]   
-  
-> name [--help]  
   
 ### Examples   
 ##### Get csv for example.com  
