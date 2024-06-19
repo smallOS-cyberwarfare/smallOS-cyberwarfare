@@ -1,0 +1,16 @@
+LICENSE
+README.md
+setup.py
+fierce/__init__.py
+fierce/fierce.py
+fierce.egg-info/PKG-INFO
+fierce.egg-info/SOURCES.txt
+fierce.egg-info/dependency_links.txt
+fierce.egg-info/entry_points.txt
+fierce.egg-info/requires.txt
+fierce.egg-info/top_level.txt
+fierce/lists/20000.txt
+fierce/lists/5000.txt
+fierce/lists/default.txt
+tests/test_fierce.py
+tests/test_filesystem.py
