@@ -14,7 +14,7 @@ Find files and directories. Multi threaded application designed to brute force p
 - [domsinkfinder](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/domsinkfinder/README.md)  
 Find DOM sinks in source code by url. Helps to manually find DOM XSS  
 
-- [fierce](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/fierce/README.md)
+- [fierce](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/fierce/README.md)  
 A DNS reconnaissance tool for locating non-contiguous IP space.
   
 - [gitleaks](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/gitleaks/README.md)  
