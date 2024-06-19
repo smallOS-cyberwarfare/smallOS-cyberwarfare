@@ -14,6 +14,7 @@ libcurl
 libssl1.1
 lynx
 ncurses
+nikto
 nmap
 nmap-ncat
 nmap-scripts
@@ -21,6 +22,7 @@ npm
 openssh
 openssl
 p7zip
+perl-net-ssleay
 py3-pip
 python3
 quickjs@testing

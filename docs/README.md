@@ -28,6 +28,9 @@ Multipurpouse Network Scanning Tool
    
 - [ngrok-opensource](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/ngrok/README.md)  
 Open Ports without router. Share localhost services
+
+- [nikto](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/nikto/README.md)  
+Web App/Server scanner
   
 - [nuclei](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/nuclei/README.md)  
 Fast and customizable vulnerability scanner based on simple YAML based DSL  

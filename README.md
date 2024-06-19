@@ -14,6 +14,7 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 - ngrok (share localhost services)
 - ncat (empowered netcat)
 - nmap (network scanner)
+- nikto (web server/app scanner)
 - nuclei (vuln scanner)
 - observatory (http headers vuln scanner)
 - searchsploit (search exploits)
