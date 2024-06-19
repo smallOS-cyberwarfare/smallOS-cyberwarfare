@@ -45,7 +45,8 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
   
 ### Programming  
 - bash  
-- go  
+- go 
+- perl
 - python3  
 - node (javasript)
 - quickjs (javascript)  
