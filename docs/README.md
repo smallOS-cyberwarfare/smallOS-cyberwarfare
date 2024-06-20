@@ -22,6 +22,9 @@ Find credentials in git repositories
 
 - [impulse](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/impulse/README.md)  
 Denial Of Service (DOS) ToolKit  
+
+- [jhon](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/jhon/README.md)  
+Advanced Offline Password Cracker
   
 - [ncat](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/ncat/README.md)  
 Read and Write to machines across network
