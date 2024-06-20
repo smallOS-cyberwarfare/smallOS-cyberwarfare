@@ -11,6 +11,7 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 - domsinkfinder (XSS-DOM sinks highlighter) 
 - fierce (DNS reconnaissance tool)
 - gitleaks (find credentials in git repositories)
+- hydra (network cracking tool)
 - impulse (ddos tools) 
 - john (offline password cracker)
 - ngrok (share localhost services)
@@ -70,9 +71,8 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 
 ##### Requeriments
 
-Download Size: **342-1700 Megabytes**  
-Installing size: **1.7 Gigabytes**  
-Installed Size: **1.7 Gigabytes**  
+Download Size: **1.2+ GB**  
+Installed Size: **4+ GB**  
 Arch: **Aarch64**  
 System: **Termux**  
   

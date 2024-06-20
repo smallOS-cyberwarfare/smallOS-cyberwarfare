@@ -20,6 +20,9 @@ A DNS reconnaissance tool for locating non-contiguous IP space.
 - [gitleaks](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/gitleaks/README.md)  
 Find credentials in git repositories
 
+- [hydra](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/hydra/README.md)  
+Network Cracking Tool
+
 - [impulse](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/impulse/README.md)  
 Denial Of Service (DOS) ToolKit  
 

@@ -7,6 +7,7 @@ busybox
 coreutils
 git
 go
+hydra
 john
 libc-utils
 libcrypto1.1
