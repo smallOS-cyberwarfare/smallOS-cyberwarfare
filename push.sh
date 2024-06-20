@@ -8,6 +8,7 @@ if [[ -d soscwfs  ]]; then
   rm soscwfs/root/.ash_history
   rm soscwfs/root/.bash_history
   rm soscwfs/root/.viminfo
+  rm soscwfs/home/.vim/.netrwhist
   rm soscwfs/root/.config/shodan/api_key
   rm soscwfs/root/.ssh/id_ecdsa
   rm soscwfs/root/.ssh/id_ecdsa.pub
