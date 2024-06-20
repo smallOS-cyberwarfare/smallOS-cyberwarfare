@@ -21,7 +21,7 @@ wtm -u https://example.com -f passwords.txt
 cat passwords.txt # Print Extracted Words
 ```
 
-##### Extract wordslist as passwords.txt from example.com source code and all the urls fond inside
+##### Extract wordslist as passwords.txt from example.com source code and all the urls found inside
 ```bash
 wtm -u https://example.com -f passwords.txt -d 2
 
