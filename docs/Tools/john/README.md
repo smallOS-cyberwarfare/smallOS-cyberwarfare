@@ -28,7 +28,7 @@ john --wordlist=wordlist.txt hashes.txt
 ```bash
 john --show --format=raw-md5 hash.txt 
 
-# Hashed cracked are saved at ~/.john/john.pot
+# Hashes cracked are saved at ~/.john/john.pot
 ```
 
 ##### Show all cracked hashes
