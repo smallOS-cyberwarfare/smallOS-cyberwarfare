@@ -3,7 +3,7 @@
 Official Documentation of SmallOS-CyberWarfare Distro
 
 ### Tools
-- [crunch](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/crunch/README.md)
+- [crunch](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/crunch/README.md)  
 Create Dictionaries 
 
 - [dig](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/dig/README.md)  
