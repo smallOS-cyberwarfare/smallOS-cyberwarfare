@@ -5,6 +5,8 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 
 ##### List of Commands  
 ### Attack
+
+- crunch (create dictionaries)
 - dig (scan dns)
 - dirfinder (folders scanner)  
 - dirstalk (folders scanner)  
@@ -26,9 +28,6 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 - subdomainfinder (fast/basic subdomain finder)
 - userlookup (OSINT on username)
 - wtm (create dictionaries based on the url)
-
-### Dictionaries  
-- https://raw.githubusercontent.com/daviddias/node-dirbuster/master/lists/directory-list-2.3-small.txt [dirstalk]
 
 ### Utils  
 - 7z (compress/decompress)
