@@ -1,0 +1,45 @@
+0 verbose cli /usr/bin/node /usr/bin/npm
+1 info using npm@10.8.0
+2 info using node@v21.7.3
+3 silly config load:file:/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/home/nbmxbsf/.npmrc
+5 silly config load:file:/home/.npmrc
+6 silly config load:file:/etc/npmrc
+7 verbose title npm i
+8 verbose argv "i"
+9 verbose logfile logs-max:10 dir:/home/.npm/_logs/2024-06-20T07_39_30_183Z-
+10 verbose logfile /home/.npm/_logs/2024-06-20T07_39_30_183Z-debug-0.log
+11 silly packumentCache heap:1979973632 maxSize:494993408 maxEntrySize:247496704
+12 silly logfile start cleaning logs, removing 1 files
+13 silly logfile done cleaning log files
+14 silly idealTree buildDeps
+15 silly reify moves {}
+16 silly audit bulk request {
+16 silly audit   '@types/node': [ '16.11.10' ],
+16 silly audit   fdir: [ '5.2.0' ],
+16 silly audit   typescript: [ '4.5.2' ]
+16 silly audit }
+17 silly packumentCache corgi:https://registry.npmjs.org/typescript cache-miss
+18 silly packumentCache corgi:https://registry.npmjs.org/@types%2fnode cache-miss
+19 silly tarball no local data for fdir@https://registry.npmjs.org/fdir/-/fdir-5.2.0.tgz. Extracting by manifest.
+20 warn tarball tarball data for fdir@https://registry.npmjs.org/fdir/-/fdir-5.2.0.tgz (sha512-skyI2Laxtj9GYzmktPgY6DT8uswXq+VoxH26SskykvEhTSbi7tRM/787uZt/p8maxrQCJdzC90zX1btbxiJ6lw==) seems to be corrupted. Trying again.
+21 http fetch GET 200 https://registry.npmjs.org/fdir/-/fdir-5.2.0.tgz 504ms (cache miss)
+22 http fetch GET 200 https://registry.npmjs.org/@types%2fnode 2030ms (cache updated)
+23 silly packumentCache corgi:https://registry.npmjs.org/@types%2fnode set size:undefined disposed:false
+24 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 2374ms
+25 silly audit report {}
+26 warn tarball tarball data for @types/node@16.11.10 (sha512-3aRnHa1KlOEEhJ6+CvyHKK5vE9BcLGjtUpwvqYLRvYNQKMfabu3BwfJaA/SLW8dxe28LsNDjtHwePTuzn3gmOA==) seems to be corrupted. Trying again.
+27 http fetch GET 200 https://registry.npmjs.org/typescript 2607ms (cache updated)
+28 silly packumentCache corgi:https://registry.npmjs.org/typescript set size:undefined disposed:false
+29 warn tarball tarball data for typescript@4.5.2 (sha512-5BlMof9H1yGt0P8/WF+wPNw6GfctgGjXp5hkblpyT+8rkASSmkUKMXrxR0Xg8ThVCi/JnHQiKXeBaEwCeQwMFw==) seems to be corrupted. Trying again.
+30 http fetch GET 200 https://registry.npmjs.org/@types/node/-/node-16.11.10.tgz 686ms (cache miss)
+31 http fetch GET 200 https://registry.npmjs.org/typescript/-/typescript-4.5.2.tgz 6484ms (cache miss)
+32 silly ADD node_modules/typescript
+33 silly ADD node_modules/fdir
+34 silly ADD node_modules/@types/node
+35 verbose cwd /home/nbmxbsf
+36 verbose os Linux 6.2.1-PRoot-Distro
+37 verbose node v21.7.3
+38 verbose npm  v10.8.0
+39 verbose exit 0
+40 info ok

@@ -1,0 +1,19 @@
+0 verbose cli /usr/bin/node /usr/bin/npm
+1 info using npm@10.8.0
+2 info using node@v21.7.3
+3 silly config load:file:/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/home/user-lookup/.npmrc
+5 silly config load:file:/home/.npmrc
+6 silly config load:file:/etc/npmrc
+7 verbose title npm start
+8 verbose argv "start"
+9 verbose logfile logs-max:10 dir:/home/.npm/_logs/2024-06-20T07_35_28_080Z-
+10 verbose logfile /home/.npm/_logs/2024-06-20T07_35_28_080Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly logfile done cleaning log files
+13 verbose cwd /home/user-lookup
+14 verbose os Linux 6.2.1-PRoot-Distro
+15 verbose node v21.7.3
+16 verbose npm  v10.8.0
+17 verbose exit 1
+18 verbose code 1
