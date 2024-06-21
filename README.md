@@ -6,6 +6,7 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 ##### List of Commands  
 ### Attack
 
+- commix (command injection exploitation tool)
 - crunch (create dictionaries)
 - dig (scan dns)
 - dirfinder (folders scanner)  

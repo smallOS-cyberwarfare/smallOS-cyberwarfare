@@ -3,6 +3,9 @@
 Official Documentation of SmallOS-CyberWarfare Distro
 
 ### Tools
+- [commix](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/commix/README.md)  
+Command Injection Exploitation Tool
+
 - [crunch](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/crunch/README.md)  
 Create Dictionaries 
 
