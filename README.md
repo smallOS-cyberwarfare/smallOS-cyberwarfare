@@ -37,6 +37,7 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 - js (run javascript commands directly in your terminal)  
 - lynx (http client, in shell/cli browser)  
 - npm (manage node packages)  
+- pup (parse html in the terminal)
 - ssh (openssh client to connect to remote servers)
 - sshd (openssh server)
 - tgbot (telegram remote administration tool)  
