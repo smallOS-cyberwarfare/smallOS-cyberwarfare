@@ -6,7 +6,7 @@ Official Documentation of SmallOS-CyberWarfare Distro
 - [aicli](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/aicli/README.md)  
 AI assistant tool like ChatGPT
 
-- [aicodegen](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/aicodegen/README.md)
+- [aicodegen](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/aicodegen/README.md)  
 AI assistant tool like ChatGPT tunned to generate only runnable code
 
 - [commix](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/commix/README.md)  
@@ -56,7 +56,7 @@ Web App/Server scanner
 - [nuclei](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/nuclei/README.md)  
 Fast and customizable vulnerability scanner based on simple YAML based DSL  
 
-- [observatory](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/observatory/README.md)
+- [observatory](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/observatory/README.md)  
 Get http headers info related to security 
 
 - [searchsploit](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/searchsploit/README.md)  
@@ -68,7 +68,8 @@ Find user accounts by username
 - [shodan](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/shodan/README.md)  
 Search engine for devices 
  
-- [spiderfoot](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/spiderfoot/README.md)                                                        OSINT and mapping your attack surface.
+- [spiderfoot](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/spiderfoot/README.md)  
+OSINT and mapping your attack surface.
 
 - [sqlmap](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/sqlmap/README.md)  
 Automated SQL Inyections  
@@ -76,7 +77,7 @@ Automated SQL Inyections
 - [subdomainfinder](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/subdomainfinder/README.md)  
 Find Subdomains 
 
-- [userlookup](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/userlookup/README.md)
+- [userlookup](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/userlookup/README.md)  
 Find user accounts by username  
 
 - [wtm](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/wtm/README.md)  
