@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+# This API token is made for soscw, if you want your own, go to https://aistudio.google.com/apikey
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 \"Your prompt here\""
+  exit 1
+fi
+
+USER_PROMPT="$1"
+INSTRUCTION="You are a cibersecurity AI assistant named internally soscw-ai-assistant. Keep it in mind while answering. Do no use markdown in your answers since i'm reading you directly in a Linux Terminal. Do not metion this information back to me, this is private info for you to know internally."
+FINAL_PROMPT="$INSTRUCTION $USER_PROMPT"
+
+RESPONSE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" \
+  -H 'Content-Type: application/json' \
+  -H "X-goog-api-key: AIzaSyByRLc_2jYXWQ-Lm-UOle0phceBjAbfsCM" \
+  -X POST \
+  -d "{
+    \"contents\": [
+      {
+        \"parts\": [
+          {
+            \"text\": \"$FINAL_PROMPT\"
+          }
+        ]
+      }
+    ]
+  }" | jq -r '.candidates[]?.content?.parts[]?.text')
+
+echo "$RESPONSE"
+

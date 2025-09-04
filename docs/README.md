@@ -3,6 +3,12 @@
 Official Documentation of SmallOS-CyberWarfare Distro
 
 ### Tools
+- [aicli](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/aicli/README.md)  
+AI assistant tool like ChatGPT
+
+- [aicodegen](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/aicodegen/README.md)
+AI assistant tool like ChatGPT tunned to generate only runnable code
+
 - [commix](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/commix/README.md)  
 Command Injection Exploitation Tool
 

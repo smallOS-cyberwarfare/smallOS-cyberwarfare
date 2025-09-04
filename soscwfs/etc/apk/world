@@ -9,6 +9,7 @@ git
 go
 hydra
 john
+jq
 libc-utils
 libcrypto1.1
 libcrypto3

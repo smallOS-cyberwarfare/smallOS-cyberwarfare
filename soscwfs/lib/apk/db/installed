@@ -17685,6 +17685,34 @@ Z:Q1Hf+1SxUZoVKKkku6oL0vi9+Pssk=
 R:specific.rule
 Z:Q12GQe/nQ8nzaX3YgaspaubahYfL4=
 
+C:Q1kDMuo28mJk09If77cvRlTOt7LpI=
+P:jq
+V:1.8.0-r0
+A:aarch64
+S:148225
+I:396840
+T:A lightweight and flexible command-line JSON processor
+U:https://jqlang.github.io/jq/
+L:MIT
+o:jq
+m:Patrycja Rosa <alpine@ptrcnull.me>
+t:1748855067
+c:d3c1a084f50cffe6f4e62e064efa32ae6129ceee
+D:so:libc.musl-aarch64.so.1 so:libonig.so.5
+p:so:libjq.so.1=1.0.4 cmd:jq=1.8.0-r0
+F:usr
+F:usr/bin
+R:jq
+a:0:0:755
+Z:Q1K5WG5SWgpLtzsL0FemfYbMOpFHI=
+F:usr/lib
+R:libjq.so.1
+a:0:0:777
+Z:Q1E8fNtZsuUbj68oh4MR4je3w3L34=
+R:libjq.so.1.0.4
+a:0:0:755
+Z:Q17Yt0IKCW3R7/QEjgA9GroJbvTcw=
+
 C:Q12uDNG5JCx+tHYNYCuiegPsphOVM=
 P:json-c
 V:0.18-r1
@@ -27284,6 +27312,30 @@ Z:Q1+31JehN1UN7LpR/DQGD2j6ZD7gw=
 R:libssl3.so.114
 a:0:0:755
 Z:Q1zpuu/u11vRS3zsZMX9j/7+nQyw0=
+
+C:Q1owtKRPqzw6zwBJdn5fLFfCKCsUw=
+P:oniguruma
+V:6.9.10-r0
+A:aarch64
+S:186698
+I:617864
+T:a regular expressions library
+U:https://github.com/kkos/oniguruma
+L:BSD-2-Clause
+o:oniguruma
+m:Francesco Colista <fcolista@alpinelinux.org>
+t:1739380646
+c:31082e89063dfb6b02af0b38c46af803a118137a
+D:so:libc.musl-aarch64.so.1
+p:so:libonig.so.5=5.5.0
+F:usr
+F:usr/lib
+R:libonig.so.5
+a:0:0:777
+Z:Q1wf6bEPw3gDwjldujVJoLqh9hY8k=
+R:libonig.so.5.5.0
+a:0:0:755
+Z:Q1tsQ2wTsOMXqIIDS9XMkULU6DKZQ=
 
 C:Q1Qq6K3eklABw9qAj9ddGH0NeYDuU=
 P:openblas

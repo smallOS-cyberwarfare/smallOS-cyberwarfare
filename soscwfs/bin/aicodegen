@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# This API token is made for soscw, if you want your own, go to https://aistudio.google.com/apikey
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 \"Your prompt here\""
+  exit 1
+fi
+
+USER_PROMPT="$1"
+INSTRUCTION="Respond only with the required code, in plain text, without explanations. "
+FINAL_PROMPT="$INSTRUCTION $USER_PROMPT"
+
+RESPONSE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" \
+  -H 'Content-Type: application/json' \
+  -H "X-goog-api-key: AIzaSyByRLc_2jYXWQ-Lm-UOle0phceBjAbfsCM" \
+  -X POST \
+  -d "{
+    \"contents\": [
+      {
+        \"parts\": [
+          {
+            \"text\": \"$FINAL_PROMPT\"
+          }
+        ]
+      }
+    ]
+  }" | jq -r '.candidates[]?.content?.parts[]?.text')
+
+if echo "$RESPONSE" | grep -q '^```'; then
+  CLEANED=$(echo "$RESPONSE" | sed '/^```/d' | sed '/^```.*$/d' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+  echo "$CLEANED"
+else
+  echo "$RESPONSE"
+fi
+

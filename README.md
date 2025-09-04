@@ -34,6 +34,8 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 
 ### Utils  
 - 7z (compress/decompress)
+- aicli (ask cuestions to an AI, custom gemini frontend)
+- aicodegen (ask for runnable code to an AI, custom gemini frontend)
 - APK (Package Manager)
 - createproject (save files or dirs to be created where you want)
 - git (manage paackages)  
