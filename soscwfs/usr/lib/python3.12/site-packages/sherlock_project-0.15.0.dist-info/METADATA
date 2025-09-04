@@ -1,0 +1,82 @@
+Metadata-Version: 2.1
+Name: sherlock-project
+Version: 0.15.0
+Summary: Hunt down social media accounts by username across social networks
+Home-page: https://sherlockproject.xyz/
+License: MIT
+Keywords: osint,reconnaissance,information gathering
+Author: Siddharth Dushantha
+Author-email: siddharth.dushantha@gmail.com
+Maintainer: Paul Pfeister
+Maintainer-email: code@pfeister.dev
+Requires-Python: >=3.8,<4.0
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Information Technology
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Security
+Provides-Extra: tor
+Requires-Dist: PySocks (>=1.7.0,<2.0.0)
+Requires-Dist: certifi (>=2019.6.16)
+Requires-Dist: colorama (>=0.4.1,<0.5.0)
+Requires-Dist: openpyxl (>=3.0.10,<4.0.0)
+Requires-Dist: pandas (>=1.0.0,<3.0.0)
+Requires-Dist: requests (>=2.22.0,<3.0.0)
+Requires-Dist: requests-futures (>=1.0.0,<2.0.0)
+Requires-Dist: stem (>=1.8.0,<2.0.0)
+Requires-Dist: torrequest (>=0.1.0,<0.2.0) ; extra == "tor"
+Project-URL: Bug Tracker, https://github.com/sherlock-project/sherlock/issues
+Project-URL: Repository, https://github.com/sherlock-project/sherlock
+Description-Content-Type: text/markdown
+
+<!-- This README should be a mini version at all times for use on pypi -->
+
+<p align=center>
+  <br>
+  <a href="https://sherlock-project.github.io/" target="_blank"><img src="https://www.kali.org/tools/sherlock/images/sherlock-logo.svg" width="25%"/></a>
+  <br>
+  <strong><span>Hunt down social media accounts by username across <a href="https://github.com/sherlock-project/sherlock/blob/master/sites.md">400+ social networks</a></span></strong>
+  <br><br>
+  <span>Additional documentation can be found at our <a href="https://github.com/sherlock-project/sherlock/">GitHub repository</a></span>
+  <br>
+</p>
+
+## Usage
+
+```console
+$ sherlock --help
+usage: sherlock [-h] [--version] [--verbose] [--folderoutput FOLDEROUTPUT]
+                [--output OUTPUT] [--tor] [--unique-tor] [--csv] [--xlsx]
+                [--site SITE_NAME] [--proxy PROXY_URL] [--json JSON_FILE]
+                [--timeout TIMEOUT] [--print-all] [--print-found] [--no-color]
+                [--browse] [--local] [--nsfw]
+                USERNAMES [USERNAMES ...]
+```
+
+To search for only one user:
+```bash
+$ sherlock user123
+```
+
+To search for more than one user:
+```bash
+$ sherlock user1 user2 user3
+```
+<br>
+
+___
+
+<br>
+<p align="center">
+<img width="70%" height="70%" src="https://user-images.githubusercontent.com/27065646/219638267-a5e11090-aa6e-4e77-87f7-0e95f6ad5978.png"/>
+</a>
+</p>
+

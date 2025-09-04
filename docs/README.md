@@ -56,12 +56,14 @@ Get http headers info related to security
 - [searchsploit](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/searchsploit/README.md)  
 Command line search tool for Exploit-DB 
 
-- [spiderfoot](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/spiderfoot/README.md)  
-OSINT tool
+- [sherlock](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/sherlock/README.md)  
+Find user accounts by username
 
 - [shodan](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/shodan/README.md)  
 Search engine for devices 
-  
+ 
+- [spiderfoot](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/spiderfoot/README.md)                                                        OSINT and mapping your attack surface.
+
 - [sqlmap](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/sqlmap/README.md)  
 Automated SQL Inyections  
   

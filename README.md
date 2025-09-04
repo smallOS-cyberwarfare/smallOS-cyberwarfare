@@ -24,8 +24,9 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 - nuclei (vuln scanner)
 - observatory (http headers vuln scanner)
 - searchsploit (search exploits)
-- spiderfoot (OSINT and mapping surface)
+- sherlock (OSINT on username)
 - shodan (search machines)
+- spiderfoot (OSINT and mapping surface)
 - sqlmap (automatic sqli)  
 - subdomainfinder (fast/basic subdomain finder)
 - userlookup (OSINT on username)
@@ -74,7 +75,7 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 
 ##### Requeriments
 
-Download Size: **1.5+ GB**  
+Download Size: **1.6+ GB**  
 Installed Size: **5+ GB**  
 Arch: **Aarch64**  
 System: **Termux**  
