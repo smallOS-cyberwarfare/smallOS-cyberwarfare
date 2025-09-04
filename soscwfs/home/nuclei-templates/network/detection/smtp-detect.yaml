@@ -1,7 +1,7 @@
-id: smtp-service-detect
+id: smtp-detect
 
 info:
-  name: SMTP Service Detection
+  name: SMTP Detection
   author: pussycat0x,userdehghani
   severity: info
   description: |
@@ -21,4 +21,4 @@ tcp:
       - type: word
         words:
           - "SMTP"
-# digest: 4a0a0047304502204d67d971f643247fbbdd0f37d4ff710f5ffc92458788c8b4f0fb8a9a75bc4444022100afca179b9a874ec0efd03bac9323addf0528728e3e1ca4c429094a9cb0d40603:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a00473045022100f4391fb9efc421ca867a7d4f97a4f0382bb81234334127df7fa3374d87d869f7022074c21d651eca1f44b39b44bf3aa3c486871a691cf3b16e08d22224793e33a510:922c64590222798bb761d5b6d8e72950

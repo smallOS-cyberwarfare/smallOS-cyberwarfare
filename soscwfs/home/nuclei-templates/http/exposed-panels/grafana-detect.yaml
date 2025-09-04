@@ -39,7 +39,6 @@ http:
 
     extractors:
       - type: regex
-        name: version
         part: body
         group: 1
         regex:
@@ -49,4 +48,4 @@ http:
       - type: kval
         kval:
           - version
-# digest: 490a0046304402203e8860b188f88035cd6d396eb8aa8ef0f43eefc67e36438b8dd034c44ce11e6b0220278a274edaacbcf855169ded447ae516dd871ba72388a58eb61e4cbd519459ec:922c64590222798bb761d5b6d8e72950
+# digest: 4b0a00483046022100c4051b13610587374a026cff239d2536309594bc56eecbae999dc2839f165877022100e2c648db89a5fd75395661d8bfecfb4d77f32d9543ad75f1bcf643265a34054e:922c64590222798bb761d5b6d8e72950

@@ -7,7 +7,6 @@ info:
   reference:
     - https://wordpress.org/plugins/really-simple-captcha/
   metadata:
-    max-request: 1
     plugin_namespace: really-simple-captcha
     wpscan: https://wpscan.com/plugin/really-simple-captcha
   tags: tech,wordpress,wp-plugin,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 4a0a00473045022100e522d3dd3b323914f1459891caad48fd8bc586f156ff087b2f98870c608442d4022067eefc60e167de3e9f9ce76bbe0be50ec13ef70a7c6d2d58d2e728b590de06f5:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a0047304502204a965af6ac307201f7949074d825cf6d46d936ccc4c448c2bee6e3ce84cddce60221008bf9241f9076a7ed2d45e0788e8628f3bf9406fe066dc827ac9486601d660677:922c64590222798bb761d5b6d8e72950

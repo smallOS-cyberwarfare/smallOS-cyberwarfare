@@ -1,10 +1,11 @@
 id: dell-idrac9-default-login
 
 info:
-  name: DELL iDRAC9 Default Login
+  name: DELL iDRAC9 - Default Login
   author: kophjager007,milo2012
   severity: high
-  description: DELL iDRAC9 default login information was discovered. The default iDRAC username and password are widely known, and any user with access to the server could change the default password.
+  description: |
+    DELL iDRAC9 default login credentials was discovered.
   reference:
     - https://www.dell.com/support/kbdoc/en-us/000177787/how-to-change-the-default-login-password-of-the-idrac-9
   classification:
@@ -30,15 +31,13 @@ http:
 
     matchers-condition: and
     matchers:
+      - type: regex
+        name: authresult
+        regex:
+          - '"authResult"\s*:\s*0'
+
       - type: status
         status:
           - 201
           - 200
-        condition: or
-
-      - type: word
-        part: body
-        words:
-          - '"authResult":0'
-
-# digest: 4a0a0047304502200a736abbc8a5fdabdc0e5bda7cdb5ceb112221b73971ad1a88d4649b8f982f5c0221008cee9dc91f9879aac58248ac6dd4a20b191e128b3dd22e6644dfb80a5be6fc51:922c64590222798bb761d5b6d8e72950
+# digest: 4b0a00483046022100c8cf50ad2870a1cbf0d8900c7826e6288336928170f974753735cae6c0d911af022100feca13be40403a6e874869bfe7a525f6a4a69ba6a0bf5fa1dad62c5b8a780408:922c64590222798bb761d5b6d8e72950

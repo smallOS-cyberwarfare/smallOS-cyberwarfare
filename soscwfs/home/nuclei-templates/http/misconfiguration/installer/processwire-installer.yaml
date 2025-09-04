@@ -3,11 +3,15 @@ id: processwire-installer
 info:
   name: ProcessWire 3.x Installer Exposure
   author: pussycat0x
-  severity: unknown
+  severity: high
   description: ProcessWire 3.x is susceptible to the Installation page exposure due to misconfiguration.
+  classification:
+    cpe: cpe:2.3:a:processwire:processwire:*:*:*:*:*:*:*:*
   metadata:
     verified: true
     max-request: 2
+    vendor: processwire
+    product: processwire
     shodan-query: title:"ProcessWire 3.x Installer"
   tags: misconfig,processwire,install,exposure
 
@@ -29,4 +33,4 @@ http:
       - type: status
         status:
           - 200
-# digest: 4a0a00473045022100c9040333d464ee74f38bb8f6bf7f9ebce6d974486b7350ee3cad1e01ac28f9d702205d65792631cf1873f7669e346c45e7bc7e29e2ded46d3f11fe0847a25cac5801:922c64590222798bb761d5b6d8e72950
+# digest: 490a00463044022034ab9d6f66f9cefd69c3169ad115d16f94e587a20027caacb8f25a7a1c4d1c380220743201f20b224ce13b3970ef57d48e0ab8a377c1e99f30813d4251c6b599ab7a:922c64590222798bb761d5b6d8e72950

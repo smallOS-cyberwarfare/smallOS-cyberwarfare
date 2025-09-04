@@ -1,0 +1,29 @@
+id: pghero-detect
+
+info:
+  name: PgHero - Detect
+  author: righettod
+  severity: info
+  description: |
+    PgHero products was detected.
+  reference:
+    - https://github.com/ankane/pghero
+  metadata:
+    verified: true
+    max-request: 1
+    shodan-query: http.title:"PgHero"
+  tags: tech,pghero,detect
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    host-redirects: true
+    matchers:
+      - type: dsl
+        dsl:
+          - 'status_code == 200'
+          - 'contains_any(to_lower(body), "<title>pghero", "/assets/pghero/", ">pghero</a>")'
+        condition: and
+# digest: 490a0046304402207d001f0e4ef069ff80098f26307fd21fc706990241608fda03a6e44b4d7b26f302201c80d7b80f509947110b4c6b2a79bd49de2c59460d4af6b338ce7a54ac59ccdb:922c64590222798bb761d5b6d8e72950

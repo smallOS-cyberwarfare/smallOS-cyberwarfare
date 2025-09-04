@@ -7,7 +7,6 @@ info:
   reference:
     - https://wordpress.org/plugins/limit-login-attempts/
   metadata:
-    max-request: 1
     plugin_namespace: limit-login-attempts
     wpscan: https://wpscan.com/plugin/limit-login-attempts
   tags: tech,wordpress,wp-plugin,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 490a0046304402200dbbcde44c92838da41546d5534dee15608d37f243982c29c26bd5e0a555f86002206afa926ac90ed15da4cd534fdacc03b9d4a097920f191ee98f34fdd7f96c4e6c:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a004730450220613e3ef9de80f3fb3e5995e1545f7bf6e02d53cd9d8043af53e4aff94781d15f022100c56e2df208dd49fb8d87e133bae3f58a2d8e7315022213affafe66713b9b28fd:922c64590222798bb761d5b6d8e72950

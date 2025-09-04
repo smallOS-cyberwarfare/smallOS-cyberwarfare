@@ -7,7 +7,6 @@ info:
   reference:
     - https://wordpress.org/plugins/kirki/
   metadata:
-    max-request: 1
     plugin_namespace: kirki
     wpscan: https://wpscan.com/plugin/kirki
   tags: tech,wordpress,wp-plugin,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 490a00463044022061bc74b273e5cc19339da2f641c951df5b61978aa7ff7460b35f0f709757841602205fb3f6fa4d77e7e195e9e876bb7380cc3ac665eec40d707556a942334e60cc5a:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a00473045022100802144b85f3836bd5c9bd6682615748ca48f9dda4d0d9ac073116ac3a3e1ccdd022004792f57f8298a1036c8c59e5a3cf8068003d8ed4351106f9edb34c358c2bd2e:922c64590222798bb761d5b6d8e72950

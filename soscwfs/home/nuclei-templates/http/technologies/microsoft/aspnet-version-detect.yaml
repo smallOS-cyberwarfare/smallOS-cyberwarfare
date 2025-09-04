@@ -20,17 +20,26 @@ http:
   - method: GET
     path:
       - "{{BaseURL}}"
+      - "{{BaseURL}}/%3f"
 
+    stop-at-first-match: true
     host-redirects: true
     max-redirects: 3
 
+    matchers-condition: and
     matchers:
       - type: dsl
         dsl:
           - 'contains(tolower(header), "x-aspnet-version")'
 
+      - type: regex
+        part: header
+        regex:
+          - '(?i)^X-AspNet-Version:\s*$'
+        negative: true
+
     extractors:
       - type: kval
         kval:
           - X_AspNet_Version
-# digest: 4b0a00483046022100dad22bf762e3dc46dba882804cdf41b02014fea00fe0a951845acbe6c3d138490221008ea9e3a1a77a748ef7e6fc1ef736795b1afc129d64c5751d9733f3734b48682c:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a00473045022100f52d08ef8190ca2133be42a4c491addbc18c35ec62825cac01c6d7a2b2216a220220774f61a6528e789bf35f9d5ed72cd727b7a4531a2a96ac2575b01b5317d1cbc7:922c64590222798bb761d5b6d8e72950

@@ -7,7 +7,6 @@ info:
   reference:
     - https://wordpress.org/plugins/otter-blocks/
   metadata:
-    max-request: 1
     plugin_namespace: otter-blocks
     wpscan: https://wpscan.com/plugin/otter-blocks
   tags: tech,wordpress,wp-plugin,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 490a00463044022051549a8aa4fd8ba6136b1e8dc2d4e6f9d73bfc2296ffcb02347ad485937511ed02203a145ed8d5c5508ace0a210b8b441d5f9ef65c7901d8c7b2bedfd8c709be8a99:922c64590222798bb761d5b6d8e72950
+# digest: 4b0a0048304602210083c57930c49fe9f7e49d058fe89ede71549137af78f6f5bb773997375a19c8500221008ba5b24d8c1b442a19a57b1e5f2b5bd5331072933d2be7ad88970daec0058996:922c64590222798bb761d5b6d8e72950

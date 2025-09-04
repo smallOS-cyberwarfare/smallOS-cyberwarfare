@@ -13,35 +13,39 @@ info:
     max-request: 1
     shodan-query: product:"Minecraft"
   tags: js,network,minecraft,enum
+
 javascript:
+  - pre-condition: |
+      isPortOpen(Host,Port);
   - code: |
       let data = "fe01"
       let c = require("nuclei/net");
       let conn = c.Open('tcp', `${Host}:${Port}`);
       conn.SendHex(data);
       let response = conn.RecvString();
-      const version = response.slice(16, 30).replace(/(\d+)(\d{1})(\d+)/, "$1.$2.$3");
-      const description = response.slice(30, -4);
-      const onlinePlayers = response.slice(-1);
-      const maxPlayers = response.slice(-3);
-      Export("Version: ", version , " Description:", description ," Online Players:", onlinePlayers, " Maximum Players:", maxPlayers)
+      if (response.includes("HTTP/1.1")) {
+        conn.Close();
+      } else {
+        let cleanedResponse = response.replace(/\x00/g, '');
+        const version = cleanedResponse.slice(16, 30).replace(/(\d+)(\d{1})(\d+)/, "$1.$2.$3");
+        const description = cleanedResponse.slice(30, -4);
+        const onlinePlayers = cleanedResponse.slice(-1);
+        const maxPlayers = cleanedResponse.slice(-3);
+        Export("Version: ", version , " Description:", description ," Online Players:", onlinePlayers, " Maximum Players:", maxPlayers);
+      }
 
     args:
       Host: "{{Host}}"
       Port: 25565
 
+    matchers-condition: and
     matchers:
       - type: dsl
         dsl:
           - "success == true"
 
-      - type: word
-        words:
-          - "HTTP/1.1"
-        negative: true
-
     extractors:
       - type: dsl
         dsl:
           - response
-# digest: 4a0a00473045022023b2976e91e7c92db1fe31bd18bb5a24b0fd67ce16a0fdf4291a8b93a685f9bb022100cf6cb8408790d6c30b2269bc44c79289d8827ab7a427946efb332ffb694bf089:922c64590222798bb761d5b6d8e72950
+# digest: 4b0a00483046022100990bf833d5080b0619d1fe6745e232836353f58344282235bad2a8f97621dbcb02210087d45a7fdcde25310e67e5079fe7c449f42aa300394b431bdbad2e5dde1e5db7:922c64590222798bb761d5b6d8e72950

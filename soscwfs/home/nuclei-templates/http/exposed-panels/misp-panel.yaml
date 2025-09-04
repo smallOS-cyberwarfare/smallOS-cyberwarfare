@@ -2,7 +2,7 @@ id: misp-panel
 
 info:
   name: MISP Threat Intelligence Sharing Platform Panel - Detect
-  author: johnk3r
+  author: johnk3r,darses
   severity: info
   classification:
     cpe: cpe:2.3:a:misp:misp:*:*:*:*:*:*:*:*
@@ -14,7 +14,13 @@ info:
     shodan-query:
       - http.title:"Users - MISP"
       - http.title:"users - misp"
-    fofa-query: title="users - misp"
+      - http.title:"Errors - MISP"
+      - http.title:"errors - misp"
+      - http.favicon.hash:-137577333
+    fofa-query:
+      - title="users - misp"
+      - title="errors - misp"
+      - icon_hash="-137577333"
     google-query: intitle:"users - misp"
   tags: panel,misp
 
@@ -26,11 +32,14 @@ http:
     matchers-condition: and
     matchers:
       - type: word
-        part: body
         words:
+          - "https://github.com/MISP/MISP"
           - "<title>Users - MISP</title>"
+        condition: or
 
       - type: status
         status:
           - 200
-# digest: 490a0046304402207609f89dca075a4fa70a4f6cecedf64930f843a778ca109eb29a433fc27f7fc902204f82bcaf4c664f0b2919cbf86a73f9b387e8ab874fa82aa379f363694109d063:922c64590222798bb761d5b6d8e72950
+          - 500
+        condition: or
+# digest: 4a0a00473045022100ad6b31528c543c8d2b34fc5928a1f0ebd8e8dd28e96944a2b0896d3b891209ec0220437f873447fce2d112619735182b69d9586b268fa3608b98db6e75b782d77cdb:922c64590222798bb761d5b6d8e72950

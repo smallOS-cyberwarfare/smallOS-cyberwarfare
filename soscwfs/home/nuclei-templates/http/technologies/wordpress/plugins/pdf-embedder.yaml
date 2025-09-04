@@ -7,7 +7,6 @@ info:
   reference:
     - https://wordpress.org/plugins/pdf-embedder/
   metadata:
-    max-request: 1
     plugin_namespace: pdf-embedder
     wpscan: https://wpscan.com/plugin/pdf-embedder
   tags: tech,wordpress,wp-plugin,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 4a0a00473045022100eec13cdd19beb40bc9f356c958e376207eb546c8606c9b79644da90b420a92f802203392969c6cb172ea00876c61a15ab3bf184730f9fb6339a1b84652238187bdd0:922c64590222798bb761d5b6d8e72950
+# digest: 4b0a0048304602210080004818b9b4043e021ae3d00c58d3e9c8b61c7a6e23ebfbb4dda6f41d21ff23022100b21ebe48173b7d130b1c2906a341adb2af52bd7fca37656fba82909b74578b75:922c64590222798bb761d5b6d8e72950

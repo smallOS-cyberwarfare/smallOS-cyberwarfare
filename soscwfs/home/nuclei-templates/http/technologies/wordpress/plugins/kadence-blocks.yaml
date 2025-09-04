@@ -1,13 +1,12 @@
 id: wordpress-kadence-blocks
 
 info:
-  name: Gutenberg Blocks by Kadence Blocks – Page Builder Features Detection
+  name: Gutenberg Blocks with AI by Kadence WP – Page Builder Features Detection
   author: ricardomaia
   severity: info
   reference:
     - https://wordpress.org/plugins/kadence-blocks/
   metadata:
-    max-request: 1
     plugin_namespace: kadence-blocks
     wpscan: https://wpscan.com/plugin/kadence-blocks
   tags: tech,wordpress,wp-plugin,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 4b0a00483046022100ab238da46d59975e969e3289ef84cb175729bffcde2a3a7c759961b10aa826be022100b961fe78553b28d33c17168ad7d2c463d75d8a1571014a368619e015c96e554b:922c64590222798bb761d5b6d8e72950
+# digest: 4b0a00483046022100d790736a1dfde76d6b6d3191518f05d96da3829a8da9e904b6248b4d1a07b127022100cd031e2dcd5d285074904227d0b3c2201e86d7ba904d42004482614ad3bf2742:922c64590222798bb761d5b6d8e72950

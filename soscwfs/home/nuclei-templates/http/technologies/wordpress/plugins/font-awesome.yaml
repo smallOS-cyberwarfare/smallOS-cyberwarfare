@@ -7,7 +7,6 @@ info:
   reference:
     - https://wordpress.org/plugins/font-awesome/
   metadata:
-    max-request: 1
     plugin_namespace: font-awesome
     wpscan: https://wpscan.com/plugin/font-awesome
   tags: tech,wordpress,wp-plugin,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 490a0046304402202a580cbc97ad923c5f9e0ba01adf3c062346f102e43307fac48ebc5ab4fdf9a302205b31093f4c5dff53d82827082494415d98590f72bfff85a8485de6cb2526ef47:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a00473045022100fd3af83fa68e8f368e10add331f3f7b4c0448fc1196c9cfcfed6fd827c9b7b5f022029c12492868ab894686edb154f2b09af43b227a5abb9995b4898412ad032ea4e:922c64590222798bb761d5b6d8e72950

@@ -4166,6 +4166,7 @@ http:
         name: foxycart
         words:
           - <script src="//cdn.foxycart.com
+          - <script src="https://cdn.foxycart.com
 
       - type: word
         name: fpoll
@@ -7596,6 +7597,7 @@ http:
         name: microsoft-silverlight
         words:
           - get microsoft silverlight
+        case-insensitive: true
 
       - type: word
         name: microsoft-skype-for-business
@@ -14986,7 +14988,7 @@ http:
         part: header
         name: zope
         words:
-          - "X-Powered-By: zope"
+          - "X-Powered-By: Zope"
 
       - type: word
         condition: and
@@ -15065,4 +15067,4 @@ http:
         words:
           - "x-dispatcher:"
         case-insensitive: true
-# digest: 4b0a00483046022100bc94744c796eb79eba218d1c041ec0e817654420bfc1a1c188d90dcfc8506dcc0221008763af93a66376ac9b4dbee14f6d8a1db56f84bfc29474faefd0f50ffd68ea6b:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a00473045022100a52dda39bebeb4a0408b7e69da1f8977f211acf29bfe5f86b269e0f84bde14eb02203acaa81f84c6bbce78867e97db9ff6e3742d8bc4e16bcf12e1a29c606985b82a:922c64590222798bb761d5b6d8e72950

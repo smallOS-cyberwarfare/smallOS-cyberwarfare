@@ -7,7 +7,6 @@ info:
   reference:
     - https://wordpress.org/plugins/pinterest-for-woocommerce/
   metadata:
-    max-request: 1
     plugin_namespace: pinterest-for-woocommerce
     wpscan: https://wpscan.com/plugin/pinterest-for-woocommerce
   tags: tech,wordpress,wp-plugin,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 4a0a00473045022100b2f433030d6001f089298e459437dbdf56254f78fa8f80774f2a1f89e5f93dd902205ae77c99b7a4dbddbd2c591f9a68492404b5f4febb05d434450b9832dbc6652e:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a00473045022100c9dfb89f20b0aa05fab1a97784a7eb2e85a98ab465f2c9c6ce5c3de2ded8ce57022005995d6793a474d6214e48806a4c14886902b98e2da143cc62320ecfa15a8109:922c64590222798bb761d5b6d8e72950

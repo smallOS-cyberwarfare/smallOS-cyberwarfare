@@ -1,13 +1,21 @@
 id: drupal-detect
 
 info:
-  name: Drupal Detection
-  author: 1nf1n7y
+  name: Drupal - Detect
+  author: 1nf1n7y,pathtaga
   severity: info
+  classification:
+    cvss-metrics: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N
+    cwe-id: CWE-200
+    cpe: cpe:2.3:a:drupal:drupal:*:*:*:*:*:*:*:*
   metadata:
     verified: true
-    max-request: 3
-    shodan-query: http.component:"Drupal"
+    max-request: 4
+    vendor: drupal
+    product: drupal
+    shodan-query:
+      - http.component:"drupal"
+      - cpe:"cpe:2.3:a:drupal:drupal"
   tags: tech,drupal
 
 http:
@@ -16,7 +24,9 @@ http:
       - "{{BaseURL}}"
       - "{{BaseURL}}/CHANGELOG.txt"
       - "{{BaseURL}}/core/install.php"
+      - "{{BaseURL}}/user/login"
 
+    stop-at-first-match: true
     matchers-condition: or
     matchers:
       - type: word
@@ -31,6 +41,13 @@ http:
         words:
           - 'content="Drupal'
 
+      - type: regex
+        part: header
+        regex:
+          - '(?i)x-drupal'
+          - "(?i)x-generator: drupal"
+        condition: or
+
     extractors:
       - type: regex
         part: body
@@ -38,5 +55,4 @@ http:
         group: 1
         regex:
           - 'class="site-version">([0-9.x-]+)'
-
-# digest: 490a0046304402206b42e6e66bef90d25a1554d6b8dea3838be21a3a6ce7dbf18a65146e41452be7022051ee7c9657b73164a633a9e41e6a0cdfc4847c9c9aa865908caab233866901b8:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a0047304502204b8db21a61d4b068c5516548ab7c78857c358a3c740b002ff0b1e5d9921c6b5c0221009d21f2c0e5cc32167e8f4991987a7af56605b57b7e3db510117c77851ecc5729:922c64590222798bb761d5b6d8e72950

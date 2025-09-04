@@ -12,8 +12,11 @@ info:
     product: dionaea
     vendor: dionaea
   tags: js,network,smb,enum
+
 javascript:
-  - code: |
+  - pre-condition: |
+      isPortOpen(Host,Port);
+    code: |
       let m = require("nuclei/smb");
       let c = new m.SMBClient();
       let response = c.ConnectSMBInfoMode(Host, Port);
@@ -23,14 +26,9 @@ javascript:
       Host: "{{Host}}"
       Port: "445"
 
-    matchers:
-      - type: dsl
-        dsl:
-          - "len(smb-version) != 0"
-
     extractors:
       - type: json
         name: smb-version
         json:
           - '.Version.VerString'
-# digest: 4a0a00473045022023cebe3ce16e51f7fd9a12715b9882ce1e88067b9d48a054fe9c12012802a3a8022100dff5e39dfa527dab4ab699daa509b1c09a33da43157daae29fa4b464dc476f1e:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a004730450220472beef6141d0bf0d9406a2effd2c0aa6c41fb83ef33c30d8b6a77b266636cf1022100b865196766e19bcdc2e4aa6b3241856f47e707916e8737ba05054826498d32dc:922c64590222798bb761d5b6d8e72950

@@ -7,7 +7,6 @@ info:
   reference:
     - https://wordpress.org/plugins/disable-comments/
   metadata:
-    max-request: 1
     plugin_namespace: disable-comments
     wpscan: https://wpscan.com/plugin/disable-comments
   tags: tech,wordpress,wp-plugin,top-100,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 4a0a0047304502205b600232b7c97a9752a1522dd496fbfa682c54591f6434046eb531b1b9b1e880022100c9ddda0bf6928d30cb59fdb5abdfb6492db91e396a11948dbd9c24ff787ae6b1:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a00473045022065f4e7b0ed5ee9a44b33b51318011c5c079cb00e65011629d782fc8eddaff7470221008dcf920c09a7ba08cbc44cb5ed6f73873f3e447e8f040eaa1f260df0080d96f6:922c64590222798bb761d5b6d8e72950

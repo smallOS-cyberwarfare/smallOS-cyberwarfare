@@ -4,8 +4,12 @@ info:
   name: Roundcube webmail
   author: ritikchaddha
   severity: info
+  classification:
+    cpe: cpe:2.3:a:roundcube:webmail:*:*:*:*:*:*:*:*
   metadata:
     max-request: 2
+    vendor: roundcube
+    product: webmail
     shodan-query: http.component:"RoundCube"
   tags: roundcube,portal,tech
 
@@ -21,13 +25,13 @@ http:
 
     matchers-condition: and
     matchers:
-      - type: word
-        part: body
-        words:
-          - "Roundcube Webmail"
+      - type: regex
+        regex:
+          - '"rcversion":\d\d\d\d'
+          - '(?i)roundcube'
+        condition: and
 
       - type: status
         status:
           - 200
-
-# digest: 4a0a00473045022100cc0fcb584c07dc0e6c7a86e20ded10bf65da2c31d36dd1f0bb1dcc52c576c19d02207201127b2fb95b43564d996fd5affa82ef7b95645890a5ce2a82737752d1520a:922c64590222798bb761d5b6d8e72950
+# digest: 4b0a00483046022100c03a10691592f9cd6d90c2b42b36a925b78b215e6d5d63579cbb33fca0c287fb02210092145f78f96dfeb01c8b8b261afb5247190e0f9f5b3cca8e55c9ea0488e5dcd8:922c64590222798bb761d5b6d8e72950

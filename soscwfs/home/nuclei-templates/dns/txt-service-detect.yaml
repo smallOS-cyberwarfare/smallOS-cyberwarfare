@@ -11,7 +11,7 @@ info:
   metadata:
     verified: true
     max-request: 1
-  tags: dns,txt
+  tags: dns,txt,txt-service
 
 dns:
   - name: "{{FQDN}}"
@@ -218,4 +218,4 @@ dns:
         name: "whimsical"
         words:
           - "whimsical"
-# digest: 4a0a00473045022100b1a2ab86bb10ef6a55eaa2a6ec8a5adc22a05f003de6e5f6ef884921c4a66e12022054a8c73bec1723fa0637e65cf405f5a5091f6f257d743962dca0691ac639ce2a:922c64590222798bb761d5b6d8e72950
+# digest: 490a004630440220583fe80e74797934fb184c4a065c44cb14615ec8966188d5eeee67b37c235efd0220431877a61093618789dbccf0dd3f2cdd4abf4d9776d45c1cf2b48154b02df13b:922c64590222798bb761d5b6d8e72950

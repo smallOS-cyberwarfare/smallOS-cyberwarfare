@@ -7,7 +7,6 @@ info:
   reference:
     - https://wordpress.org/plugins/wpcf7-redirect/
   metadata:
-    max-request: 1
     plugin_namespace: wpcf7-redirect
     wpscan: https://wpscan.com/plugin/wpcf7-redirect
   tags: tech,wordpress,wp-plugin,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 4a0a00473045022100e4f7f59c16fe53bae95a24321341cd34a549aa0b8a5a5263e709d6b71d57593702207c9622383fb0c3504e9836856034ebd724d401294b011ac6e4afe70c24440781:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a00473045022100f215fe62b322d5aa8d28b377221df438dce018bcdd30915866ba7bc9aa0772ee0220365a44dee298e0b9cdddc7018941e0653a23ac49809e8b162aa1d2adc095dbe1:922c64590222798bb761d5b6d8e72950

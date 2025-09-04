@@ -2,7 +2,7 @@ id: hangfire-dashboard
 
 info:
   name: Hangfire Dashboard Panel - Detect
-  author: DhiyaneshDk
+  author: DhiyaneshDk,righettod
   severity: info
   description: Hangfire Dashboard panel was detected.
   classification:
@@ -34,7 +34,7 @@ http:
       - type: word
         part: body
         words:
-          - 'Overview – Hangfire Dashboard'
+          - 'Hangfire Dashboard'
           - 'Realtime Graph'
         condition: and
         case-insensitive: true
@@ -42,4 +42,11 @@ http:
       - type: status
         status:
           - 200
-# digest: 4b0a00483046022100a8da18c47325988f4a919f061f1aa425c6a50746ea09af7422c633d62e8e6ef90221008c61d6582c31f2c6a9b1eeaec8987e91149b32985911831ed6a2deaf1d75afc7:922c64590222798bb761d5b6d8e72950
+
+    extractors:
+      - type: regex
+        part: body
+        group: 1
+        regex:
+          - 'Hangfire\s+([0-9.]+)'
+# digest: 4a0a004730450220188936b65457aea1af1a075691be7274bad551bfa8a9922920c67c94c4a308a1022100c66bc001ead4416f9809eedb0e2d2c0369f48f6db2cd4432271263c382d005c7:922c64590222798bb761d5b6d8e72950

@@ -7,7 +7,6 @@ info:
   reference:
     - https://wordpress.org/plugins/wp-google-maps/
   metadata:
-    max-request: 1
     plugin_namespace: wp-google-maps
     wpscan: https://wpscan.com/plugin/wp-google-maps
   tags: tech,wordpress,wp-plugin,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 490a00463044022005b52a1da378c04de722845182ea198a185779ee0473f7b7944d899bc06085d3022022516e5e2759167bf29a2f9e5208ad1c6145c98fa473d3c04bd4092c1b2c0f8d:922c64590222798bb761d5b6d8e72950
+# digest: 490a00463044022042b1b7c8762c8121a63f9573ddcb2bbbac1e467aab99712182b8acef0757855b02200c81af0a4e5e5c3aa78bc45020510380edeabd404d2d79b4f85800e02d54b82a:922c64590222798bb761d5b6d8e72950

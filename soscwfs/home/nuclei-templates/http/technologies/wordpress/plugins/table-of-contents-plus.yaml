@@ -7,7 +7,6 @@ info:
   reference:
     - https://wordpress.org/plugins/table-of-contents-plus/
   metadata:
-    max-request: 1
     plugin_namespace: table-of-contents-plus
     wpscan: https://wpscan.com/plugin/table-of-contents-plus
   tags: tech,wordpress,wp-plugin,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 4a0a00473045022100ea6d40e7439350af059e6946ef246c8734ea7f0c9ab208345a866e494c879cd702203ae3a50c864689eea037f8aeeb9ed1b79e469848351ff276f927b292b2f9bde7:922c64590222798bb761d5b6d8e72950
+# digest: 490a00463044022021ff2fb50028cd1d296b1d730c38224980c8a214a17df468046946984569ca170220169b3832a8321244d76ce6929143092e69c325edf1f6cd942306d372f445a11d:922c64590222798bb761d5b6d8e72950

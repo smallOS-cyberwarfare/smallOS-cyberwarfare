@@ -49,10 +49,8 @@ http:
           - "Summary"
           - "Logout"
         condition: and
-        case-insensitive: true
 
       - type: status
         status:
           - 200
-
-# digest: 4a0a004730450221009cf451433dcf74fe1f8921e94e67b72b095733cc4ccb5f0be3a3cbf6eeedbee202207210e8bae1fb331bdaee14f25437c25516bd56ab47ff03b2bee78b8e7b97ce01:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a00473045022100edaa56f00e761afe08029701663c8bca34d197fdcc8b6ad11e6759a0fbb1f6ba02203cfa23c422bdf01b12145252e2bfe96e91682786e8f90945e75f3ac675a2d183:922c64590222798bb761d5b6d8e72950

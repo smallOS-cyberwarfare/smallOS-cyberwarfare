@@ -1,8 +1,8 @@
 id: reflected-xss
 
 info:
-  name: Reflected Cross Site Scripting
-  author: pdteam
+  name: Reflected Cross-Site Scripting
+  author: pdteam,0xKayala,AmirHossein Raeisi
   severity: medium
   metadata:
     max-request: 1
@@ -19,10 +19,18 @@ http:
 
     payloads:
       reflection:
-        - "'\"><{{first}}"
+        - "'\"><{{first}}>"
+        - "'><{{first}}>"
+        - "\"><{{first}}>"
 
     fuzzing:
       - part: query
+        type: postfix
+        mode: single
+        fuzz:
+          - "{{reflection}}"
+
+      - part: path
         type: postfix
         mode: single
         fuzz:
@@ -40,4 +48,4 @@ http:
         part: header
         words:
           - "text/html"
-# digest: 4a0a0047304502205821d73014fc8d11f73cd6310b813fe726e0a079b64f64e68b4ec264862ca17e0221008b5588348307f431509fb585b4920dc44a9de1f9330154b012be8dc4520fd47d:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a00473045022100b946e6f2777bc795532ee437c3d501e3a0dda1c5bb31838576a7ae90d9862af102203bce6702443ca30f8c1fd96869c24c442f0d920e8b2db0bab68413c30b9756c9:922c64590222798bb761d5b6d8e72950

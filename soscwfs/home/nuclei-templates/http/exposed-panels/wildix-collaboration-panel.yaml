@@ -1,0 +1,32 @@
+id: wildix-collaboration-panel
+
+info:
+  name: Wildix Collaboration Panel - Detect
+  author: rxerium
+  severity: info
+  description: |
+    Wildix Collaboration login panel was detected.
+  reference:
+    - https://www.wildix.com/product/collaboration-ucc-platform/#
+  classification:
+    cwe-id: CWE-200
+  metadata:
+    max-request: 1
+    verified: true
+    shodan-query: http.favicon.hash:-1295577382
+  tags: panel,login,wildix,detect
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    host-redirects: true
+    max-redirects: 2
+
+    matchers:
+      - type: word
+        part: server
+        words:
+          - "wildix"
+# digest: 4b0a00483046022100fbaf56ad14158f9144b8b698a29cf064959097a74ce38c216595f048889d3bdd022100a4c8e8573731f98be12f5a3a260eb474747721b00457ec5157a5c937ab67aaa4:922c64590222798bb761d5b6d8e72950

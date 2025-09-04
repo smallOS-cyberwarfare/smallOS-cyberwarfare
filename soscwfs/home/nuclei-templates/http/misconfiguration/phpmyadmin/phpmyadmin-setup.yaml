@@ -2,17 +2,20 @@ id: phpmyadmin-setup
 
 info:
   name: PhpMyAdmin Setup File - Detect
-  author: sheikhrishad,thevillagehacker,Kr1shna4garwal,ArjunChandarana,0xpugazh
+  author: sheikhrishad,thevillagehacker,Kr1shna4garwal,ArjunChandarana,0xpugal
   severity: medium
   description: Multiple phpMyAdmin setup files were detected.
   classification:
     cvss-metrics: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N
     cvss-score: 5.3
     cwe-id: CWE-200
+    cpe: cpe:2.3:a:phpmyadmin:phpmyadmin:*:*:*:*:*:*:*:*
   metadata:
     verified: true
     max-request: 16
     shodan-query: http.html:"phpMyAdmin"
+    product: phpmyadmin
+    vendor: phpmyadmin
   tags: phpmyadmin,misconfig
 
 http:
@@ -31,6 +34,7 @@ http:
         - "/xampp/phpmyadmin/scripts/setup.php"
         - "/sysadmin/phpMyAdmin/scripts/setup.php"
         - "/phpmyadmin/setup/index.php"
+        - "/phpMyAdmin/setup/index.php"
         - "/pma/setup/index.php"
         - "/admin/pma/setup/index.php"
         - "/phpmyadmin/setup/"
@@ -52,4 +56,4 @@ http:
       - type: status
         status:
           - 200
-# digest: 490a0046304402201ba753f9522b781ed669474d8d7c5f3eca817efc0e019a95dae6f132913720f10220738371f5fa2fdc90a89c62fab55e77eaf6fb9315166e18633cc4880b0ff91c3b:922c64590222798bb761d5b6d8e72950
+# digest: 4a0a00473045022100cd0c46c2350820b2657bae550b6baa5c7b455618af9cd943d35639caf2ca23c2022013290fa9427105903bc04fb20af0fe809e72a90707939c948db3c8e9c8f21608:922c64590222798bb761d5b6d8e72950

@@ -1,0 +1,28 @@
+id: ivanti-epm-detect
+
+info:
+  name: Ivanti Endpoint Manager (EPM) - Detect
+  author: rxerium
+  severity: info
+  description: |
+    An Ivanti Endpoint Manager was detected.
+  reference:
+    - https://www.ivanti.com/en-gb/products/endpoint-manager
+  metadata:
+    verified: true
+    max-request: 2
+    shodan-query: http.favicon.hash:362091310
+  tags: detect,ivanti,emm,tech,mobileiron,epm
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/favicon.ico"
+      - "{{BaseURL}}/images/favicon.ico"
+
+    stop-at-first-match: true
+    matchers:
+      - type: dsl
+        dsl:
+          - "status_code==200 && (\"362091310\" == mmh3(base64_py(body)))"
+# digest: 4a0a0047304502206bde2f30a1a2135ef2da40962bede28871c0adfdded6220aaed806996ea1c5bf0221009f4cd25041f84fa5a366315ddec9eba13a7ab44bd6aaa9c878407f7122b5b779:922c64590222798bb761d5b6d8e72950

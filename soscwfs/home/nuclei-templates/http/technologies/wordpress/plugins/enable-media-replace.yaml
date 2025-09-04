@@ -7,7 +7,6 @@ info:
   reference:
     - https://wordpress.org/plugins/enable-media-replace/
   metadata:
-    max-request: 1
     plugin_namespace: enable-media-replace
     wpscan: https://wpscan.com/plugin/enable-media-replace
   tags: tech,wordpress,wp-plugin,top-200
@@ -47,4 +46,4 @@ http:
         part: body
         regex:
           - '(?i)Stable.tag:\s?([\w.]+)'
-# digest: 4b0a00483046022100a361120b037df40ebaf02f14bff625c4acce830e8abc5deaaa4a02c7c5d11ecb022100f699513bbb297b8facbd2c673947e678f2de4f42f8f81fd498143bf3db16acf3:922c64590222798bb761d5b6d8e72950
+# digest: 490a00463044022049f4b55d38fc3afa1fcf43227494526af605d61ad14de5215e6f489f26a212e7022029e9dad1bb60817d83e2e87677a0fa1e62da81998a539ff8e3348bb3136b01a7:922c64590222798bb761d5b6d8e72950
