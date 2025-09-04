@@ -1,3 +1,2 @@
-- Add more gitleaks example commands
 - Add more inpulse example commands
 - Add more ncat example commands

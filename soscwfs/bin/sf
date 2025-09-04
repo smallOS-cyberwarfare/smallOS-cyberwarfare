@@ -1,0 +1,4 @@
+#!/bin/bash
+cd /home/spiderfoot-4.0
+python3 sf.py "$@"
+

@@ -1,0 +1,75 @@
+2025-09-04 13:28:45,205 [WARNING] sf.py:550 : 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2025-09-04 13:30:18,966 [WARNING] sf.py:550 : 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2025-09-04 13:32:18,710 [ERROR] sfp_accounts.py:93 : Unable to parse social media accounts list: Extra data: line 1 column 4 (char 3)
+2025-09-04 13:32:36,549 [ERROR] sfp_googlesearch.py:93 : You enabled sfp_googlesearch but did not set a Google API key!
+2025-09-04 13:32:36,603 [ERROR] sfp_riskiq.py:168 : You enabled sfp_riskiq but did not set an credentials!
+2025-09-04 13:32:36,605 [ERROR] sfp_circllu.py:149 : You enabled sfp_circllu but did not set an credentials!
+2025-09-04 13:32:36,631 [ERROR] sfp_hunter.py:128 : You enabled sfp_hunter but did not set an API key!
+2025-09-04 13:32:36,633 [ERROR] sfp_snov.py:161 : You enabled sfp_snov but did not set a Client ID and/or Client Secret
+2025-09-04 13:32:36,636 [ERROR] sfp_zetalytics.py:190 : You enabled sfp_zetalytics but did not set an API key!
+2025-09-04 13:32:36,636 [ERROR] sfp_intelx.py:199 : You enabled sfp_intelx but did not set an API key and/or base URL!
+2025-09-04 13:32:36,637 [ERROR] sfp_alienvault.py:262 : You enabled sfp_alienvault but did not set an API key!
+2025-09-04 13:32:37,087 [ERROR] sfp_spyonweb.py:208 : You enabled sfp_spyonweb but did not set an API key!
+2025-09-04 13:32:37,512 [ERROR] sfp_spyse.py:344 : You enabled sfp_spyse but did not set an API key!
+2025-09-04 13:32:37,800 [ERROR] sfp_commoncrawl.py:95 : CommonCrawl index collection doesn't seem to be available.
+2025-09-04 13:32:37,800 [ERROR] sfp_commoncrawl.py:153 : Unable to fetch CommonCrawl index.
+2025-09-04 13:32:38,934 [ERROR] sfp_coinblocker.py:107 : Unexpected HTTP response code 403 from https://zerodot1.gitlab.io/CoinBlockerLists/list.txt
+2025-09-04 13:32:39,016 [ERROR] sflib.py:195 : Failed to connect to https://api.sublist3r.com/search.php?domain=foro.elhacker.net
+2025-09-04 13:32:39,031 [ERROR] sfp_sublist3r.py:71 : Error querying Sublist3r API
+2025-09-04 13:32:39,032 [ERROR] sfp_sublist3r.py:74 : Bad response code "None" from Sublist3r API
+2025-09-04 13:32:39,033 [ERROR] sfp_customfeed.py:185 : You enabled sfp_customfeed but defined no custom feed URL!
+2025-09-04 13:32:43,549 [ERROR] sflib.py:195 : Failed to connect to https://www.threatcrowd.org/searchApi/v2/domain/report/?domain=foro.elhacker.net
+2025-09-04 13:32:43,601 [ERROR] sfp_metadefender.py:158 : You enabled sfp_metadefender but did not set an API key!
+2025-09-04 13:32:43,603 [ERROR] sfp_malwarepatrol.py:126 : You enabled sfp_malwarepatrol but did not provide a receipt ID!
+2025-09-04 13:32:44,279 [ERROR] sfp_trashpanda.py:124 : You enabled sfp_trashpanda but did not set an API username / password!
+2025-09-04 13:33:28,807 [ERROR] sflib.py:195 : Failed to connect to https://dnsdumpster.com
+2025-09-04 13:33:28,844 [ERROR] sfp_dnsdumpster.py:62 : Bad response code "None" from DNSDumpster
+2025-09-04 13:40:49,361 [WARNING] sf:550 : 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2025-09-04 13:44:33,275 [WARNING] sf:550 : 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2025-09-04 13:46:26,920 [WARNING] sf.py:550 : 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2025-09-04 13:51:34,417 [WARNING] sf.py:550 : 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2025-09-04 14:10:50,557 [WARNING] sf.py:550 : 
+********************************************************************
+Warning: passwd file contains no passwords. Authentication disabled.
+Please consider adding authentication to protect this instance!
+Refer to https://www.spiderfoot.net/documentation/#security.
+********************************************************************
+
+2025-09-04 14:17:02,302 [ERROR] sflib.py:195 : Failed to load module: sfp_dns
+2025-09-04 14:21:17,322 [ERROR] sfp_bingsearch.py:86 : You enabled sfp_bingsearch but did not set a Bing API key!

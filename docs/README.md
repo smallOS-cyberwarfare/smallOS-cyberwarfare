@@ -56,6 +56,9 @@ Get http headers info related to security
 - [searchsploit](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/searchsploit/README.md)  
 Command line search tool for Exploit-DB 
 
+- [spiderfoot](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/spiderfoot/README.md)  
+OSINT tool
+
 - [shodan](https://github.com/smallOS-cyberwarfare/smallOS-cyberwarfare/blob/master/docs/Tools/shodan/README.md)  
 Search engine for devices 
   

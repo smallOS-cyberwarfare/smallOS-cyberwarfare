@@ -1,0 +1,16 @@
+python_whois-0.9.5.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+python_whois-0.9.5.dist-info/LICENSE.txt,sha256=-cTHe6o4KABO5UuKTy2y6I7USmI3pJOWW_VR-sD8ti0,1023
+python_whois-0.9.5.dist-info/METADATA,sha256=KPtLyDZXp2veXzP8CY_3-y-zOYIOSeKuMTTga-qzUGY,2615
+python_whois-0.9.5.dist-info/RECORD,,
+python_whois-0.9.5.dist-info/REQUESTED,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0
+python_whois-0.9.5.dist-info/WHEEL,sha256=R06PA3UVYHThwHvxuRWMqaGcr-PuniXahwjmQRFMEkY,91
+python_whois-0.9.5.dist-info/top_level.txt,sha256=yCaPM-2Osc56mYnRJ41S1XWNb9943Z4lqZ0lc0pAX3k,6
+whois/__init__.py,sha256=2ScJnTX0SGL03dGIyOQ-TxeWTgXaUyyxGr4FoNQlG3o,5472
+whois/__pycache__/__init__.cpython-312.pyc,,
+whois/__pycache__/parser.cpython-312.pyc,,
+whois/__pycache__/time_zones.cpython-312.pyc,,
+whois/__pycache__/whois.cpython-312.pyc,,
+whois/data/public_suffix_list.dat,sha256=s716Z7MqwF7pPrcQLUcDn87QzelDvKpJqdPsyLChHhQ,232589
+whois/parser.py,sha256=xoxwSzjLfAerQ5tRTq484TOjWyF7wqwHLgKdOiAaCVw,141810
+whois/time_zones.py,sha256=ualTvgvoSkUaLtQs2eBkBc3mVe7THKP9-iWeM3sUh30,1275
+whois/whois.py,sha256=NH4oP2nsDNa_CAJ5YwfUY5x0DUze3nMrgOnmiMbhI20,20123

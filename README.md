@@ -24,6 +24,7 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 - nuclei (vuln scanner)
 - observatory (http headers vuln scanner)
 - searchsploit (search exploits)
+- spiderfoot (OSINT and mapping surface)
 - shodan (search machines)
 - sqlmap (automatic sqli)  
 - subdomainfinder (fast/basic subdomain finder)
