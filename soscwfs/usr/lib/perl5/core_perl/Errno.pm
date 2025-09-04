@@ -10,10 +10,10 @@ use strict;
 
 use Config;
 "$Config{'archname'}-$Config{'osvers'}" eq
-"aarch64-linux-thread-multi-6.1.34-1-lts" or
-	die "Errno architecture (aarch64-linux-thread-multi-6.1.34-1-lts) does not match executable architecture ($Config{'archname'}-$Config{'osvers'})";
+"aarch64\-linux\-thread\-multi-6\.1\.90\-0\-lts" or
+	die "Errno architecture (aarch64\-linux\-thread\-multi-6\.1\.90\-0\-lts) does not match executable architecture ($Config{'archname'}-$Config{'osvers'})";
 
-our $VERSION = "1.37";
+our $VERSION = "1.38";
 $VERSION = eval $VERSION;
 
 my %err;

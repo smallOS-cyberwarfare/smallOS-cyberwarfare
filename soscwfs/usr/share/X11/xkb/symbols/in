@@ -2614,3 +2614,18 @@ xkb_symbols "urd-navees" {
     include "pk(urd-navees)"
     name[Group1]= "Urdu (Navees)";
 };
+
+// Compatibility mapping
+partial xkb_symbols "eeyek" {
+    include "in(mni)"
+};
+
+// Compatibility mapping
+partial xkb_symbols "olck" {
+    include "in(sat)"
+};
+
+// Compatibility mapping
+partial xkb_symbols "urd" {
+    include "in(urd-phonetic)"
+};

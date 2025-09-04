@@ -92,7 +92,7 @@ xkb_symbols "deadacute" {
 
 partial alphanumeric_keys
 xkb_symbols "e1" {
-    // German extended layout E1, based on DIN 2137-1:2020-11, for a 105-key keyboard.
+    // German extended layout E1, based on DIN 2137-1:2023-08, for a 105-key keyboard.
     // See https://de.wikipedia.org/wiki/E1_(Tastaturbelegung).
 
     name[Group1]="German (E1)";
@@ -110,7 +110,7 @@ xkb_symbols "e1" {
     key <AE09>	{[            9, parenright,         bracketright,  any,                U27E9,                U27EB ]};
     key <AE10>	{[            0,      equal,           braceright,  any,             division,                U2205 ]};
     key <AE11>	{[       ssharp,   question,            backslash,  any,             notequal,              notsign ]};
-    key <AE12>	{[   dead_acute, dead_grave,        dead_abovedot,  any,             sterling,                U035C ]};
+    key <AE12>	{[   dead_acute, dead_grave,        dead_abovedot,  any,             sterling,                U00A5 ]};
 
     key.type[Group1] = "EIGHT_LEVEL_SEMIALPHABETIC";
     key <AD01>	{[            q,          Q,                   at,  any,            masculine,                U2642 ]};
@@ -119,17 +119,18 @@ xkb_symbols "e1" {
     key <AD04>	{[            r,          R,     dead_doubleacute,  any,            trademark,           registered ]};
     key <AD05>	{[            t,          T,           dead_caron,  any,                thorn,                THORN ]};
     key <AD06>	{[            z,          Z,       dead_diaeresis,  any,                  ezh,                  EZH ]};
-    key <AD07>	{[            u,          U,           dead_breve,  any,           rightarrow,            leftarrow ]};
+    key <AD07>	{[            u,          U,           dead_breve,  any,            downarrow,              uparrow ]};
     key <AD08>	{[            i,          I,           dead_tilde,  any,             idotless,                U26A5 ]};
     key <AD09>	{[            o,          O,       dead_abovering,  any,               oslash,               Oslash ]};
-    key <AD10>	{[            p,          P,            dead_hook,  any,            downarrow,              uparrow ]};
+    key <AD10>	{[            p,          P,            dead_hook,  any,           rightarrow,            leftarrow ]};
     key <AD11>	{[   udiaeresis, Udiaeresis,            dead_horn,  any,                U2198,                U2197 ]};
     key.type[Group1] = "EIGHT_LEVEL";
     key <AD12>	{[         plus,   asterisk,           asciitilde,  any,            plusminus,                U2052 ]};
 
     key.type[Group1] = "EIGHT_LEVEL_SEMIALPHABETIC";
     // Per DIN 2137-1:2018-12, p. 11-12, AltGr+a can either invoke a selection possibility
-    // for emojis and/or special characters, or output the U+263A smiley.
+    // for emojis and/or special characters, or output the U+263A smiley.  The same holds for
+    // DIN 2137-1:2023-08.
     key <AC01>	{[            a,          A,            Multi_key,  any,                  any,                  any ]};
     key <AC02>	{[            s,          S,              seconds,  any,                U017F,                U2211 ]};
     key <AC03>	{[            d,          D,              minutes,  any,                  eth,                  ETH ]};
@@ -153,15 +154,16 @@ xkb_symbols "e1" {
     key <AB05>	{[            b,          B,                U2039,  any, rightdoublequotemark, rightsinglequotemark ]};
     key <AB06>	{[            n,          N,               endash,  any,                  eng,                  ENG ]};
     // Per DIN 2137-1:2018-12, p. 12, U+2217 should be replaced by the 'middle asterisk' character
-    // as soon as it has been added to Unicode (see Unicode proposal L2/17-152).
+    // as soon as it has been added to Unicode (see Unicode proposal L2/17-152).  Same holds for
+    // DIN 2137-1:2023-08.
     key <AB07>	{[            m,          M,                   mu,  any,                U200C,                U2217 ]};
     key.type[Group1] = "EIGHT_LEVEL";
-    key <AB08>	{[        comma,  semicolon,                U2011,  any,                U02BB,                U2661 ]};
+    key <AB08>	{[        comma,  semicolon,                U2011,  any,                U02BB,                U2665 ]};
     key <AB09>	{[       period,      colon,       periodcentered,  any,             ellipsis,                U2713 ]};
     key <AB10>	{[        minus, underscore,               hyphen,  any,                U2022,                U25E6 ]};
 
     key.type[Group1] = "EIGHT_LEVEL";
-    key <SPCE>	{[        space,      space,         nobreakspace,  any,                U200A,                U2009 ]};
+    key <SPCE>	{[        space,      space,         nobreakspace,  any,                U200A,                U200A ]};
 
     key.type[Group1] = "ONE_LEVEL";
     key <LFSH>	{[ Shift_L ]};
@@ -173,7 +175,7 @@ xkb_symbols "e1" {
 
 partial alphanumeric_keys
 xkb_symbols "e2" {
-    // German extended layout E2, based on DIN 2137-1:2020-11, for a 104-key keyboard.
+    // German extended layout E2, based on DIN 2137-1:2023-08, for a 104-key keyboard.
     // See https://de.wikipedia.org/wiki/E1_(Tastaturbelegung).
 
     include "de(e1)"
@@ -936,9 +938,11 @@ partial alphanumeric_keys
 	include "sun_vndr/de(sun_type6)"
 };
 
-partial alphanumeric_keys
-xkb_symbols "adnw_base" {
+partial alphanumeric_keys modifier_keys keypad_keys
+xkb_symbols "adnw" {
     include "de(neo_base)"
+
+    name[Group1]= "German (Aus der Neo-Welt)";
 
     key.type[Group1] = "EIGHT_LEVEL_WITH_LEVEL5_LOCK";
     key <AD04> { [ period,                  enfilledcircbullet,      NoSymbol,                U03D1,                   NoSymbol,                NoSymbol,                U21A6,                   NoSymbol                 ] };
@@ -975,14 +979,6 @@ xkb_symbols "adnw_base" {
     key <AB08> { [ w,                       W,                       NoSymbol,                Greek_omega,             NoSymbol,                NoSymbol,                Greek_OMEGA,             NoSymbol                 ] };
     key <AB09> { [ m,                       M,                       NoSymbol,                Greek_mu,                NoSymbol,                NoSymbol,                ifonlyif,                NoSymbol                 ] };
     key <AB10> { [ z,                       Z,                       NoSymbol,                Greek_zeta,              NoSymbol,                NoSymbol,                U2124,                   NoSymbol                 ] };
-};
-
-partial alphanumeric_keys modifier_keys keypad_keys
-xkb_symbols "adnw" {
-
-    include "de(adnw_base)"
-
-    name[Group1]= "German (Aus der Neo-Welt)";
 
     include "shift(both_capslock)"
     include "level3(caps_switch)"
@@ -991,9 +987,11 @@ xkb_symbols "adnw" {
     include "level5(ralt_switch_lock)"
 };
 
-partial alphanumeric_keys
-xkb_symbols "koy_base" {
+partial alphanumeric_keys modifier_keys keypad_keys
+xkb_symbols "koy" {
     include "de(neo_base)"
+
+    name[Group1]= "German (KOY)";
 
     key.type[Group1] = "EIGHT_LEVEL_WITH_LEVEL5_LOCK";
     key <AD02> { [ period,                  enfilledcircbullet,      NoSymbol,                U03D1,                   NoSymbol,                NoSymbol,                U21A6,                   NoSymbol                 ] };
@@ -1030,14 +1028,6 @@ xkb_symbols "koy_base" {
     key <AB08> { [ w,                       W,                       NoSymbol,                Greek_omega,             NoSymbol,                NoSymbol,                Greek_OMEGA,             NoSymbol                 ] };
     key <AB09> { [ m,                       M,                       NoSymbol,                Greek_mu,                NoSymbol,                NoSymbol,                ifonlyif,                NoSymbol                 ] };
     key <AB10> { [ j,                       J,                       NoSymbol,                Greek_theta,             NoSymbol,                NoSymbol,                Greek_THETA,             NoSymbol                 ] };
-};
-
-partial alphanumeric_keys modifier_keys keypad_keys
-xkb_symbols "koy" {
-
-    include "de(koy_base)"
-
-    name[Group1]= "German (KOY)";
 
     include "shift(both_capslock)"
     include "level3(caps_switch)"
@@ -1101,21 +1091,15 @@ xkb_symbols "bone" {
     include "level5(ralt_switch_lock)"
 };
 
-partial alphanumeric_keys
-xkb_symbols "bone_eszett_home_base" {
+partial alphanumeric_keys modifier_keys keypad_keys
+xkb_symbols "bone_eszett_home" {
     include "de(bone_base)"
+
+    name[Group1]= "German (Bone, eszett in the home row)";
 
     key.type[Group1] = "EIGHT_LEVEL_ALPHABETIC_WITH_LEVEL5_LOCK";
     key <AD11> { [ q,                       Q,                       NoSymbol,                U03D5,                   NoSymbol,                NoSymbol,                U211A,                   NoSymbol                 ] };
     key <AC11> { [ ssharp,                  U1E9E,                   NoSymbol,                Greek_finalsmallsigma,   NoSymbol,                NoSymbol,                jot,                     NoSymbol                 ] };
-};
-
-partial alphanumeric_keys modifier_keys keypad_keys
-xkb_symbols "bone_eszett_home" {
-
-    include "de(bone_eszett_home_base)"
-
-    name[Group1]= "German (Bone, eszett in the home row)";
 
     include "shift(both_capslock)"
     include "level3(caps_switch)"
@@ -1180,25 +1164,24 @@ xkb_symbols "neo_qwertz" {
     include "level5(ralt_switch_lock)"
 };
 
-partial alphanumeric_keys
-xkb_symbols "neo_qwerty_base" {
+partial alphanumeric_keys modifier_keys keypad_keys
+xkb_symbols "neo_qwerty" {
     include "de(neo_qwertz_base)"
+
+    name[Group1]= "German (Neo, QWERTY)";
 
     key.type[Group1] = "EIGHT_LEVEL_ALPHABETIC_WITH_LEVEL5_LOCK";
     key <AD06> { [ y,                       Y,                       NoSymbol,                Greek_upsilon,           NoSymbol,                NoSymbol,                nabla,                   NoSymbol                 ] };
     key <AB01> { [ z,                       Z,                       NoSymbol,                Greek_zeta,              NoSymbol,                NoSymbol,                U2124,                   NoSymbol                 ] };
-};
-
-partial alphanumeric_keys modifier_keys keypad_keys
-xkb_symbols "neo_qwerty" {
-
-    include "de(neo_qwerty_base)"
-
-    name[Group1]= "German (Neo, QWERTY)";
 
     include "shift(both_capslock)"
     include "level3(caps_switch)"
     include "level3(bksl_switch)"
     include "level5(lsgt_switch_lock)"
     include "level5(ralt_switch_lock)"
+};
+
+// Compatibility mapping
+partial xkb_symbols "lld" {
+    include "it(lldde)"
 };

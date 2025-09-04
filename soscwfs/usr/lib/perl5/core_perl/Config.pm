@@ -10,7 +10,7 @@ use strict;
 use warnings;
 our ( %Config, $VERSION );
 
-$VERSION = "5.038002";
+$VERSION = "5.040003";
 
 # Skip @Config::EXPORT because it only contains %Config, which we special
 # case below as it's not a function. @Config::EXPORT won't change in the
@@ -56,11 +56,11 @@ sub import {
     return;
 }
 
-die "$0: Perl lib version (5.38.2) doesn't match executable '$^X' version ($])"
+die "$0: Perl lib version (5.40.3) doesn't match executable '$^X' version ($])"
     unless $^V;
 
-$^V eq 5.38.2
-    or die sprintf "%s: Perl lib version (5.38.2) doesn't match executable '$^X' version (%vd)", $0, $^V;
+$^V eq 5.40.3
+    or die sprintf "%s: Perl lib version (5.40.3) doesn't match executable '$^X' version (%vd)", $0, $^V;
 
 
 sub FETCH {
@@ -98,7 +98,7 @@ tie %Config, 'Config', {
     ldlibpthname => 'LD_LIBRARY_PATH',
     libpth => '/usr/lib /usr/local/lib /lib',
     osname => 'linux',
-    osvers => '6.1.34-1-lts',
+    osvers => '6.1.90-0-lts',
     path_sep => ':',
     privlibexp => '/usr/share/perl5/core_perl',
     scriptdir => '/usr/bin',
@@ -107,5 +107,5 @@ tie %Config, 'Config', {
     so => 'so',
     useithreads => 'define',
     usevendorprefix => 'define',
-    version => '5.38.2',
+    version => '5.40.3',
 };

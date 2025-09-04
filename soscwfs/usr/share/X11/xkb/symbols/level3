@@ -83,6 +83,22 @@ xkb_symbols "caps_switch" {
   key <CAPS> {[  ISO_Level3_Shift  ], type[group1]="ONE_LEVEL" };
 };
 
+// The CapsLock key (while pressed) chooses the third shift level and
+// Ctrl + CapsLock has the original CapsLock function.
+// The 2023 DIN standard for German keyboards recommends it as an option:
+// - https://de.wikipedia.org/wiki/E1_(Tastaturbelegung)#Feststelltaste/Umschaltsperre
+// - https://en.wikipedia.org/wiki/Caps_Lock#Abolition
+partial modifier_keys
+xkb_symbols "caps_switch_capslock_with_ctrl" {
+    key <CAPS> {
+        type[Group1] = "PC_CONTROL_LEVEL2",
+        symbols[Group1] = [ ISO_Level3_Shift, Caps_Lock ],
+        // Explicit actions are preferred over modMap None/Mod5 { Caps_Lock }
+        // because they have no side effect
+        actions[Group1] = [ SetMods(modifiers = LevelThree), LockMods(modifiers = Lock) ]
+    };
+};
+
 // The Backslash key (while pressed) chooses the third shift level.
 partial modifier_keys
 xkb_symbols "bksl_switch" {

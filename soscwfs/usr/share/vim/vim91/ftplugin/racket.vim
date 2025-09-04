@@ -3,8 +3,7 @@
 " Maintainer:           D. Ben Knoble <ben.knoble+github@gmail.com>
 " Previous Maintainer:  Will Langstroth <will@langstroth.com>
 " URL:                  https://github.com/benknoble/vim-racket
-" Last Change:          2022 Aug 29
-"                       2024 Jan 14 by Vim Project (browsefilter)
+" Last Change:          2024 Jun 01
 
 if exists("b:did_ftplugin")
   finish
@@ -17,19 +16,20 @@ set cpo&vim
 " quick hack to allow adding values
 setlocal iskeyword=@,!,#-',*-:,<-Z,a-z,~,_,94
 
+setlocal shiftwidth=2 softtabstop=2
+
 " Enable auto begin new comment line when continuing from an old comment line
 setlocal comments=:;;;;,:;;;,:;;,:;
 setlocal formatoptions+=r
 
-"setlocal commentstring=;;%s
-setlocal commentstring=#\|\ %s\ \|#
+setlocal commentstring=;;\ %s
 
 setlocal formatprg=raco\ fmt
 
 " Undo our settings when the filetype changes away from Racket
 " (this should be amended if settings/mappings are added above!)
 let b:undo_ftplugin =
-      \  "setlocal iskeyword< lispwords< lisp< comments< formatoptions< formatprg<"
+      \  "setlocal iskeyword< shiftwidth< softtabstop< comments< formatoptions< formatprg<"
       \. " | setlocal commentstring<"
 
 if !exists("no_plugin_maps") && !exists("no_racket_maps")

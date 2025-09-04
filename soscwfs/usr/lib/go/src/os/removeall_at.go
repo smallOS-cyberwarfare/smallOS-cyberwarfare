@@ -88,7 +88,7 @@ func removeAllFrom(parent *File, base string) error {
 			if IsNotExist(err) {
 				return nil
 			}
-			if err == syscall.ENOTDIR {
+			if err == syscall.ENOTDIR || err == unix.NoFollowErrno {
 				// Not a directory; return the error from the unix.Unlinkat.
 				return &PathError{Op: "unlinkat", Path: base, Err: uErr}
 			}
@@ -166,20 +166,11 @@ func removeAllFrom(parent *File, base string) error {
 // we are going to (try to) remove the file.
 // The contents of this file are not relevant for test caching.
 func openDirAt(dirfd int, name string) (*File, error) {
-	var r int
-	for {
-		var e error
-		r, e = unix.Openat(dirfd, name, O_RDONLY|syscall.O_CLOEXEC|syscall.O_DIRECTORY|syscall.O_NOFOLLOW, 0)
-		if e == nil {
-			break
-		}
-
-		// See comment in openFileNolog.
-		if e == syscall.EINTR {
-			continue
-		}
-
-		return nil, e
+	r, err := ignoringEINTR2(func() (int, error) {
+		return unix.Openat(dirfd, name, O_RDONLY|syscall.O_CLOEXEC|syscall.O_DIRECTORY|syscall.O_NOFOLLOW, 0)
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	if !supportsCloseOnExec {
@@ -187,5 +178,5 @@ func openDirAt(dirfd int, name string) (*File, error) {
 	}
 
 	// We use kindNoPoll because we know that this is a directory.
-	return newFile(r, name, kindNoPoll), nil
+	return newFile(r, name, kindNoPoll, false), nil
 }

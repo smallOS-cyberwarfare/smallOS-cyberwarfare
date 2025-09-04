@@ -97,7 +97,7 @@ const errorMessage = (er, npm) => {
       // Check whether we ran into a conflict in our own package.json
       if (er.path === resolve(npm.prefix, 'package.json')) {
         const { isDiff } = require('parse-conflict-json')
-        const txt = require('fs').readFileSync(er.path, 'utf8').replace(/\r\n/g, '\n')
+        const txt = require('node:fs').readFileSync(er.path, 'utf8').replace(/\r\n/g, '\n')
         if (isDiff(txt)) {
           detail.push(['', [
             'Merge conflict detected in your package.json.',
@@ -199,6 +199,13 @@ const errorMessage = (er, npm) => {
         'or move it out of the way first.',
       ].join('\n')])
       break
+
+    case 'EBADDEVENGINES': {
+      const { current, required } = er
+      summary.push(['EBADDEVENGINES', er.message])
+      detail.push(['EBADDEVENGINES', { current, required }])
+      break
+    }
 
     case 'EBADPLATFORM': {
       const actual = er.current

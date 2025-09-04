@@ -219,3 +219,28 @@ partial alphanumeric_keys
 xkb_symbols "sun_type6" {
     include "sun_vndr/ro(sun_type6)"
 };
+
+// Compatibility mapping
+partial xkb_symbols "academic" {
+    include "ro(std)"
+};
+
+// Compatibility mapping
+partial xkb_symbols "comma" {
+    include "ro(basic)"
+};
+
+// Compatibility mapping
+partial xkb_symbols "de" {
+    include "ro(winkeys)"
+};
+
+// Compatibility mapping
+partial xkb_symbols "std_comma" {
+    include "ro(std)"
+};
+
+// Compatibility mapping
+partial xkb_symbols "us" {
+    include "ro(std)"
+};

@@ -16,14 +16,14 @@ build_time_vars = {'ABIFLAGS': '',
  'BINDIR': '/usr/bin',
  'BINLIBDEST': '/usr/lib/python3.12',
  'BLDLIBRARY': '-L. -lpython3.12',
- 'BLDSHARED': 'gcc -shared',
+ 'BLDSHARED': 'cc -shared',
  'BOOTSTRAP_HEADERS': '\\',
  'BUILDEXE': '',
  'BUILDPYTHON': 'python',
  'BUILD_GNU_TYPE': 'aarch64-alpine-linux-musl',
  'BUILD_SCRIPTS_DIR': 'build/scripts-3.12',
  'BYTESTR_DEPS': '\\',
- 'CC': 'gcc',
+ 'CC': 'cc',
  'CCSHARED': '-fPIC',
  'CFLAGS': '-fno-strict-overflow -Wsign-compare -DNDEBUG -g -O3 -Wall',
  'CFLAGSFORSHARED': '-fPIC',
@@ -36,10 +36,7 @@ build_time_vars = {'ABIFLAGS': '',
  'CONFIGURE_CFLAGS': '',
  'CONFIGURE_CFLAGS_NODIST': '-Os -fstack-clash-protection -Wformat '
                             '-Werror=format-security -g -O2 '
-                            '-DTHREAD_STACK_SIZE=0x200000 '
-                            '-fno-semantic-interposition -flto '
-                            '-fuse-linker-plugin -ffat-lto-objects '
-                            '-flto-partition=none -g -std=c11 -Wextra '
+                            '-DTHREAD_STACK_SIZE=0x200000  -g -std=c11 -Wextra '
                             '-Wno-unused-parameter '
                             '-Wno-missing-field-initializers '
                             '-Wstrict-prototypes '
@@ -48,10 +45,9 @@ build_time_vars = {'ABIFLAGS': '',
  'CONFIGURE_CPPFLAGS': '',
  'CONFIGURE_LDFLAGS': '',
  'CONFIGURE_LDFLAGS_NODIST': '-Wl,--as-needed,-O1,--sort-common '
-                             '-fno-semantic-interposition -flto '
-                             '-fuse-linker-plugin -ffat-lto-objects '
-                             '-flto-partition=none -g',
- 'CONFIGURE_LDFLAGS_NOLTO': '-fno-lto',
+                             '-Wl,-z,pack-relative-relocs '
+                             '-Wl,-z,stack-size=0x200000  -g',
+ 'CONFIGURE_LDFLAGS_NOLTO': '',
  'CONFIG_ARGS': "'--build=aarch64-alpine-linux-musl' "
                 "'--host=aarch64-alpine-linux-musl' '--prefix=/usr' "
                 "'--enable-ipv6' '--enable-loadable-sqlite-extensions' "
@@ -59,18 +55,18 @@ build_time_vars = {'ABIFLAGS': '',
                 "'--with-computed-gotos' '--with-dbmliborder=gdbm:ndbm' "
                 "'--with-system-expat' '--with-system-libmpdec' "
                 "'--without-ensurepip' 'build_alias=aarch64-alpine-linux-musl' "
-                "'host_alias=aarch64-alpine-linux-musl' 'CC=gcc'",
+                "'host_alias=aarch64-alpine-linux-musl' 'CC=cc'",
  'CONFINCLUDEDIR': '/usr/include',
  'CONFINCLUDEPY': '/usr/include/python3.12',
  'COREPYTHONPATH': '',
- 'COVERAGE_INFO': '/home/buildozer/aports/main/python3/src/Python-3.12.3/coverage.info',
+ 'COVERAGE_INFO': '/home/buildozer/aports/main/python3/src/Python-3.12.11/coverage.info',
  'COVERAGE_LCOV_OPTIONS': '--rc lcov_branch_coverage=1',
- 'COVERAGE_REPORT': '/home/buildozer/aports/main/python3/src/Python-3.12.3/lcov-report',
+ 'COVERAGE_REPORT': '/home/buildozer/aports/main/python3/src/Python-3.12.11/lcov-report',
  'COVERAGE_REPORT_OPTIONS': '--rc lcov_branch_coverage=1 --branch-coverage '
                             '--title "CPython 3.12 LCOV report [commit $(shell '
                             ')]"',
  'CPPFLAGS': '-I. -I./Include',
- 'CXX': 'g++',
+ 'CXX': 'c++',
  'DEEPFREEZE_C': 'Python/deepfreeze/deepfreeze.c',
  'DEEPFREEZE_DEPS': './Tools/build/deepfreeze.py _bootstrap_python '
                     './Programs/_freeze_module.py \\',
@@ -110,7 +106,6 @@ build_time_vars = {'ABIFLAGS': '',
  'EXTRA_CFLAGS': '',
  'EXT_SUFFIX': '.cpython-312-aarch64-linux-musl.so',
  'FILEMODE': 644,
- 'FLOAT_WORDS_BIGENDIAN': 0,
  'FREEZE_MODULE': './_bootstrap_python ./Programs/_freeze_module.py',
  'FREEZE_MODULE_BOOTSTRAP': './Programs/_freeze_module',
  'FREEZE_MODULE_BOOTSTRAP_DEPS': 'Programs/_freeze_module',
@@ -543,6 +538,7 @@ build_time_vars = {'ABIFLAGS': '',
  'HAVE_SYS_MODEM_H': 0,
  'HAVE_SYS_NDIR_H': 0,
  'HAVE_SYS_PARAM_H': 1,
+ 'HAVE_SYS_PIDFD_H': 0,
  'HAVE_SYS_POLL_H': 1,
  'HAVE_SYS_RANDOM_H': 1,
  'HAVE_SYS_RESOURCE_H': 1,
@@ -576,7 +572,7 @@ build_time_vars = {'ABIFLAGS': '',
  'HAVE_TMPNAM_R': 0,
  'HAVE_TM_ZONE': 1,
  'HAVE_TRUNCATE': 1,
- 'HAVE_TTYNAME': 1,
+ 'HAVE_TTYNAME_R': 1,
  'HAVE_TZNAME': 0,
  'HAVE_UMASK': 1,
  'HAVE_UNAME': 1,
@@ -624,11 +620,11 @@ build_time_vars = {'ABIFLAGS': '',
  'INSTSONAME': 'libpython3.12.so.1.0',
  'IO_H': 'Modules/_io/_iomodule.h',
  'IO_OBJS': '\\',
- 'LDCXXSHARED': 'g++ -shared',
+ 'LDCXXSHARED': 'c++ -shared',
  'LDFLAGS': '',
  'LDLIBRARY': 'libpython3.12.so',
  'LDLIBRARYDIR': '',
- 'LDSHARED': 'gcc -shared',
+ 'LDSHARED': 'cc -shared',
  'LDVERSION': '3.12',
  'LIBC': '',
  'LIBDEST': '/usr/lib/python3.12',
@@ -637,32 +633,26 @@ build_time_vars = {'ABIFLAGS': '',
  'LIBEXPAT_CFLAGS': '-fno-strict-overflow -Wsign-compare -DNDEBUG -g -O3 -Wall '
                     '-Os -fstack-clash-protection -Wformat '
                     '-Werror=format-security -g -O2 '
-                    '-DTHREAD_STACK_SIZE=0x200000 -fno-semantic-interposition '
-                    '-flto -fuse-linker-plugin -ffat-lto-objects '
-                    '-flto-partition=none -g -std=c11 -Wextra '
+                    '-DTHREAD_STACK_SIZE=0x200000  -g -std=c11 -Wextra '
                     '-Wno-unused-parameter -Wno-missing-field-initializers '
                     '-Wstrict-prototypes -Werror=implicit-function-declaration '
                     '-fvisibility=hidden -Os -fstack-clash-protection -Wformat '
                     '-Werror=format-security -g -O2 '
-                    '-DTHREAD_STACK_SIZE=0x200000 -fprofile-use '
-                    '-fprofile-correction -I./Include/internal -I. -I./Include '
-                    '-fPIC -fPIC',
+                    '-DTHREAD_STACK_SIZE=0x200000  -I./Include/internal -I. '
+                    '-I./Include -fPIC -fPIC',
  'LIBEXPAT_HEADERS': '\\',
  'LIBEXPAT_OBJS': '\\',
  'LIBHACL_CFLAGS': '-I./Modules/_hacl/include -D_BSD_SOURCE -D_DEFAULT_SOURCE '
                    '-fno-strict-overflow -Wsign-compare -DNDEBUG -g -O3 -Wall '
                    '-Os -fstack-clash-protection -Wformat '
                    '-Werror=format-security -g -O2 '
-                   '-DTHREAD_STACK_SIZE=0x200000 -fno-semantic-interposition '
-                   '-flto -fuse-linker-plugin -ffat-lto-objects '
-                   '-flto-partition=none -g -std=c11 -Wextra '
+                   '-DTHREAD_STACK_SIZE=0x200000  -g -std=c11 -Wextra '
                    '-Wno-unused-parameter -Wno-missing-field-initializers '
                    '-Wstrict-prototypes -Werror=implicit-function-declaration '
                    '-fvisibility=hidden -Os -fstack-clash-protection -Wformat '
                    '-Werror=format-security -g -O2 '
-                   '-DTHREAD_STACK_SIZE=0x200000 -fprofile-use '
-                   '-fprofile-correction -I./Include/internal -I. -I./Include '
-                   '-fPIC -fPIC',
+                   '-DTHREAD_STACK_SIZE=0x200000  -I./Include/internal -I. '
+                   '-I./Include -fPIC -fPIC',
  'LIBHACL_HEADERS': '\\',
  'LIBHACL_SHA2_A': 'Modules/_hacl/libHacl_Hash_SHA2.a',
  'LIBHACL_SHA2_HEADERS': '\\',
@@ -673,16 +663,13 @@ build_time_vars = {'ABIFLAGS': '',
                     '-fno-strict-overflow -Wsign-compare -DNDEBUG -g -O3 -Wall '
                     '-Os -fstack-clash-protection -Wformat '
                     '-Werror=format-security -g -O2 '
-                    '-DTHREAD_STACK_SIZE=0x200000 -fno-semantic-interposition '
-                    '-flto -fuse-linker-plugin -ffat-lto-objects '
-                    '-flto-partition=none -g -std=c11 -Wextra '
+                    '-DTHREAD_STACK_SIZE=0x200000  -g -std=c11 -Wextra '
                     '-Wno-unused-parameter -Wno-missing-field-initializers '
                     '-Wstrict-prototypes -Werror=implicit-function-declaration '
                     '-fvisibility=hidden -Os -fstack-clash-protection -Wformat '
                     '-Werror=format-security -g -O2 '
-                    '-DTHREAD_STACK_SIZE=0x200000 -fprofile-use '
-                    '-fprofile-correction -I./Include/internal -I. -I./Include '
-                    '-fPIC -fPIC',
+                    '-DTHREAD_STACK_SIZE=0x200000  -I./Include/internal -I. '
+                    '-I./Include -fPIC -fPIC',
  'LIBMPDEC_HEADERS': '\\',
  'LIBMPDEC_OBJS': '\\',
  'LIBOBJDIR': 'Python/',
@@ -696,7 +683,7 @@ build_time_vars = {'ABIFLAGS': '',
  'LIBRARY_OBJS_OMIT_FROZEN': '\\',
  'LIBS': '-ldl',
  'LIBSUBDIRS': 'asyncio \\',
- 'LINKCC': 'gcc',
+ 'LINKCC': 'cc',
  'LINKFORSHARED': '-Xlinker -export-dynamic',
  'LINK_PYTHON_DEPS': 'libpython3.12.a libpython3.12.so libpython3.so',
  'LINK_PYTHON_OBJS': '-L. -lpython3.12',
@@ -704,7 +691,7 @@ build_time_vars = {'ABIFLAGS': '',
  'LIPO_INTEL64_FLAGS': '',
  'LLVM_PROF_ERR': 'no',
  'LLVM_PROF_FILE': '',
- 'LLVM_PROF_MERGER': 'true',
+ 'LLVM_PROF_MERGER': '',
  'LN': 'ln',
  'LOCALMODLIBS': '',
  'MACHDEP': 'linux',
@@ -769,7 +756,7 @@ build_time_vars = {'ABIFLAGS': '',
  'MODULE_AUDIOOP_LDFLAGS': '-lm',
  'MODULE_AUDIOOP_STATE': 'yes',
  'MODULE_BINASCII_CFLAGS': '-DUSE_ZLIB_CRC32',
- 'MODULE_BINASCII_LDFLAGS': '-L/lib -lz',
+ 'MODULE_BINASCII_LDFLAGS': '-lz',
  'MODULE_BINASCII_STATE': 'yes',
  'MODULE_CMATH_DEPS': './Modules/_math.h',
  'MODULE_CMATH_LDFLAGS': '-lm',
@@ -797,7 +784,7 @@ build_time_vars = {'ABIFLAGS': '',
  'MODULE_PYEXPAT_DEPS': '',
  'MODULE_PYEXPAT_LDFLAGS': '-lexpat',
  'MODULE_PYEXPAT_STATE': 'yes',
- 'MODULE_READLINE_CFLAGS': '-DNCURSES_WIDECHAR',
+ 'MODULE_READLINE_CFLAGS': '-D_BSD_SOURCE -DNCURSES_WIDECHAR',
  'MODULE_READLINE_LDFLAGS': '-lreadline',
  'MODULE_READLINE_STATE': 'yes',
  'MODULE_RESOURCE_STATE': 'yes',
@@ -814,7 +801,7 @@ build_time_vars = {'ABIFLAGS': '',
  'MODULE_XXLIMITED_STATE': 'yes',
  'MODULE_XXSUBTYPE_STATE': 'yes',
  'MODULE_ZLIB_CFLAGS': '',
- 'MODULE_ZLIB_LDFLAGS': '-L/lib -lz',
+ 'MODULE_ZLIB_LDFLAGS': '-lz',
  'MODULE_ZLIB_STATE': 'yes',
  'MODULE__ABC_LDFLAGS': '',
  'MODULE__ASYNCIO_STATE': 'yes',
@@ -883,9 +870,10 @@ build_time_vars = {'ABIFLAGS': '',
  'MODULE__CTYPES_STATE': 'yes',
  'MODULE__CTYPES_TEST_LDFLAGS': '-lm',
  'MODULE__CTYPES_TEST_STATE': 'yes',
- 'MODULE__CURSES_CFLAGS': '-DNCURSES_WIDECHAR',
+ 'MODULE__CURSES_CFLAGS': '-D_BSD_SOURCE -DNCURSES_WIDECHAR',
  'MODULE__CURSES_LDFLAGS': '-lncursesw',
- 'MODULE__CURSES_PANEL_CFLAGS': '-DNCURSES_WIDECHAR -DNCURSES_WIDECHAR',
+ 'MODULE__CURSES_PANEL_CFLAGS': '-D_BSD_SOURCE -DNCURSES_WIDECHAR '
+                                '-D_BSD_SOURCE -DNCURSES_WIDECHAR',
  'MODULE__CURSES_PANEL_LDFLAGS': '-lpanelw -lncursesw',
  'MODULE__CURSES_PANEL_STATE': 'yes',
  'MODULE__CURSES_STATE': 'yes',
@@ -1014,8 +1002,8 @@ build_time_vars = {'ABIFLAGS': '',
  'PARSER_OBJS': '\\ \\ Parser/myreadline.o Parser/tokenizer.o',
  'PEGEN_HEADERS': '\\',
  'PEGEN_OBJS': '\\',
- 'PGO_PROF_GEN_FLAG': '-fprofile-generate',
- 'PGO_PROF_USE_FLAG': '-fprofile-use -fprofile-correction',
+ 'PGO_PROF_GEN_FLAG': '',
+ 'PGO_PROF_USE_FLAG': '',
  'PLATLIBDIR': 'lib',
  'POBJS': '\\',
  'POSIX_SEMAPHORES_NOT_ENABLED': 0,
@@ -1041,59 +1029,51 @@ build_time_vars = {'ABIFLAGS': '',
  'PY_BUILTIN_MODULE_CFLAGS': '-fno-strict-overflow -Wsign-compare -DNDEBUG -g '
                              '-O3 -Wall -Os -fstack-clash-protection -Wformat '
                              '-Werror=format-security -g -O2 '
-                             '-DTHREAD_STACK_SIZE=0x200000 '
-                             '-fno-semantic-interposition -flto '
-                             '-fuse-linker-plugin -ffat-lto-objects '
-                             '-flto-partition=none -g -std=c11 -Wextra '
-                             '-Wno-unused-parameter '
+                             '-DTHREAD_STACK_SIZE=0x200000  -g -std=c11 '
+                             '-Wextra -Wno-unused-parameter '
                              '-Wno-missing-field-initializers '
                              '-Wstrict-prototypes '
                              '-Werror=implicit-function-declaration '
                              '-fvisibility=hidden -Os -fstack-clash-protection '
                              '-Wformat -Werror=format-security -g -O2 '
-                             '-DTHREAD_STACK_SIZE=0x200000 -fprofile-use '
-                             '-fprofile-correction -I./Include/internal -I. '
-                             '-I./Include -fPIC -DPy_BUILD_CORE_BUILTIN',
+                             '-DTHREAD_STACK_SIZE=0x200000  '
+                             '-I./Include/internal -I. -I./Include -fPIC '
+                             '-DPy_BUILD_CORE_BUILTIN',
  'PY_CFLAGS': '-fno-strict-overflow -Wsign-compare -DNDEBUG -g -O3 -Wall',
  'PY_CFLAGS_NODIST': '-Os -fstack-clash-protection -Wformat '
                      '-Werror=format-security -g -O2 '
-                     '-DTHREAD_STACK_SIZE=0x200000 -fno-semantic-interposition '
-                     '-flto -fuse-linker-plugin -ffat-lto-objects '
-                     '-flto-partition=none -g -std=c11 -Wextra '
+                     '-DTHREAD_STACK_SIZE=0x200000  -g -std=c11 -Wextra '
                      '-Wno-unused-parameter -Wno-missing-field-initializers '
                      '-Wstrict-prototypes '
                      '-Werror=implicit-function-declaration '
                      '-fvisibility=hidden -Os -fstack-clash-protection '
                      '-Wformat -Werror=format-security -g -O2 '
-                     '-DTHREAD_STACK_SIZE=0x200000 -fprofile-use '
-                     '-fprofile-correction -I./Include/internal',
+                     '-DTHREAD_STACK_SIZE=0x200000  -I./Include/internal',
  'PY_COERCE_C_LOCALE': 1,
  'PY_CORE_CFLAGS': '-fno-strict-overflow -Wsign-compare -DNDEBUG -g -O3 -Wall '
                    '-Os -fstack-clash-protection -Wformat '
                    '-Werror=format-security -g -O2 '
-                   '-DTHREAD_STACK_SIZE=0x200000 -fno-semantic-interposition '
-                   '-flto -fuse-linker-plugin -ffat-lto-objects '
-                   '-flto-partition=none -g -std=c11 -Wextra '
+                   '-DTHREAD_STACK_SIZE=0x200000  -g -std=c11 -Wextra '
                    '-Wno-unused-parameter -Wno-missing-field-initializers '
                    '-Wstrict-prototypes -Werror=implicit-function-declaration '
                    '-fvisibility=hidden -Os -fstack-clash-protection -Wformat '
                    '-Werror=format-security -g -O2 '
-                   '-DTHREAD_STACK_SIZE=0x200000 -fprofile-use '
-                   '-fprofile-correction -I./Include/internal -I. -I./Include '
-                   '-fPIC -DPy_BUILD_CORE',
+                   '-DTHREAD_STACK_SIZE=0x200000  -I./Include/internal -I. '
+                   '-I./Include -fPIC -DPy_BUILD_CORE',
  'PY_CORE_LDFLAGS': '-Wl,--as-needed,-O1,--sort-common '
-                    '-fno-semantic-interposition -flto -fuse-linker-plugin '
-                    '-ffat-lto-objects -flto-partition=none -g '
-                    '-Wl,--as-needed,-O1,--sort-common',
+                    '-Wl,-z,pack-relative-relocs -Wl,-z,stack-size=0x200000  '
+                    '-g -Wl,--as-needed,-O1,--sort-common '
+                    '-Wl,-z,pack-relative-relocs -Wl,-z,stack-size=0x200000',
  'PY_CPPFLAGS': '-I. -I./Include',
  'PY_ENABLE_SHARED': 1,
  'PY_HAVE_PERF_TRAMPOLINE': 0,
  'PY_LDFLAGS': '',
  'PY_LDFLAGS_NODIST': '-Wl,--as-needed,-O1,--sort-common '
-                      '-fno-semantic-interposition -flto -fuse-linker-plugin '
-                      '-ffat-lto-objects -flto-partition=none -g '
-                      '-Wl,--as-needed,-O1,--sort-common',
- 'PY_LDFLAGS_NOLTO': '-fno-lto -Wl,--as-needed,-O1,--sort-common',
+                      '-Wl,-z,pack-relative-relocs -Wl,-z,stack-size=0x200000  '
+                      '-g -Wl,--as-needed,-O1,--sort-common '
+                      '-Wl,-z,pack-relative-relocs -Wl,-z,stack-size=0x200000',
+ 'PY_LDFLAGS_NOLTO': '-Wl,--as-needed,-O1,--sort-common '
+                     '-Wl,-z,pack-relative-relocs -Wl,-z,stack-size=0x200000',
  'PY_SQLITE_ENABLE_LOAD_EXTENSION': 1,
  'PY_SQLITE_HAVE_SERIALIZE': 1,
  'PY_SSL_DEFAULT_CIPHERS': 1,
@@ -1101,17 +1081,14 @@ build_time_vars = {'ABIFLAGS': '',
  'PY_STDMODULE_CFLAGS': '-fno-strict-overflow -Wsign-compare -DNDEBUG -g -O3 '
                         '-Wall -Os -fstack-clash-protection -Wformat '
                         '-Werror=format-security -g -O2 '
-                        '-DTHREAD_STACK_SIZE=0x200000 '
-                        '-fno-semantic-interposition -flto -fuse-linker-plugin '
-                        '-ffat-lto-objects -flto-partition=none -g -std=c11 '
-                        '-Wextra -Wno-unused-parameter '
-                        '-Wno-missing-field-initializers -Wstrict-prototypes '
+                        '-DTHREAD_STACK_SIZE=0x200000  -g -std=c11 -Wextra '
+                        '-Wno-unused-parameter -Wno-missing-field-initializers '
+                        '-Wstrict-prototypes '
                         '-Werror=implicit-function-declaration '
                         '-fvisibility=hidden -Os -fstack-clash-protection '
                         '-Wformat -Werror=format-security -g -O2 '
-                        '-DTHREAD_STACK_SIZE=0x200000 -fprofile-use '
-                        '-fprofile-correction -I./Include/internal -I. '
-                        '-I./Include -fPIC',
+                        '-DTHREAD_STACK_SIZE=0x200000  -I./Include/internal '
+                        '-I. -I./Include -fPIC',
  'PY_SUPPORT_TIER': 0,
  'Py_DEBUG': 0,
  'Py_ENABLE_SHARED': 1,
@@ -1123,7 +1100,7 @@ build_time_vars = {'ABIFLAGS': '',
  'READELF': '@READELF@',
  'RESSRCDIR': 'Mac/Resources/framework',
  'RETSIGTYPE': 'void',
- 'RUNSHARED': 'LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.12.3',
+ 'RUNSHARED': 'LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.12.11',
  'SCRIPTDIR': '/usr/lib',
  'SCRIPT_2TO3': 'build/scripts-3.12/2to3-3.12',
  'SCRIPT_IDLE': 'build/scripts-3.12/idle3.12',
@@ -1246,10 +1223,10 @@ build_time_vars = {'ABIFLAGS': '',
  'SYS_SELECT_WITH_SYS_TIME': 1,
  'TESTOPTS': '',
  'TESTPATH': '',
- 'TESTPYTHON': 'LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.12.3 '
+ 'TESTPYTHON': 'LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.12.11 '
                './python -E',
  'TESTPYTHONOPTS': '',
- 'TESTRUNNER': 'LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.12.3 '
+ 'TESTRUNNER': 'LD_LIBRARY_PATH=/home/buildozer/aports/main/python3/src/Python-3.12.11 '
                './python -E ./Tools/scripts/run_tests.py',
  'TESTSUBDIRS': 'idlelib/idle_test \\',
  'TESTTIMEOUT': 1200,
@@ -1279,8 +1256,8 @@ build_time_vars = {'ABIFLAGS': '',
  'WITH_VALGRIND': 0,
  'X87_DOUBLE_ROUNDING': 0,
  'XMLLIBSUBDIRS': 'xml xml/dom xml/etree xml/parsers xml/sax',
- 'abs_builddir': '/home/buildozer/aports/main/python3/src/Python-3.12.3',
- 'abs_srcdir': '/home/buildozer/aports/main/python3/src/Python-3.12.3',
+ 'abs_builddir': '/home/buildozer/aports/main/python3/src/Python-3.12.11',
+ 'abs_srcdir': '/home/buildozer/aports/main/python3/src/Python-3.12.11',
  'datarootdir': '/usr/share',
  'exec_prefix': '/usr',
  'prefix': '/usr',

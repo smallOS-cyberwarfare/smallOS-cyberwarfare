@@ -166,6 +166,13 @@
     </model>
     <model>
       <configItem>
+        <name>abnt2</name>
+        <description>Brazilian ABNT2</description>
+        <vendor>Generic</vendor>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
         <name>brother</name>
         <description>Brother Internet</description>
         <vendor>Brother</vendor>
@@ -316,13 +323,6 @@
         <name>chromebook</name>
         <description>Chromebook</description>
         <vendor>Google</vendor>
-      </configItem>
-    </model>
-    <model>
-      <configItem>
-        <name>classmate</name>
-        <description>Classmate PC</description>
-        <vendor>Intel</vendor>
       </configItem>
     </model>
     <model>
@@ -551,13 +551,6 @@
     </model>
     <model>
       <configItem>
-        <name>macintosh_hhk</name>
-        <description>Happy Hacking for Mac</description>
-        <vendor>Fujitsu</vendor>
-      </configItem>
-    </model>
-    <model>
-      <configItem>
         <name>hpi6</name>
         <description>Hewlett-Packard Internet</description>
         <vendor>Hewlett-Packard</vendor>
@@ -691,6 +684,13 @@
     </model>
     <model>
       <configItem>
+        <name>jp106</name>
+        <description>Japanese 106-key</description>
+        <vendor>Generic</vendor>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
         <name>flexpro</name>
         <description>Keytronic FlexPro</description>
         <vendor>Keytronic</vendor>
@@ -701,6 +701,13 @@
         <name>kinesis</name>
         <description>Kinesis</description>
         <vendor>Kinesis</vendor>
+      </configItem>
+    </model>
+    <model>
+      <configItem>
+	<name>kr106</name>
+	<description>Korean 106-key</description>
+	<vendor>Generic</vendor>
       </configItem>
     </model>
     <model>
@@ -856,34 +863,6 @@
         <name>logiultraxc</name>
         <description>Logitech Ultra-X Cordless Media Desktop</description>
         <vendor>Logitech</vendor>
-      </configItem>
-    </model>
-    <model>
-      <configItem>
-        <name>macbook78</name>
-        <description>MacBook/MacBook Pro</description>
-        <vendor>Apple</vendor>
-      </configItem>
-    </model>
-    <model>
-      <configItem>
-        <name>macbook79</name>
-        <description>MacBook/MacBook Pro (intl.)</description>
-        <vendor>Apple</vendor>
-      </configItem>
-    </model>
-    <model>
-      <configItem>
-        <name>macintosh</name>
-        <description>Macintosh</description>
-        <vendor>Apple</vendor>
-      </configItem>
-    </model>
-    <model>
-      <configItem>
-        <name>macintosh_old</name>
-        <description>Macintosh Old</description>
-        <vendor>Apple</vendor>
       </configItem>
     </model>
     <model>
@@ -1929,6 +1908,7 @@
         <languageList>
           <iso639Id>tzm</iso639Id>
           <iso639Id>fra</iso639Id>
+          <iso639Id>kab</iso639Id>
         </languageList>
       </configItem>
       <variantList>
@@ -3533,6 +3513,18 @@
           <configItem>
             <name>dvorak</name>
             <description>French (Dvorak)</description>
+          </configItem>
+        </variant>
+        <variant>
+          <configItem>
+            <name>ergol</name>
+            <description>French (Ergo‑L)</description>
+          </configItem>
+        </variant>
+        <variant>
+          <configItem>
+            <name>ergol_iso</name>
+            <description>French (Ergo‑L, ISO variant)</description>
           </configItem>
         </variant>
         <variant>
@@ -7060,8 +7052,32 @@
       </option>
       <option>
         <configItem>
+          <name>grp:ctrl_shift_toggle_bidir</name>
+          <description>Left Ctrl+Left Shift chooses previous layout, Right Ctrl + Right Shift chooses next layout</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
           <name>grp:ctrl_alt_toggle</name>
           <description>Alt+Ctrl</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
+          <name>grp:lctrl_lalt_toggle</name>
+          <description>Left Alt+Left Ctrl</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
+          <name>grp:rctrl_ralt_toggle</name>
+          <description>Right Alt+Right Ctrl</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
+          <name>grp:ctrl_alt_toggle_bidir</name>
+          <description>Left Ctrl+Left Alt chooses previous layout, Right Ctrl + Right Alt chooses next layout</description>
         </configItem>
       </option>
       <option>
@@ -7080,6 +7096,12 @@
         <configItem>
           <name>grp:ralt_rshift_toggle</name>
           <description>Right Alt+Right Shift</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
+          <name>grp:alt_shift_toggle_bidir</name>
+          <description>Left Alt+Left Shift chooses previous layout, Right Alt + Right Shift chooses next layout</description>
         </configItem>
       </option>
       <option>
@@ -7255,6 +7277,12 @@
       </option>
       <option>
         <configItem>
+          <name>lv3:caps_switch_capslock_with_ctrl</name>
+          <description>Caps Lock; Ctrl+Caps Lock for original Caps Lock action</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
           <name>lv3:bksl_switch</name>
           <description>Backslash</description>
         </configItem>
@@ -7310,6 +7338,12 @@
       </option>
       <option>
         <configItem>
+          <name>ctrl:grouptoggle_capscontrol</name>
+          <description>Caps Lock as Ctrl,  Left Control switches to another layout</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
           <name>ctrl:hyper_capscontrol</name>
           <description>Caps Lock as Ctrl, Ctrl as Hyper</description>
         </configItem>
@@ -7330,6 +7364,12 @@
         <configItem>
           <name>ctrl:rctrl_ralt</name>
           <description>Right Ctrl as Right Alt</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
+          <name>ctrl:ralt_rctrl</name>
+          <description>Right Alt as Right Control</description>
         </configItem>
       </option>
       <option>
@@ -7591,6 +7631,12 @@
       </option>
       <option>
         <configItem>
+          <name>caps:return</name>
+          <description>Make Caps Lock an additional Return key</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
           <name>caps:super</name>
           <description>Make Caps Lock an additional Super</description>
         </configItem>
@@ -7615,8 +7661,26 @@
       </option>
       <option>
         <configItem>
+          <name>caps:ctrl_shifted_capslock</name>
+          <description>Make Caps Lock an additional Ctrl and Shift + Caps Lock the regular Caps Lock</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
           <name>caps:ctrl_modifier</name>
-          <description>Make Caps Lock an additional Ctrl</description>
+          <description>Make Caps Lock act as an additional Ctrl modifier, but keep identifying as Caps Lock</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
+          <name>caps:digits_row</name>
+          <description>Caps Lock gives digits on the digits row (Azerty layouts)</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
+          <name>caps:digits_row_independent_lock</name>
+          <description>Shift + Caps locks the digits on the digits row, Caps Lock alone behaves as usual (Azerty layouts)</description>
         </configItem>
       </option>
       <option>
@@ -7702,6 +7766,12 @@
         <configItem>
           <name>altwin:swap_lalt_lwin</name>
           <description>Left Alt is swapped with Left Win</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
+          <name>altwin:swap_ralt_rwin</name>
+          <description>Right Alt is swapped with Right Win</description>
         </configItem>
       </option>
       <option>
@@ -7869,6 +7939,12 @@
       </option>
       <option>
         <configItem>
+          <name>scrolllock:mod3</name>
+          <description>Map Scroll Lock to Mod3</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
           <name>srvrkeys:none</name>
           <description>Special keys (Ctrl+Alt+&lt;key&gt;) handled in a server</description>
         </configItem>
@@ -7955,7 +8031,13 @@
       <option>
         <configItem>
           <name>eurosign:e</name>
-          <description>Euro on E</description>
+          <description>Euro on E, third level</description>
+        </configItem>
+      </option>
+      <option>
+        <configItem>
+          <name>eurosign:E</name>
+          <description>Euro on E, fourth level</description>
         </configItem>
       </option>
       <option>
@@ -8042,44 +8124,6 @@
           <description>Right Win chooses 5th level and acts as a one-time lock if pressed with another 5th level chooser</description>
         </configItem>
       </option>
-<!--
-      <option>
-        <configItem>
-          <name>lv5:lsgt_switch_lock_cancel</name>
-          <description>The "&lt; &gt;" key chooses 5th level and acts as a one-time lock if pressed with another 5th level chooser</description>
-        </configItem>
-      </option>
-      <option>
-        <configItem>
-          <name>lv5:ralt_switch_lock_cancel</name>
-          <description>Right Alt chooses 5th level and acts as a one-time lock if pressed with another 5th level chooser</description>
-        </configItem>
-      </option>
-      <option>
-        <configItem>
-          <name>lv5:lwin_switch_lock_cancel</name>
-          <description>Left Win chooses 5th level and acts as a one-time lock if pressed with another 5th level chooser</description>
-        </configItem>
-      </option>
-      <option>
-        <configItem>
-          <name>lv5:rwin_switch_lock_cancel</name>
-          <description>Right Win chooses 5th level and acts as a one-time lock if pressed with another 5th level chooser</description>
-        </configItem>
-      </option>
-      <option>
-        <configItem>
-          <name>lv5:lsgt_switch_lock_cancel</name>
-          <description>The "&lt; &gt;" key chooses 5th level; acts as onetime lock lock when pressed together with another 5th level chooser</description>
-        </configItem>
-      </option>
-      <option>
-        <configItem>
-          <name>lv5:ralt_switch_lock_cancel</name>
-          <description>Right Alt chooses 5th level and acts as a one-time lock if pressed with another 5th level chooser</description>
-        </configItem>
-      </option>
--->
     </group>
     <group allowMultipleSelection="false">
       <!-- Let space output NBSP, NNBSP, ZWNJ, and ZWJ for the desired level -->
@@ -8271,6 +8315,18 @@
         <configItem>
           <name>terminate:ctrl_alt_bksp</name>
           <description>Ctrl+Alt+Backspace</description>
+        </configItem>
+      </option>
+    </group>
+    <group allowMultipleSelection="true">
+      <configItem>
+        <name>fkeys</name>
+        <description>Function keys</description>
+      </configItem>
+      <option>
+        <configItem>
+          <name>fkeys:basic_13-24</name>
+          <description>Use F13-F24 as usual function keys</description>
         </configItem>
       </option>
     </group>

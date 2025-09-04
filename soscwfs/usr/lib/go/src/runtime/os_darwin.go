@@ -6,6 +6,7 @@ package runtime
 
 import (
 	"internal/abi"
+	"internal/stringslite"
 	"unsafe"
 )
 
@@ -191,14 +192,10 @@ func getPageSize() uintptr {
 	return 0
 }
 
-var urandom_dev = []byte("/dev/urandom\x00")
-
 //go:nosplit
 func readRandom(r []byte) int {
-	fd := open(&urandom_dev[0], 0 /* O_RDONLY */, 0)
-	n := read(fd, unsafe.Pointer(&r[0]), int32(len(r)))
-	closefd(fd)
-	return int(n)
+	arc4random_buf(unsafe.Pointer(&r[0]), int32(len(r)))
+	return len(r)
 }
 
 func goenvs() {
@@ -347,8 +344,11 @@ func unminit() {
 	getg().m.procid = 0
 }
 
-// Called from exitm, but not from drop, to undo the effect of thread-owned
+// Called from mexit, but not from dropm, to undo the effect of thread-owned
 // resources in minit, semacreate, or elsewhere. Do not take locks after calling this.
+//
+// This always runs without a P, so //go:nowritebarrierrec is required.
+//go:nowritebarrierrec
 func mdestroy(mp *m) {
 }
 
@@ -465,10 +465,7 @@ func sysargs(argc int32, argv **byte) {
 	executablePath = gostringnocopy(argv_index(argv, n+1))
 
 	// strip "executable_path=" prefix if available, it's added after OS X 10.11.
-	const prefix = "executable_path="
-	if len(executablePath) > len(prefix) && executablePath[:len(prefix)] == prefix {
-		executablePath = executablePath[len(prefix):]
-	}
+	executablePath = stringslite.TrimPrefix(executablePath, "executable_path=")
 }
 
 func signalM(mp *m, sig int) {

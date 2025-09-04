@@ -19,7 +19,9 @@ const (
 	_SIG_SETMASK = 3
 )
 
-type mOS struct{}
+type mOS struct {
+	waitsema uint32 // semaphore for parking on locks
+}
 
 //go:noescape
 func lwp_create(param *lwpparams) int32
@@ -214,8 +216,11 @@ func unminit() {
 	getg().m.procid = 0
 }
 
-// Called from exitm, but not from drop, to undo the effect of thread-owned
+// Called from mexit, but not from dropm, to undo the effect of thread-owned
 // resources in minit, semacreate, or elsewhere. Do not take locks after calling this.
+//
+// This always runs without a P, so //go:nowritebarrierrec is required.
+//go:nowritebarrierrec
 func mdestroy(mp *m) {
 }
 

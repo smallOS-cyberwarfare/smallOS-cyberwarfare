@@ -22,16 +22,17 @@ var versionErrorRx = regexp.MustCompile(`requires go[0-9]+\.[0-9]+ or later`)
 
 // checkFiles configures and runs the types2 checker on the given
 // parsed source files and then returns the result.
-func checkFiles(m posMap, noders []*noder) (*types2.Package, *types2.Info) {
+// The map result value indicates which closures are generated from the bodies of range function loops.
+func checkFiles(m posMap, noders []*noder) (*types2.Package, *types2.Info, map[*syntax.FuncLit]bool) {
 	if base.SyntaxErrors() != 0 {
 		base.ErrorExit()
 	}
 
 	// setup and syntax error reporting
 	files := make([]*syntax.File, len(noders))
-	// posBaseMap maps all file pos bases back to *syntax.File
+	// fileBaseMap maps all file pos bases back to *syntax.File
 	// for checking Go version mismatched.
-	posBaseMap := make(map[*syntax.PosBase]*syntax.File)
+	fileBaseMap := make(map[*syntax.PosBase]*syntax.File)
 	for i, p := range noders {
 		files[i] = p.file
 		// The file.Pos() is the position of the package clause.
@@ -40,7 +41,7 @@ func checkFiles(m posMap, noders []*noder) (*types2.Package, *types2.Info) {
 		// Make sure to consistently map back to file base, here and
 		// when we look for a file in the conf.Error handler below,
 		// otherwise the file may not be found (was go.dev/issue/67141).
-		posBaseMap[fileBase(p.file.Pos())] = p.file
+		fileBaseMap[p.file.Pos().FileBase()] = p.file
 	}
 
 	// typechecking
@@ -55,6 +56,7 @@ func checkFiles(m posMap, noders []*noder) (*types2.Package, *types2.Info) {
 		IgnoreBranchErrors: true, // parser already checked via syntax.CheckBranches mode
 		Importer:           &importer,
 		Sizes:              types2.SizesFor("gc", buildcfg.GOARCH),
+		EnableAlias:        true,
 	}
 	if base.Flag.ErrorURL {
 		conf.ErrorURL = " [go.dev/e/%s]"
@@ -74,9 +76,9 @@ func checkFiles(m posMap, noders []*noder) (*types2.Package, *types2.Info) {
 		terr := err.(types2.Error)
 		msg := terr.Msg
 		if versionErrorRx.MatchString(msg) {
-			posBase := fileBase(terr.Pos)
-			fileVersion := info.FileVersions[posBase]
-			file := posBaseMap[posBase]
+			fileBase := terr.Pos.FileBase()
+			fileVersion := info.FileVersions[fileBase]
+			file := fileBaseMap[fileBase]
 			if file == nil {
 				// This should never happen, but be careful and don't crash.
 			} else if file.GoVersion == fileVersion {
@@ -142,6 +144,34 @@ func checkFiles(m posMap, noders []*noder) (*types2.Package, *types2.Info) {
 	}
 	base.ExitIfErrors()
 
+	// Implementation restriction: we don't allow not-in-heap types to
+	// be used as map keys/values, or channel.
+	{
+		for _, file := range files {
+			syntax.Inspect(file, func(n syntax.Node) bool {
+				if n, ok := n.(*syntax.TypeDecl); ok {
+					switch n := n.Type.(type) {
+					case *syntax.MapType:
+						typ := n.GetTypeInfo().Type.Underlying().(*types2.Map)
+						if isNotInHeap(typ.Key()) {
+							base.ErrorfAt(m.makeXPos(n.Pos()), 0, "incomplete (or unallocatable) map key not allowed")
+						}
+						if isNotInHeap(typ.Elem()) {
+							base.ErrorfAt(m.makeXPos(n.Pos()), 0, "incomplete (or unallocatable) map value not allowed")
+						}
+					case *syntax.ChanType:
+						typ := n.GetTypeInfo().Type.Underlying().(*types2.Chan)
+						if isNotInHeap(typ.Elem()) {
+							base.ErrorfAt(m.makeXPos(n.Pos()), 0, "chan of incomplete (or unallocatable) type not allowed")
+						}
+					}
+				}
+				return true
+			})
+		}
+	}
+	base.ExitIfErrors()
+
 	// Rewrite range over function to explicit function calls
 	// with the loop bodies converted into new implicit closures.
 	// We do this now, before serialization to unified IR, so that if the
@@ -149,18 +179,9 @@ func checkFiles(m posMap, noders []*noder) (*types2.Package, *types2.Info) {
 	// If we do the rewrite in the back end, like between typecheck and walk,
 	// then the new implicit closure will not have a unified IR inline body,
 	// and bodyReaderFor will fail.
-	rangefunc.Rewrite(pkg, info, files)
+	rangeInfo := rangefunc.Rewrite(pkg, info, files)
 
-	return pkg, info
-}
-
-// fileBase returns a file's position base given a position in the file.
-func fileBase(pos syntax.Pos) *syntax.PosBase {
-	base := pos.Base()
-	for !base.IsFileBase() { // line directive base
-		base = base.Pos().Base()
-	}
-	return base
+	return pkg, info, rangeInfo
 }
 
 // A cycleFinder detects anonymous interface cycles (go.dev/issue/56103).

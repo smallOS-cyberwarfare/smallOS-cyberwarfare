@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"internal/godebug"
 	"internal/lazyregexp"
 	"internal/singleflight"
 	"io/fs"
@@ -27,6 +28,7 @@ import (
 	"cmd/go/internal/search"
 	"cmd/go/internal/str"
 	"cmd/go/internal/web"
+	"cmd/internal/pathcache"
 
 	"golang.org/x/mod/module"
 )
@@ -36,6 +38,7 @@ import (
 type Cmd struct {
 	Name      string
 	Cmd       string     // name of binary to invoke command
+	Env       []string   // any environment values to set/override
 	RootNames []rootName // filename and mode indicating the root of a checkout directory
 
 	CreateCmd   []string // commands to download a fresh copy of a repository
@@ -153,6 +156,10 @@ func vcsByCmd(cmd string) *Cmd {
 var vcsHg = &Cmd{
 	Name: "Mercurial",
 	Cmd:  "hg",
+
+	// HGPLAIN=1 turns off additional output that a user may have enabled via
+	// config options or certain extensions.
+	Env: []string{"HGPLAIN=1"},
 	RootNames: []rootName{
 		{filename: ".hg", isDir: true},
 	},
@@ -188,12 +195,11 @@ func hgRemoteRepo(vcsHg *Cmd, rootDir string) (remoteRepo string, err error) {
 
 func hgStatus(vcsHg *Cmd, rootDir string) (Status, error) {
 	// Output changeset ID and seconds since epoch.
-	out, err := vcsHg.runOutputVerboseOnly(rootDir, `log -l1 -T {node}:{date|hgdate}`)
+	out, err := vcsHg.runOutputVerboseOnly(rootDir, `log -r. -T {node}:{date|hgdate}`)
 	if err != nil {
 		return Status{}, err
 	}
 
-	// Successful execution without output indicates an empty repo (no commits).
 	var rev string
 	var commitTime time.Time
 	if len(out) > 0 {
@@ -208,7 +214,7 @@ func hgStatus(vcsHg *Cmd, rootDir string) (Status, error) {
 	}
 
 	// Also look for untracked files.
-	out, err = vcsHg.runOutputVerboseOnly(rootDir, "status")
+	out, err = vcsHg.runOutputVerboseOnly(rootDir, "status -S")
 	if err != nil {
 		return Status{}, err
 	}
@@ -331,12 +337,12 @@ func gitStatus(vcsGit *Cmd, rootDir string) (Status, error) {
 	}
 	uncommitted := len(out) > 0
 
-	// "git status" works for empty repositories, but "git show" does not.
-	// Assume there are no commits in the repo when "git show" fails with
+	// "git status" works for empty repositories, but "git log" does not.
+	// Assume there are no commits in the repo when "git log" fails with
 	// uncommitted files and skip tagging revision / committime.
 	var rev string
 	var commitTime time.Time
-	out, err = vcsGit.runOutputVerboseOnly(rootDir, "-c log.showsignature=false show -s --format=%H:%ct")
+	out, err = vcsGit.runOutputVerboseOnly(rootDir, "-c log.showsignature=false log -1 --format=%H:%ct")
 	if err != nil && !uncommitted {
 		return Status{}, err
 	} else if err == nil {
@@ -678,7 +684,7 @@ func (v *Cmd) run1(dir string, cmdline string, keyval []string, verbose bool) ([
 		args = args[2:]
 	}
 
-	_, err := cfg.LookPath(v.Cmd)
+	_, err := pathcache.LookPath(v.Cmd)
 	if err != nil {
 		fmt.Fprintf(os.Stderr,
 			"go: missing %s command. See https://golang.org/s/gogetcmd\n",
@@ -688,6 +694,9 @@ func (v *Cmd) run1(dir string, cmdline string, keyval []string, verbose bool) ([
 
 	cmd := exec.Command(v.Cmd, args...)
 	cmd.Dir = dir
+	if v.Env != nil {
+		cmd.Env = append(cmd.Environ(), v.Env...)
+	}
 	if cfg.BuildX {
 		fmt.Fprintf(os.Stderr, "cd %s\n", dir)
 		fmt.Fprintf(os.Stderr, "%s %s\n", v.Cmd, strings.Join(args, " "))
@@ -831,11 +840,13 @@ type vcsPath struct {
 	schemelessRepo bool                                // if true, the repo pattern lacks a scheme
 }
 
+var allowmultiplevcs = godebug.New("allowmultiplevcs")
+
 // FromDir inspects dir and its parents to determine the
 // version control system and code repository to use.
 // If no repository is found, FromDir returns an error
 // equivalent to os.ErrNotExist.
-func FromDir(dir, srcRoot string, allowNesting bool) (repoDir string, vcsCmd *Cmd, err error) {
+func FromDir(dir, srcRoot string) (repoDir string, vcsCmd *Cmd, err error) {
 	// Clean and double-check that dir is in (a subdirectory of) srcRoot.
 	dir = filepath.Clean(dir)
 	if srcRoot != "" {
@@ -849,21 +860,28 @@ func FromDir(dir, srcRoot string, allowNesting bool) (repoDir string, vcsCmd *Cm
 	for len(dir) > len(srcRoot) {
 		for _, vcs := range vcsList {
 			if isVCSRoot(dir, vcs.RootNames) {
-				// Record first VCS we find.
-				// If allowNesting is false (as it is in GOPATH), keep looking for
-				// repositories in parent directories and report an error if one is
-				// found to mitigate VCS injection attacks.
 				if vcsCmd == nil {
+					// Record first VCS we find.
 					vcsCmd = vcs
 					repoDir = dir
-					if allowNesting {
+					if allowmultiplevcs.Value() == "1" {
+						allowmultiplevcs.IncNonDefault()
 						return repoDir, vcsCmd, nil
 					}
+					// If allowmultiplevcs is not set, keep looking for
+					// repositories in current and parent directories and report
+					// an error if one is found to mitigate VCS injection
+					// attacks.
 					continue
 				}
-				// Otherwise, we have one VCS inside a different VCS.
-				return "", nil, fmt.Errorf("directory %q uses %s, but parent %q uses %s",
-					repoDir, vcsCmd.Cmd, dir, vcs.Cmd)
+				if vcsCmd == vcsGit && vcs == vcsGit {
+					// Nested Git is allowed, as this is how things like
+					// submodules work. Git explicitly protects against
+					// injection against itself.
+					continue
+				}
+				return "", nil, fmt.Errorf("multiple VCS detected: %s in %q, and %s in %q",
+					vcsCmd.Cmd, repoDir, vcs.Cmd, dir)
 			}
 		}
 

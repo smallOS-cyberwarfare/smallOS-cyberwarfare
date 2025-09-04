@@ -57,12 +57,13 @@ end
 -- Runs a shell command on the remote host.
 --
 -- @param cmd A command to run.
+-- @param no_pty If true, skip requesting a PTY.
 -- @return The command output.
-function SSHConnection:run_remote (cmd)
+function SSHConnection:run_remote (cmd, no_pty)
   if not (self.session and self.authenticated) then
     return false
   end
-  local channel = libssh2.open_channel(self.session)
+  local channel = libssh2.open_channel(self.session, no_pty)
   libssh2.channel_exec(self.session, channel, cmd)
   libssh2.channel_send_eof(self.session, channel)
   local buff = {}
@@ -71,6 +72,9 @@ function SSHConnection:run_remote (cmd)
     data = libssh2.channel_read(self.session, channel)
     if data then
       table.insert(buff, data)
+    elseif no_pty then
+      -- PTY is responsible for sending EOF
+      break
     end
   end
   return table.concat(buff)
@@ -95,10 +99,10 @@ function SSHConnection:password_auth (username, password)
 end
 
 ---
--- Attempts to authenticate using provided private key.
+-- Attempts to authenticate using provided private key file.
 --
 -- @param username A username to authenticate as.
--- @param privatekey_file A path to a privatekey.
+-- @param privatekey_file A path to a privatekey file.
 -- @param passphrase A passphrase for the privatekey.
 -- @return true on success or false on failure.
 function SSHConnection:publickey_auth (username, privatekey_file, passphrase)
@@ -106,6 +110,25 @@ function SSHConnection:publickey_auth (username, privatekey_file, passphrase)
     return false
   end
   if libssh2.userauth_publickey(self.session, username, privatekey_file, passphrase or "") then
+    self.authenticated = true
+    return true
+  else
+    return false
+  end
+end
+
+---
+-- Attempts to authenticate using provided private key.
+--
+-- @param username A username to authenticate as.
+-- @param privatekey The privatekey as a string.
+-- @param passphrase A passphrase for the privatekey.
+-- @return true on success or false on failure.
+function SSHConnection:publickey_auth_frommemory (username, privatekey, passphrase)
+  if not self.session then
+    return false
+  end
+  if libssh2.userauth_publickey_frommemory(self.session, username, privatekey, passphrase or "") then
     self.authenticated = true
     return true
   else

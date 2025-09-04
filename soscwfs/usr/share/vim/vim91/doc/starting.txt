@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 May 05
+*starting.txt*  For Vim version 9.1.  Last change: 2025 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -428,8 +428,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 --not-a-term	Tells Vim that the user knows that the input and/or output is
 		not connected to a terminal.  This will avoid the warning and
 		the two second delay that would happen.
-		Also avoids the "Reading from stdin..." message.
-		Also avoids the "N files to edit" message.
+		Also avoids the "Reading from stdin..." as well as the
+		"N files to edit" message.
 
 --gui-dialog-file {name}				*--gui-dialog-file*
 		When using the GUI, instead of showing a dialog, write the
@@ -540,6 +540,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		not needed when reading a file, because there is a check if
 		the file that is being read has been encrypted, and Vim asks
 		for a key automatically. |encryption|
+		{only available when compiled with the |+cryptv| feature}
 
 							*-X*
 -X		Do not try connecting to the X server to get the current
@@ -557,6 +558,12 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		When the connection is desired later anyway (e.g., for
 		client-server messages), call the |serverlist()| function.
 		This does not enable the XSMP handler though.
+
+							*-Y*
+-Y		Do not try connecting to the Wayland compositor.  Is only
+		relevant for Unix when compiled with the |+wayland| feature,
+		otherwise it's ignored.  Note that this will make any feature
+		that uses Wayland unavailable, such as the clipboard.
 
 							*-s*
 -s {scriptin}	The script file "scriptin" is read.  The characters in the
@@ -827,8 +834,9 @@ accordingly.  Vim proceeds in this order:
 	easy to copy it to another system.
 
 	If Vim was started with "-u filename", the file "filename" is used.
-	All following initializations until 4. are skipped. $MYVIMRC is not
-	set.
+	All following initializations until 4. are skipped. `$MYVIMRC` and
+	`$MYVIMDIR` are not set (but `$MYVIMDIR` will be set, if 'rtp' is
+	updated).
 	"vim -u NORC" can be used to skip these initializations without
 	reading a file.  "vim -u NONE" also skips loading plugins.  |-u|
 
@@ -846,24 +854,27 @@ accordingly.  Vim proceeds in this order:
 	'compatible' is only done later.  Add a ":set nocp" command if you
 	like.  For the Macintosh the $VIMRUNTIME/macmap.vim is read.
 
-	  *VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc* *$MYVIMRC*
+			*VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc*
+			*$MYVIMRC* *$MYVIMDIR*
      c. Five places are searched for initializations.  The first that exists
-	is used, the others are ignored.  The $MYVIMRC environment variable is
-	set to the file that was first found, unless $MYVIMRC was already set
-	and when using VIMINIT.
+	is used, the others are ignored.  The `$MYVIMRC` environment variable is
+	set to the file that was first found, unless `$MYVIMRC` was already set
+	when using VIMINIT.  The `$MYVIMDIR` environment variable is
+	set to the personal 'rtp' directory, however it is not verified
+	that the directory actually exists.
 	I   The environment variable VIMINIT (see also |compatible-default|) (*)
 	    The value of $VIMINIT is used as an Ex command line.
 	II  The user vimrc file(s):
-		    "$HOME/.vimrc"		(for Unix) (*)
-		    "$HOME/.vim/vimrc"		(for Unix) (*)
-		    "$HOME/.config/vim/vimrc"	(for Unix) (*)
-		    "s:.vimrc"			(for Amiga) (*)
-		    "home:.vimrc"		(for Amiga) (*)
-		    "home:vimfiles:vimrc"	(for Amiga) (*)
-		    "$VIM/.vimrc"		(for Amiga) (*)
-		    "$HOME/_vimrc"		(for Win32) (*)
-		    "$HOME/vimfiles/vimrc"	(for Win32) (*)
-		    "$VIM/_vimrc"		(for Win32) (*)
+		    "$HOME/.vimrc"		  (for Unix) (*)
+		    "$HOME/.vim/vimrc"		  (for Unix) (*)
+		    "$XDG_CONFIG_HOME/vim/vimrc"  (for Unix) (*)
+		    "s:.vimrc"			  (for Amiga) (*)
+		    "home:.vimrc"		  (for Amiga) (*)
+		    "home:vimfiles:vimrc"	  (for Amiga) (*)
+		    "$VIM/.vimrc"		  (for Amiga) (*)
+		    "$HOME/_vimrc"		  (for Win32) (*)
+		    "$HOME/vimfiles/vimrc"	  (for Win32) (*)
+		    "$VIM/_vimrc"		  (for Win32) (*)
 		    "$HOME/config/settings/vim/vimrc"	(for Haiku) (*)
 
 		Note: For Unix and Amiga, when ".vimrc" does not exist,
@@ -969,8 +980,11 @@ accordingly.  Vim proceeds in this order:
 	The |v:vim_did_enter| variable is set to 1.
 	The |VimEnter| autocommands are executed.
 
-The $MYVIMRC or $MYGVIMRC file will be set to the first found vimrc and/or
-gvimrc file.
+The `$MYVIMRC` or `$MYGVIMRC` environment variable will be set to the first found
+vimrc and/or gvimrc file while `$MYVIMDIR` is set to the users personal runtime
+directory 'rtp' (typically the first entry in 'runtimepath').  If 'rtp'
+changes, `$MYVIMDIR` will be updated.
+Note: These environment variables resolve symbolic links, but 'rtp' does not.
 
 
 Some hints on using initializations ~
@@ -1073,9 +1087,10 @@ This should work well for new Vim users.  If you create your own .vimrc, it is
 recommended to add these lines somewhere near the top: >
 	unlet! skip_defaults_vim
 	source $VIMRUNTIME/defaults.vim
-Then Vim works like before you had a .vimrc. Copying $VIMRUNTIME/vimrc_example
-is way to do this.  Alternatively, you can copy defaults.vim to your .vimrc
-and modify it (but then you won't get updates when it changes).
+Then Vim works like before you had a .vimrc.
+Copying $VIMRUNTIME/vimrc_example.vim to your .vimrc is another way to do
+this. Alternatively, you can copy defaults.vim to your .vimrc and modify it
+(but then you won't get updates when it changes).
 
 If you don't like some of the defaults, you can still source defaults.vim and
 revert individual settings.  See the defaults.vim file for hints on how to
@@ -1257,7 +1272,7 @@ To change it later, use a ":let" command like this: >
 In case you need the value of $VIMRUNTIME in a shell (e.g., for a script that
 greps in the help files) you might be able to use this: >
 
-	VIMRUNTIME=`vim -e -T dumb --cmd 'exe "set t_cm=\<C-M>"|echo $VIMRUNTIME|quit' | tr -d '\015' `
+	VIMRUNTIME=$(vim -es '+put=$VIMRUNTIME|print|quit!')
 
 Don't set $VIMRUNTIME to an empty value, some things may stop working.
 
@@ -1712,7 +1727,8 @@ most of the information will be restored).
 			|viminfo-file-name| above).
 			If [!] is given, then any information that is
 			already set (registers, marks, |v:oldfiles|, etc.)
-			will be overwritten.
+			will be overwritten.  "E195" may be given, when
+			'viminfofile' has been set to "NONE".
 
 			*:wv* *:wviminfo* *E137* *E138* *E574* *E886* *E929*
 :wv[iminfo][!] [file]	Write to viminfo file [file] (default: see

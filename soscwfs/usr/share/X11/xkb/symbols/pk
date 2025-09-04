@@ -434,3 +434,8 @@ xkb_symbols "urd-navees" {
 
     include "level3(ralt_switch)"
 };
+
+// Compatibility mapping
+partial xkb_symbols "urd" {
+    include "pk(urd-phonetic)"
+};

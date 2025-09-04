@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 )
 
 // ErrNotFound is the error resulting if a path search failed to find an executable file.
@@ -66,8 +65,12 @@ func findExecutable(file string, exts []string) (string, error) {
 //
 // In older versions of Go, LookPath could return a path relative to the current directory.
 // As of Go 1.19, LookPath will instead return that path along with an error satisfying
-// errors.Is(err, ErrDot). See the package documentation for more details.
+// [errors.Is](err, [ErrDot]). See the package documentation for more details.
 func LookPath(file string) (string, error) {
+	if err := validateLookPath(file); err != nil {
+		return "", &Error{file, err}
+	}
+
 	return lookPath(file, pathExt())
 }
 
@@ -81,6 +84,10 @@ func LookPath(file string) (string, error) {
 // "C:\foo\example.com" would be returned as-is even if the
 // program is actually "C:\foo\example.com.exe".
 func lookExtensions(path, dir string) (string, error) {
+	if err := validateLookPath(path); err != nil {
+		return "", &Error{path, err}
+	}
+
 	if filepath.Base(path) == path {
 		path = "." + string(filepath.Separator) + path
 	}
@@ -154,7 +161,7 @@ func lookPath(file string, exts []string) (string, error) {
 		dotf   string
 		dotErr error
 	)
-	if _, found := syscall.Getenv("NoDefaultCurrentDirectoryInExePath"); !found {
+	if _, found := os.LookupEnv("NoDefaultCurrentDirectoryInExePath"); !found {
 		if f, err := findExecutable(filepath.Join(".", file), exts); err == nil {
 			if execerrdot.Value() == "0" {
 				execerrdot.IncNonDefault()

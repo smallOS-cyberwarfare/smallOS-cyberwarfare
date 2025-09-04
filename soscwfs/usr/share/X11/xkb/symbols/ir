@@ -281,3 +281,8 @@ xkb_symbols "ku_ara" {
     include "nbsp(zwnj2nb3)"
     include "level3(ralt_switch)"
 };
+
+// Compatibility mapping
+partial xkb_symbols "ave" {
+    include "ancient(ave)"
+};

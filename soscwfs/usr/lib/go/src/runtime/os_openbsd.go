@@ -6,7 +6,7 @@ package runtime
 
 import (
 	"internal/abi"
-	"runtime/internal/atomic"
+	"internal/runtime/atomic"
 	"unsafe"
 )
 
@@ -139,6 +139,9 @@ func osinit() {
 	physPageSize = getPageSize()
 }
 
+// TODO(#69781): set startupRand using the .openbsd.randomdata ELF section.
+// See SPECS.randomdata.
+
 var urandom_dev = []byte("/dev/urandom\x00")
 
 //go:nosplit
@@ -179,8 +182,11 @@ func unminit() {
 	getg().m.procid = 0
 }
 
-// Called from exitm, but not from drop, to undo the effect of thread-owned
+// Called from mexit, but not from dropm, to undo the effect of thread-owned
 // resources in minit, semacreate, or elsewhere. Do not take locks after calling this.
+//
+// This always runs without a P, so //go:nowritebarrierrec is required.
+//go:nowritebarrierrec
 func mdestroy(mp *m) {
 }
 

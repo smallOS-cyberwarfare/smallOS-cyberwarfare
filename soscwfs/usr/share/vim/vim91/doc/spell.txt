@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 9.1.  Last change: 2024 May 11
+*spell.txt*	For Vim version 9.1.  Last change: 2024 Oct 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -61,6 +61,17 @@ To search for the next misspelled word:
 
 							*[S*
 [S			Like "]S" but search backwards.
+
+							*]r*
+]r			Move to next "rare" word after the cursor.
+			A count before the command can be used to repeat.
+			'wrapscan' applies.
+
+							*[r*
+[r			Like "]r" but search backwards, find the "rare"
+			word before the cursor.  Doesn't recognize words
+			split over two lines, thus may stop at words that are
+			not highlighted as rare.
 
 
 To add words to your own word list:
@@ -781,7 +792,7 @@ them before the Vim word list is made.  The tools for this can be found in the
 The format for the affix and word list files is based on what Myspell uses
 (the spell checker of Mozilla and OpenOffice.org).  A description can be found
 here:
-	http://lingucomponent.openoffice.org/affix.readme ~
+	http://lingucomponent.openoffice.org/affix.readme
 Note that affixes are case sensitive, this isn't obvious from the description.
 
 Vim supports quite a few extras.  They are described below |spell-affix-vim|.

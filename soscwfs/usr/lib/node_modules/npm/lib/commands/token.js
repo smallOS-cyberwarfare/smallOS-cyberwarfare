@@ -50,7 +50,7 @@ class Token extends BaseCommand {
     log.info('token', 'getting list')
     const tokens = await listTokens(this.npm.flatOptions)
     if (json) {
-      output.standard(JSON.stringify(tokens, null, 2))
+      output.buffer(tokens)
       return
     }
     if (parseable) {
@@ -73,7 +73,6 @@ class Token extends BaseCommand {
     for (const token of tokens) {
       const level = token.readonly ? 'Read only token' : 'Publish token'
       const created = String(token.created).slice(0, 10)
-      /* eslint-disable-next-line max-len */
       output.standard(`${chalk.blue(level)} ${token.token}… with id ${chalk.cyan(token.id)} created ${created}`)
       if (token.cidr_whitelist) {
         output.standard(`with IP whitelist: ${chalk.green(token.cidr_whitelist.join(','))}`)
@@ -99,7 +98,6 @@ class Token extends BaseCommand {
         toRemove.push(matches[0].key)
       } else if (matches.length > 1) {
         throw new Error(
-          /* eslint-disable-next-line max-len */
           `Token ID "${id}" was ambiguous, a new token may have been created since you last ran \`npm token list\`.`
         )
       } else {
@@ -117,7 +115,7 @@ class Token extends BaseCommand {
       })
     )
     if (json) {
-      output.standard(JSON.stringify(toRemove))
+      output.buffer(toRemove)
     } else if (parseable) {
       output.standard(toRemove.join('\t'))
     } else {
@@ -142,7 +140,7 @@ class Token extends BaseCommand {
     delete result.key
     delete result.updated
     if (json) {
-      output.standard(JSON.stringify(result))
+      output.buffer(result)
     } else if (parseable) {
       Object.keys(result).forEach(k => output.standard(k + '\t' + result[k]))
     } else {

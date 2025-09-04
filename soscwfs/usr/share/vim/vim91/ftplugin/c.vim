@@ -2,6 +2,7 @@
 " Language:	C
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
 " Last Change:	2023 Aug 22
+"		2024 Jun 02 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Only do this when not done yet for this buffer
@@ -24,7 +25,7 @@ setlocal fo-=t fo+=croql
 
 " These options have the right value as default, but the user may have
 " overruled that.
-setlocal commentstring& define& include&
+setlocal commentstring=/*\ %s\ */ define& include&
 
 " Set completion with CTRL-X CTRL-O to autoloaded function.
 if exists('&ofu')
@@ -43,7 +44,7 @@ endif
 " When the matchit plugin is loaded, this makes the % command skip parens and
 " braces in comments properly.
 if !exists("b:match_words")
-  let b:match_words = '^\s*#\s*if\(\|def\|ndef\)\>:^\s*#\s*elif\>:^\s*#\s*else\>:^\s*#\s*endif\>'
+  let b:match_words = '^\s*#\s*if\%(\|def\|ndef\)\>:^\s*#\s*elif\%(\|def\|ndef\)\>:^\s*#\s*else\>:^\s*#\s*endif\>'
   let b:match_skip = 's:comment\|string\|character\|special'
   let b:undo_ftplugin ..= " | unlet! b:match_skip b:match_words"
 endif
