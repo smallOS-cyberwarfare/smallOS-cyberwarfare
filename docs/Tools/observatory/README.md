@@ -1,21 +1,16 @@
 # Observatory
-Get http headers security related info from Mozilla Observatory 
+Get http headers security related info from MDN Observatory 
 
 ### Download
-https://github.com/mozilla/observatory-cli via npm install -g observatory-cli
+https://github.com/mdn/mdn-http-observatory via npm install --global @mdn/mdn-http-observatory
 
 ### Usage  
-> observatory domain.tld [--format=FORMAT_TYPE] [--rescan] [--zero] [--attemps] [--quiet] [--help] 
+> observatory domain.tld 
   
   
 ### Examples   
-##### Get csv for example.com  
-```bash
-observatory example.com --format=csv
-```
-
 ##### Get Report for google.com 
 ```bash
-observatory google.com --format=report
+observatory google.com 
 ```
 

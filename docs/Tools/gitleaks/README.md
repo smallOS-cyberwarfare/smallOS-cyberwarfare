@@ -13,3 +13,7 @@ https://github.com/gitleaks/gitleaks via git clone https://github.com/gitleaks/g
 gitleaks version 
 ```
 
+##### Scan a repo
+```bash
+git clone --depth 1 https://github.com/stringmanolo/panther.git /tmp/panther && ./gitleaks detect --source /tmp/panther --verbose && rm -rf /tmp/panther
+```

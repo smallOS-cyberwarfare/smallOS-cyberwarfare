@@ -73,8 +73,8 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 
 ##### Requeriments
 
-Download Size: **1.2+ GB**  
-Installed Size: **4+ GB**  
+Download Size: **1.5+ GB**  
+Installed Size: **5+ GB**  
 Arch: **Aarch64**  
 System: **Termux**  
   
