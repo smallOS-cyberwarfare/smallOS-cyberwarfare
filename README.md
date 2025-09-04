@@ -5,7 +5,8 @@ This is the aarch64 version patched to run with proot-distro under termux. No ro
 
 ##### List of Commands  
 ### Attack
-
+  
+- arjun (find http parameters)
 - commix (command injection exploitation tool)
 - crunch (create dictionaries)
 - dig (scan dns)
