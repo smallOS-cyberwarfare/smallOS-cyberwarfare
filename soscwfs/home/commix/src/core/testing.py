@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ Runs the basic smoke testing
 """
 def smoke_test():
     info_msg = "Executing smoke test."
-    print(settings.print_info_msg(info_msg))
+    settings.print_data_to_stdout(settings.print_info_msg(info_msg))
 
     _ = True
     file_paths = []
@@ -40,19 +40,19 @@ def smoke_test():
             __import__(path)
             if settings.VERBOSITY_LEVEL != 0:
               debug_msg = "Succeeded importing '" + str(path) + "' module."
-              print(settings.print_debug_msg(debug_msg))
+              settings.print_data_to_stdout(settings.print_debug_msg(debug_msg))
           except Exception as e:
             error_msg = "Failed importing '" + path + "' module due to '" + str(e) + "'."
-            print(settings.print_error_msg(error_msg))
+            settings.print_data_to_stdout(settings.print_error_msg(error_msg))
             _ = False
 
     result = "Smoke test "
     if _:
       result = result + "passed."
-      print(settings.print_bold_info_msg(result))
+      settings.print_data_to_stdout(settings.print_bold_info_msg(result))
     else:
       result = result + "failed."
-      print(settings.print_bold_error_msg(result))
+      settings.print_data_to_stdout(settings.print_bold_error_msg(result))
     raise SystemExit()
 
 

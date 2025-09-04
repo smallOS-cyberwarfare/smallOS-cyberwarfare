@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ from src.utils import settings
 from src.core.compat import xrange
 
 """
-About: Append a fake HTTP header 'X-Forwarded-For' (and alike).
+About: Appends a fake HTTP header 'X-Forwarded-For' (and alike).
 """
 
 __tamper__ = "xforwardedfor"

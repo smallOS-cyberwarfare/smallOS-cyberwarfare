@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,16 +29,11 @@ if not settings.TAMPER_SCRIPTS[__tamper__]:
   settings.TAMPER_SCRIPTS[__tamper__] = True
 
 def tamper(payload):
-  def add_slash2env(payload):
-    settings.TAMPER_SCRIPTS[__tamper__] = True
+  def add_slash2env(payload): 
     payload = payload.replace("/", "${PATH%%u*}")
     return payload
-
   if settings.TARGET_OS != settings.OS.WINDOWS:
-    if settings.EVAL_BASED_STATE != False:
-      return payload
-    else:
-      return add_slash2env(payload)
+    return add_slash2env(payload)
   else:
     return payload
 

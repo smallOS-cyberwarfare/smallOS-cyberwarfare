@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ def path_creation(path):
         error_msg = str(err_msg).split("] ")[1] + "."
       except IndexError:
         error_msg = str(err_msg) + "."
-      print(settings.print_critical_msg(error_msg))
+      settings.print_data_to_stdout(settings.print_critical_msg(error_msg))
       raise SystemExit()
 
 """
@@ -56,12 +56,12 @@ def logs_filename_creation(url):
     if os.path.isdir(menu.options.output_dir):
       output_dir = menu.options.output_dir
       warn_msg = "Using '" + output_dir + "' for output directory."
-      print(settings.print_warning_msg(warn_msg)) 
+      settings.print_data_to_stdout(settings.print_warning_msg(warn_msg)) 
     else:
       output_dir = tempfile.mkdtemp(prefix=settings.APPLICATION)
       warn_msg = "Unable to create output directory '" + menu.options.output_dir + "'. "
       warn_msg += "Using temporary directory '" + output_dir + "' instead."
-      print(settings.print_warning_msg(warn_msg))
+      settings.print_data_to_stdout(settings.print_warning_msg(warn_msg))
   else:
     output_dir = settings.OUTPUT_DIR
     path_creation(os.path.dirname(settings.OUTPUT_DIR))
@@ -77,7 +77,6 @@ def logs_filename_creation(url):
 Create log files
 """
 def create_log_file(url, output_dir):
-
   host = _urllib.parse.urlparse(url).netloc.replace(":","_") + "/"
   logs_path = output_dir + host
 
@@ -93,19 +92,19 @@ def create_log_file(url, output_dir):
       settings.SESSION_FILE = menu.options.session_file
     else:
       err_msg = "The provided session file ('" + menu.options.session_file + "') does not exist."
-      print(settings.print_critical_msg(err_msg))
+      settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
       raise SystemExit()
   else:
     settings.SESSION_FILE = logs_path + "session.db"
 
   # Load command history
-  if settings.LOAD_SESSION == True:
+  if settings.LOAD_SESSION == True and os.path.exists(settings.CLI_HISTORY):
     checks.load_cmd_history()
 
   # The logs filename construction.
   filename = logs_path + settings.OUTPUT_FILE
   try:
-    with open(filename, 'a') as output_file:
+    with open(filename, 'a', encoding=settings.DEFAULT_CODEC) as output_file:
       if not menu.options.no_logging:
         output_file.write("\n" + "=" * 37)
         output_file.write("\n" + "| Started in " + \
@@ -118,7 +117,7 @@ def create_log_file(url, output_dir):
       error_msg = str(err_msg.args[0]).split("] ")[1] + "."
     except:
       error_msg = str(err_msg.args[0]) + "."
-    print(settings.print_critical_msg(error_msg))
+    settings.print_data_to_stdout(settings.print_critical_msg(error_msg))
     raise SystemExit()
 
   if not menu.options.output_dir:
@@ -133,7 +132,7 @@ def add_type_and_technique(export_injection_info, filename, injection_type, tech
 
   if export_injection_info == False:
     settings.SHOW_LOGS_MSG = True
-    with open(filename, 'a') as output_file:
+    with open(filename, 'a', encoding=settings.DEFAULT_CODEC) as output_file:
       if not menu.options.no_logging:
         output_file.write("\n" + re.compile(re.compile(settings.ANSI_COLOR_REMOVAL)).sub("",settings.INFO_BOLD_SIGN) + "Type: " + injection_type.title())
         output_file.write("\n" + re.compile(re.compile(settings.ANSI_COLOR_REMOVAL)).sub("",settings.INFO_BOLD_SIGN) + "Technique: " + technique.title())
@@ -144,7 +143,7 @@ def add_type_and_technique(export_injection_info, filename, injection_type, tech
 Add the vulnerable parameter in log files.
 """
 def add_parameter(vp_flag, filename, the_type, header_name, http_request_method, vuln_parameter, payload):
-  with open(filename, 'a') as output_file:
+  with open(filename, 'a', encoding=settings.DEFAULT_CODEC) as output_file:
     if not menu.options.no_logging:
       if header_name[1:] == settings.COOKIE.lower():
         header_name = " ("+ header_name[1:] + ") " + vuln_parameter
@@ -159,7 +158,7 @@ def add_parameter(vp_flag, filename, the_type, header_name, http_request_method,
 Add any payload in log files.
 """
 def update_payload(filename, counter, payload):
-  with open(filename, 'a') as output_file:
+  with open(filename, 'a', encoding=settings.DEFAULT_CODEC) as output_file:
     if not menu.options.no_logging:
       if "\n" in payload:
         output_file.write(re.compile(re.compile(settings.ANSI_COLOR_REMOVAL)).sub("",settings.INFO_BOLD_SIGN) + "Used payload: " + re.sub("%20", settings.SINGLE_WHITESPACE, _urllib.parse.unquote_plus(payload.replace("\n", "\\n"))) + "\n")
@@ -172,11 +171,11 @@ execution output result in log files.
 """
 def executed_command(filename, cmd, output):
   try:
-    with open(filename, 'a') as output_file:
+    with open(filename, 'a', encoding=settings.DEFAULT_CODEC) as output_file:
       if not menu.options.no_logging:
         output_file.write(re.compile(re.compile(settings.ANSI_COLOR_REMOVAL)).sub("",settings.INFO_BOLD_SIGN) + "Executed command: " +  cmd + "\n")
-        output_file.write(re.compile(re.compile(settings.ANSI_COLOR_REMOVAL)).sub("",settings.INFO_SIGN) + "Execution output: " + output.encode(settings.DEFAULT_CODEC).decode() + "\n")
-  except TypeError:
+        output_file.write(re.compile(re.compile(settings.ANSI_COLOR_REMOVAL)).sub("",settings.INFO_SIGN) + "Execution output: " + str(output.encode(settings.DEFAULT_CODEC).decode()) + "\n")
+  except:
     pass
 
 """
@@ -186,7 +185,7 @@ def logs_notification(filename):
   # Save command history.
   if not menu.options.no_logging:
     info_msg = "Fetched data logged to text files under '" + filename + "'."
-    print(settings.print_info_msg(info_msg))
+    settings.print_data_to_stdout(settings.print_info_msg(info_msg))
 
 """
 Log all HTTP traffic into a textual file.
@@ -200,9 +199,11 @@ def log_traffic(header):
 Print logs notification.
 """
 def print_logs_notification(filename, url):
-  checks.save_cmd_history()
+  if os.path.exists(settings.CLI_HISTORY):
+    checks.save_cmd_history()
   if settings.SHOW_LOGS_MSG == True and not menu.options.no_logging:
-    logs_notification(filename)
+    if not settings.LOAD_SESSION:
+      logs_notification(filename)
   if url:
     session_handler.clear(url)
 

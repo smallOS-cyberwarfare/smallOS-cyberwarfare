@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ from src.thirdparty.six.moves import urllib as _urllib
 from src.thirdparty.six.moves import http_client as _http_client
 from src.utils import menu
 from src.utils import settings
-from src.utils import requirments
+from src.utils import requirements
 from src.core.requests import proxy
 from src.core.requests import requests
 from src.thirdparty.colorama import Fore, Back, Style, init
@@ -34,15 +34,15 @@ def tor_connection_error():
     err_msg += "try again using option '--tor-port'."
   else:
     err_msg += "check again the provided option '--tor-port'."
-  print(settings.print_error_msg(err_msg))
+  settings.print_data_to_stdout(settings.print_error_msg(err_msg))
   raise SystemExit()
 
 def do_check():
   info_msg = "Testing Tor HTTP proxy settings."
-  print(settings.print_info_msg(info_msg))
+  settings.print_data_to_stdout(settings.print_info_msg(info_msg))
   if menu.options.offline:
     err_msg = "You cannot use Tor network while offline."
-    print(settings.print_critical_msg(err_msg))
+    settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
     raise SystemExit()
   try:
     request = _urllib.request.Request(settings.CHECK_TOR_PAGE, method=settings.HTTPMETHOD.GET)
@@ -54,6 +54,6 @@ def do_check():
     tor_connection_error()
   else:
     info_msg = "Connection with the Tor HTTP proxy is properly set. "
-    print(settings.print_info_msg(info_msg))
+    settings.print_data_to_stdout(settings.print_info_msg(info_msg))
 
 # eof

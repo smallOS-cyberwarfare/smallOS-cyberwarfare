@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ if settings.IS_WINDOWS:
 The commix's banner.
 """
 def banner():
-  print(r"""                                      __
+  settings.print_data_to_stdout(r"""                                      __
    ___   ___     ___ ___     ___ ___ /\_\   __  _
  /`___\ / __`\ /' __` __`\ /' __` __`\/\ \ /\ \/'\  """ + settings.COLOR_VERSION + r"""
 /\ \__//\ \/\ \/\ \/\ \/\ \/\ \/\ \/\ \ \ \\/>  </
@@ -234,6 +234,12 @@ request.add_option("--cookie-del",
                 action="store",
                 dest="cdel",
                 help="Set character for splitting cookie values.")
+
+request.add_option("--http1.0",
+                action="store_true", 
+                dest="http10", 
+                default=False,
+                help="Force (legacy) HTTP/1.0 for requests.")
 
 request.add_option("-H","--header",
                 action="store",
@@ -488,9 +494,9 @@ injection.add_option("--delay",
 injection.add_option("--time-sec",
                 default=1,
                 action="store",
-                type="int",
+                type="float",
                 dest="timesec",
-                help="Seconds to delay the OS response (Default: 1).")
+                help="Seconds to delay the OS response.")
 
 injection.add_option("--tmp-path",
                 action="store",
@@ -539,9 +545,9 @@ detection = OptionGroup(parser, Style.BRIGHT + Style.UNDERLINE + "Detection" + S
                         "used to customize the detection phase.")
 
 detection.add_option("--level",
-                dest="level",
                 type="int",
-                default=1,
+                dest="level",
+                default=False,
                 help="Level of tests to perform (1-3, Default: " + str(settings.DEFAULT_INJECTION_LEVEL) + ").")
 
 detection.add_option("--skip-calc",
@@ -682,7 +688,7 @@ settings.sys_argv_errors()
 The "os_shell" available options.
 """
 def os_shell_options():
-    print("""""" + Style.BRIGHT + """Available 'os_shell' options:""" + Style.RESET_ALL + """
+    settings.print_data_to_stdout("""""" + Style.BRIGHT + """Available 'os_shell' options:""" + Style.RESET_ALL + """
 """ + settings.SUB_CONTENT_SIGN_TYPE + """Type '""" + Style.BRIGHT + """?""" + Style.RESET_ALL + """' to get all the available options.
 """ + settings.SUB_CONTENT_SIGN_TYPE + """Type '""" + Style.BRIGHT + """back""" + Style.RESET_ALL + """' to move back from the current context.
 """ + settings.SUB_CONTENT_SIGN_TYPE + """Type '""" + Style.BRIGHT + """quit""" + Style.RESET_ALL + """' / '""" + Style.BRIGHT + """exit""" + Style.RESET_ALL + """' (or use <Ctrl-C>) to quit commix.
@@ -693,7 +699,7 @@ def os_shell_options():
 The "reverse_tcp" available options.
 """
 def reverse_tcp_options():
-    print("""""" + Style.BRIGHT + """Available 'reverse_tcp' options:""" + Style.RESET_ALL + """
+    settings.print_data_to_stdout("""""" + Style.BRIGHT + """Available 'reverse_tcp' options:""" + Style.RESET_ALL + """
 """ + settings.SUB_CONTENT_SIGN_TYPE + """Type '""" + Style.BRIGHT + """?""" + Style.RESET_ALL + """' to get all the available options.
 """ + settings.SUB_CONTENT_SIGN_TYPE + """Type '""" + Style.BRIGHT + """set""" + Style.RESET_ALL + """' to set a context-specific variable to a value.
 """ + settings.SUB_CONTENT_SIGN_TYPE + """Type '""" + Style.BRIGHT + """back""" + Style.RESET_ALL + """' to move back from the current context.
@@ -705,7 +711,7 @@ def reverse_tcp_options():
 The "bind_tcp" available options.
 """
 def bind_tcp_options():
-    print("""""" + Style.BRIGHT + """Available 'bind_tcp' options:""" + Style.RESET_ALL + """
+    settings.print_data_to_stdout("""""" + Style.BRIGHT + """Available 'bind_tcp' options:""" + Style.RESET_ALL + """
 """ + settings.SUB_CONTENT_SIGN_TYPE + """Type '""" + Style.BRIGHT + """?""" + Style.RESET_ALL + """' to get all the available options.
 """ + settings.SUB_CONTENT_SIGN_TYPE + """Type '""" + Style.BRIGHT + """set""" + Style.RESET_ALL + """' to set a context-specific variable to a value.
 """ + settings.SUB_CONTENT_SIGN_TYPE + """Type '""" + Style.BRIGHT + """back""" + Style.RESET_ALL + """' to move back from the current context.
@@ -717,7 +723,7 @@ def bind_tcp_options():
 The available mobile user agents.
 """
 def mobile_user_agents():
-    print("""""" + Style.BRIGHT + """Available smartphones HTTP User-Agent headers:""" + Style.RESET_ALL + """
+    settings.print_data_to_stdout("""""" + Style.BRIGHT + """Available smartphones HTTP User-Agent headers:""" + Style.RESET_ALL + """
 """ + settings.SUB_CONTENT_SIGN_TYPE + """Type '""" + Style.BRIGHT + """1""" + Style.RESET_ALL + """' for BlackBerry Z10.
 """ + settings.SUB_CONTENT_SIGN_TYPE + """Type '""" + Style.BRIGHT + """2""" + Style.RESET_ALL + """' for Samsung Galaxy S7.
 """ + settings.SUB_CONTENT_SIGN_TYPE + """Type '""" + Style.BRIGHT + """3""" + Style.RESET_ALL + """' for HP iPAQ 6365.

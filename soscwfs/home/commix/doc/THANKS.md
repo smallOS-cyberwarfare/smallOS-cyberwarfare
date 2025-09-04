@@ -2,6 +2,7 @@
 * Thanks [Obrela Security Industries](https://www.obrela.com/) for sponsorship.
 
 ## List of individual donors:
+* Thanks Joseph Disser for a donation.
 * Thanks John Brinton for a donation.
 * Thanks [Himself132](https://github.com/Himself132) for a donation.
 * Thanks [m3g9tr0n](https://x.com/m3g9tr0n) for a donation.
@@ -72,6 +73,8 @@
 * Thanks [pomil-1969](https://github.com/pomil-1969) for reporting a bug.
 * Thanks [powercrypt](https://github.com/powercrypt) for reporting a few bugs.
 * Thanks [prince74igor](https://github.com/prince74igor) for suggesting an enhancement.
+* Thanks [raeph123](https://github.com/raeph123) for contributing code.
+* Thanks [Raymond-JV](https://github.com/Raymond-JV) for contributing code.
 * Thanks [royharoush](https://github.com/royharoush) for suggesting an enhancement.
 * Thanks [royshum93](https://github.com/royshum93) for reporting a bug.
 * Thanks [SaifSalah](https://github.com/SaifSalah) for reporting a bug.

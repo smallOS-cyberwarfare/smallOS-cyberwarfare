@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -78,9 +78,9 @@ def grab_ip_addr():
   except socket_error as err_msg:
     if errno.ECONNREFUSED:
       warn_msg = "Internet seems unreachable."
-      print(settings.print_warning_msg(warn_msg))
+      settings.print_data_to_stdout(settings.print_warning_msg(warn_msg))
     else:
-      print(settings.print_critical_msg(str(err_msg)) + "\n")
+      settings.print_data_to_stdout(settings.print_critical_msg(str(err_msg)))
       raise SystemExit()
 
 class Handler(_BaseHTTPServer.BaseHTTPRequestHandler):

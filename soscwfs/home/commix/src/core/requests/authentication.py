@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -53,11 +53,12 @@ def authentication_process(http_request_method):
       if settings.VERBOSITY_LEVEL != 0:
         info_msg = "The received cookie is "
         info_msg += str(menu.options.cookie) + Style.RESET_ALL + "."
-        print(settings.print_bold_info_msg(info_msg))
+        settings.print_data_to_stdout(settings.print_bold_info_msg(info_msg))
     _urllib.request.install_opener(opener)
     request = _urllib.request.Request(auth_url, auth_data.encode(settings.DEFAULT_CODEC), method=http_request_method)
     # Check if defined extra headers.
     headers.do_check(request)
+    headers.check_http_traffic(request)
     # Get the response of the request.
     return _urllib.request.urlopen(request, timeout=settings.TIMEOUT)
 
@@ -76,8 +77,8 @@ def define_wordlists():
     if do_update in settings.CHOICE_YES:
       username_txt_file = settings.USERNAMES_TXT_FILE
       passwords_txt_file = settings.PASSWORDS_TXT_FILE
-      info_msg = "Setting default wordlists for dictionary-based attack."
-      print(settings.print_info_msg(info_msg))
+      info_msg = "Using default wordlists for dictionary-based authentication check."
+      settings.print_data_to_stdout(settings.print_info_msg(info_msg))
       break
     elif do_update in settings.CHOICE_NO:
       message = "Please enter usernames wordlist > "
@@ -95,14 +96,14 @@ def define_wordlists():
     usernames = []
     if settings.VERBOSITY_LEVEL != 0:
       debug_msg = "Parsing usernames wordlist '" + username_txt_file + "'."
-      print(settings.print_debug_msg(debug_msg))
+      settings.print_data_to_stdout(settings.print_debug_msg(debug_msg))
     if not os.path.isfile(username_txt_file):
       err_msg = "The specified file '" + str(username_txt_file) + "' does not exist."
-      print(settings.print_critical_msg(err_msg))
+      settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
       raise SystemExit()
     if len(username_txt_file) == 0:
       err_msg = "The specified file '" + str(username_txt_file) + "' seems empty."
-      print(settings.print_critical_msg(err_msg))
+      settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
       raise SystemExit()
     with open(username_txt_file, "r") as f:
       for line in f:
@@ -110,21 +111,21 @@ def define_wordlists():
         usernames.append(line)
   except IOError:
     err_msg = " Check if file '" + str(username_txt_file) + "' is readable or corrupted."
-    print(settings.print_critical_msg(err_msg))
+    settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
     raise SystemExit()
 
   try:
     passwords = []
     if settings.VERBOSITY_LEVEL != 0:
       debug_msg = "Parsing passwords wordlist '" + passwords_txt_file + "'."
-      print(settings.print_debug_msg(debug_msg))
+      settings.print_data_to_stdout(settings.print_debug_msg(debug_msg))
     if not os.path.isfile(passwords_txt_file):
       err_msg = "The specified file '" + str(passwords_txt_file) + "' does not exist."
-      print(settings.print_critical_msg(err_msg))
+      settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
       raise SystemExit()
     if len(passwords_txt_file) == 0:
       err_msg = "The specified file '" + str(passwords_txt_file) + "' seems empty."
-      print(settings.print_critical_msg(err_msg))
+      settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
       raise SystemExit()
     with open(passwords_txt_file, "r") as f:
       for line in f:
@@ -132,7 +133,7 @@ def define_wordlists():
         passwords.append(line)
   except IOError:
     err_msg = " Check if file '" + str(passwords_txt_file) + "' is readable or corrupted."
-    print(settings.print_critical_msg(err_msg))
+    settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
     raise SystemExit()
 
   return usernames, passwords
@@ -156,10 +157,9 @@ def http_auth_cracker(url, realm, http_request_method):
         if settings.VERBOSITY_LEVEL != 0:
           payload = "'" + username + ":" + password + "'"
           if settings.VERBOSITY_LEVEL >= 2:
-            print(settings.print_checking_msg(payload))
+            settings.print_data_to_stdout(settings.print_checking_msg(payload))
           else:
-            sys.stdout.write("\r" + settings.print_checking_msg(payload) + settings.SINGLE_WHITESPACE * 10)
-            sys.stdout.flush()
+            settings.print_data_to_stdout(settings.END_LINE.CR + settings.print_checking_msg(payload) + settings.SINGLE_WHITESPACE * len(payload))
         try:
           # Basic authentication
           if authentication_type.lower() == settings.AUTH_TYPE.BASIC:
@@ -177,9 +177,6 @@ def http_auth_cracker(url, realm, http_request_method):
           if menu.options.proxy or menu.options.ignore_proxy or menu.options.tor: 
             proxy.use_proxy(request)
           response = _urllib.request.urlopen(request, timeout=settings.TIMEOUT)
-          # Store valid results to session
-          admin_panel = url
-          session_handler.import_valid_credentials(url, authentication_type, admin_panel, username, password)
           found = True
         except KeyboardInterrupt :
           raise
@@ -196,24 +193,25 @@ def http_auth_cracker(url, realm, http_request_method):
             i = i + 1
             float_percent = ".. (" + float_percent + ")"
         if settings.VERBOSITY_LEVEL == 0:
-          info_msg = "Checking for valid pair of HTTP authentication credentials."
+          info_msg = "Testing for valid HTTP authentication credentials."
           info_msg += float_percent
-          sys.stdout.write("\r\r" + settings.print_info_msg(info_msg))
-          sys.stdout.flush()
+          settings.print_data_to_stdout("\r\r" + settings.print_info_msg(info_msg))
+          
         if found:
+          if not settings.LOAD_SESSION:
+            session_handler.import_valid_credentials(url, authentication_type, url, username, password)
           valid_pair =  "" + username + ":" + password + ""
           if not settings.VERBOSITY_LEVEL >= 2:
-            print(settings.SINGLE_WHITESPACE)
-          info_msg = "Identified valid pair of HTTP authentication credentials: '"
-          info_msg += valid_pair + Style.RESET_ALL + Style.BRIGHT  + "'."
-          print(settings.print_bold_info_msg(info_msg))
+            settings.print_data_to_stdout(settings.SINGLE_WHITESPACE)
+          info_msg = "Authentication succeeded using credentials: '" + valid_pair + "'."
+          settings.print_data_to_stdout(settings.print_info_msg(info_msg))
           return valid_pair
 
     err_msg = "Use the '--auth-cred' option to provide a valid pair of "
     err_msg += "HTTP authentication credentials (i.e --auth-cred=\"admin:admin\") "
     err_msg += "or place an other dictionary into '"
     err_msg += os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'txt')) + "/' directory."
-    print("\n" + settings.print_critical_msg(err_msg))
+    settings.print_data_to_stdout("\n" + settings.print_critical_msg(err_msg))
     return False
 
 # eof

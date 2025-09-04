@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -175,7 +175,7 @@ def cmd_execution(separator, TAG, cmd):
                   separator + "echo '" + TAG + "'`)%3B"
                 )
   else:
-    settings.USER_SUPPLIED_CMD = cmd
+    settings.USER_APPLIED_CMD = cmd
     if separator == "":
       payload = ("print(`echo " + TAG + "`." +
                   "`echo " + TAG + "`." +
@@ -222,6 +222,7 @@ def cmd_execution_alter_shell(separator, TAG, cmd):
                     separator + "echo '" + TAG + "'`)%3B"
                   )
   else:
+    settings.USER_APPLIED_CMD = cmd
     if separator == "":
       payload = ("print(`echo " + TAG + "`." +
                   "`echo " + TAG + "`." +

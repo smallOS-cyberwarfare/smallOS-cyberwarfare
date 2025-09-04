@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -43,6 +43,21 @@ from src.thirdparty.colorama import Fore, Back, Style, init
 from src.thirdparty.six.moves import urllib as _urllib
 
 """
+Encoding non-ASCII characters (in URL path and query).
+"""
+def encode_non_ascii_url(request):
+  url = request.get_full_url()
+  parts = _urllib.parse.urlsplit(url)
+  # Encode path, preserving '/', '*', and '%' to avoid over-encoding
+  path = _urllib.parse.quote(parts.path, safe="*%/")
+  # Encode query string, preserving delimiters and configured parameter delimiter
+  query = _urllib.parse.quote(parts.query, safe="*=?/%" + settings.URL_PARAM_DELIMITER)
+  # Reconstruct the full URL with encoded path and query
+  request.full_url = _urllib.parse.urlunsplit((parts.scheme, parts.netloc, path, query, parts.fragment))
+
+  return request
+  
+"""
 Checking the HTTP response content.
 """
 def http_response_content(content):
@@ -50,7 +65,7 @@ def http_response_content(content):
     content = content.decode(settings.DEFAULT_CODEC)
   if settings.VERBOSITY_LEVEL >= 4:
     content = checks.remove_empty_lines(content)
-    print(settings.print_http_response_content(content))
+    settings.print_data_to_stdout(settings.print_http_response_content(content))
   if menu.options.traffic_file:
     logs.log_traffic(content)
     logs.log_traffic("\n\n" + "#" * 77 + "\n\n")
@@ -63,7 +78,7 @@ def http_response(headers, code):
   for header in response_http_headers:
     if len(header) > 1:
       if settings.VERBOSITY_LEVEL >= 3:
-        print(settings.print_traffic(header))
+        settings.print_data_to_stdout(settings.print_traffic(header))
       if menu.options.traffic_file:
         logs.log_traffic("\n" + header)
   if menu.options.traffic_file:
@@ -73,22 +88,26 @@ def http_response(headers, code):
 Print HTTP response headers / Body.
 """
 def print_http_response(response_headers, code, page):
-  if int(code) in settings.ABORT_CODE:
-    err_msg = "Aborting due to detected HTTP code '" + str(code) + "'. "
-    print(settings.print_critical_msg(err_msg))
-    raise SystemExit()
+  try:
+    if int(code) in settings.ABORT_CODE:
+      err_msg = "Aborting due to detected HTTP code '" + str(code) + "'. "
+      settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
+      raise SystemExit()
+  except (ValueError, TypeError):
+    warn_msg = "Skipping abort check due to invalid (or missing) HTTP response code '" + str(code) + "'"
+    settings.print_data_to_stdout(settings.print_warning_msg(warn_msg))
 
   if settings.VERBOSITY_LEVEL >= 3 or menu.options.traffic_file:
     if settings.VERBOSITY_LEVEL >= 3:
       resp_msg = "HTTP response [" + settings.print_request_num(settings.TOTAL_OF_REQUESTS) + "] (" + str(code) + "):"
-      print(settings.print_response_msg(resp_msg))
+      settings.print_data_to_stdout(settings.print_response_msg(resp_msg))
     if menu.options.traffic_file:
       resp_msg = "HTTP response [#" + str(settings.TOTAL_OF_REQUESTS) + "] (" + str(code) + "):"
       logs.log_traffic("\n" + resp_msg)
     http_response(response_headers, code)
   if settings.VERBOSITY_LEVEL >= 4 or menu.options.traffic_file:
     if settings.VERBOSITY_LEVEL >= 4:
-      print(settings.SINGLE_WHITESPACE)
+      settings.print_data_to_stdout(settings.SINGLE_WHITESPACE)
     try:
       http_response_content(page)
     except AttributeError:
@@ -105,6 +124,10 @@ def check_http_traffic(request):
   else:
     http_client = _http_client.HTTPConnection
 
+  if menu.options.http10:
+    _http_client.HTTPConnection._http_vsn = 10
+    _http_client.HTTPConnection._http_vsn_str = 'HTTP/1.0'
+
   class connection(http_client):
     def send(self, req):
       headers = req.decode()
@@ -115,10 +138,10 @@ def check_http_traffic(request):
       if settings.USER_DEFINED_POST_DATA and \
          len(request_http_headers) == 1 and \
          settings.VERBOSITY_LEVEL >= 2:
-        print(settings.SINGLE_WHITESPACE)
+        settings.print_data_to_stdout(settings.SINGLE_WHITESPACE)
       for header in request_http_headers:
         if settings.VERBOSITY_LEVEL >= 2:
-          print(settings.print_traffic(header))
+          settings.print_data_to_stdout(settings.print_traffic(header))
         if menu.options.traffic_file:
           logs.log_traffic("\n" + header)
       http_client.send(self, req)
@@ -132,7 +155,7 @@ def check_http_traffic(request):
       if settings.VERBOSITY_LEVEL >= 2 or menu.options.traffic_file:
         if settings.VERBOSITY_LEVEL >= 2:
           req_msg = "HTTP request [" + settings.print_request_num(settings.TOTAL_OF_REQUESTS) + "]:"
-          print(settings.print_request_msg(req_msg))
+          settings.print_data_to_stdout(settings.print_request_msg(req_msg))
         if menu.options.traffic_file:
           req_msg = "HTTP request [#" + str(settings.TOTAL_OF_REQUESTS) + "]:"
           logs.log_traffic(req_msg)
@@ -163,11 +186,14 @@ def check_http_traffic(request):
   response = False
   unauthorized = False
   while not _ and settings.TOTAL_OF_REQUESTS <= settings.MAX_RETRIES and unauthorized is False:
+    if any((settings.REVERSE_TCP, settings.BIND_TCP)):
+      _ = True
     if settings.MULTI_TARGETS:
       if settings.INIT_TEST == True and len(settings.MULTI_ENCODED_PAYLOAD) != 0:
         settings.MULTI_ENCODED_PAYLOAD = []
-        menu.options.tamper = settings.USER_SUPPLIED_TAMPER
+        menu.options.tamper = settings.USER_APPLIED_TAMPER
     try:
+      request = encode_non_ascii_url(request)
       response = opener.open(request, timeout=settings.TIMEOUT)
       _ = True
       settings.MAX_RETRIES = settings.TOTAL_OF_REQUESTS * 2
@@ -180,15 +206,15 @@ def check_http_traffic(request):
 
     except ValueError as err:
       if settings.VERBOSITY_LEVEL < 2:
-        print(settings.SINGLE_WHITESPACE)
+        settings.print_data_to_stdout(settings.SINGLE_WHITESPACE)
       err_msg = "Invalid target URL has been given."
-      print(settings.print_critical_msg(err_msg))
+      settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
       raise SystemExit()
 
     except AttributeError:
       raise SystemExit()
 
-    except _urllib.error.HTTPError as err_msg:
+    except (_urllib.error.HTTPError, _urllib.error.URLError) as err_msg:
       if settings.UNAUTHORIZED_ERROR in str(err_msg):
         settings.UNAUTHORIZED = unauthorized = True
         settings.MAX_RETRIES = settings.TOTAL_OF_REQUESTS
@@ -213,9 +239,9 @@ def check_http_traffic(request):
     page = checks.page_encoding(response, action="encode")
     response_headers[settings.URI_HTTP_HEADER] = response.geturl()
     response_headers = str(response_headers).strip("\n")
-    # Checks for not declared cookie(s), while server wants to set its own.
+    # Handle server-set cookies.
     if not menu.options.drop_set_cookie:
-      checks.not_declared_cookies(response)
+      checks.handle_server_cookies(response)
     print_http_response(response_headers, code, page)
     # Checks regarding a potential CAPTCHA protection mechanism.
     checks.captcha_check(page)
@@ -226,18 +252,18 @@ def check_http_traffic(request):
 
   # This is useful when handling exotic HTTP errors (i.e requests for authentication).
   except _urllib.error.HTTPError as err:
-    # Checks for not declared cookie(s), while server wants to set its own.
     if not menu.options.drop_set_cookie:
-      checks.not_declared_cookies(err)
+      checks.handle_server_cookies(err)
     try:
-      if err.fp is None:
+      if getattr(err, 'fp', None) is None:
         raise AttributeError
       page = checks.page_encoding(err, action="encode")
-    except Exception as e:
+    except Exception:
       page = ''
-      
-    print_http_response(err.info(), err.code, page)
-    
+    response_headers = err.info()
+    code = err.code
+    print_http_response(response_headers, code, page)
+
     if (not settings.PERFORM_CRACKING and \
     not settings.IS_JSON and \
     not settings.IS_XML and \
@@ -245,23 +271,42 @@ def check_http_traffic(request):
     not str(err.code) == settings.BAD_REQUEST and \
     not settings.CRAWLED_URLS_NUM != 0 and \
     not settings.MULTI_TARGETS) and settings.CRAWLED_SKIPPED_URLS_NUM != 0:
-      print(settings.SINGLE_WHITESPACE)
+      settings.print_data_to_stdout(settings.SINGLE_WHITESPACE)
     # Check for 3xx, 4xx, 5xx HTTP error codes.
     if str(err.code).startswith(('3', '4', '5')):
       settings.HTTP_ERROR_CODES_SUM.append(err.code)
       if settings.VERBOSITY_LEVEL >= 2:
-        if len(str(err).split(": ")[1]) == 0:
+        parts = str(err).split(": ")
+        if len(parts) > 1 and len(parts[1]) == 0:
           error_msg = "Non-standard HTTP status code"
       pass
     else:
-      error_msg = str(err).replace(": "," (")
-      if len(str(err).split(": ")[1]) == 0:
+      error_msg = str(err).replace(": ", " (")
+      parts = str(err).split(": ")
+      if len(parts) > 1 and len(parts[1]) == 0:
         err_msg = error_msg + "Non-standard HTTP status code"
       else:
         err_msg = error_msg
 
-      print(settings.print_critical_msg(err_msg + ")."))
+      settings.print_data_to_stdout(settings.print_critical_msg(err_msg + ")."))
       raise SystemExit()
+
+  except _urllib.error.URLError as err:
+    if not menu.options.drop_set_cookie:
+      checks.handle_server_cookies(err)
+    reason = str(getattr(err, 'reason', 'Unknown error'))
+    reason_parts = reason.split(settings.SINGLE_WHITESPACE)
+    if len(reason_parts) > 2:
+      response_headers = settings.SINGLE_WHITESPACE.join(reason_parts[2:]) + "."
+    else:
+      response_headers = reason
+    if not response_headers.endswith("."):
+      response_headers += "."
+    code = ""
+    page = ""
+    print_http_response(response_headers, code, page)
+    settings.print_data_to_stdout(settings.print_critical_msg("URL Error: " + reason))
+    raise SystemExit()
 
 """
 Check for added headers.
@@ -269,20 +314,20 @@ Check for added headers.
 def do_check(request):
 
   # Check if defined any Cookie HTTP header.
-  if menu.options.cookie and settings.COOKIE_INJECTION == None:
-    request.add_header(settings.COOKIE, menu.options.cookie)
+  if menu.options.cookie and not settings.COOKIE_INJECTION:
+    request.add_header(settings.COOKIE, checks.remove_tags(menu.options.cookie))
 
   # Check if defined any User-Agent HTTP header.
-  if menu.options.agent and settings.USER_AGENT_INJECTION == None:
-    request.add_header(settings.USER_AGENT, menu.options.agent)
+  if menu.options.agent and not settings.USER_AGENT_INJECTION:
+    request.add_header(settings.USER_AGENT, checks.remove_tags(menu.options.agent))
 
   # Check if defined any Referer HTTP header.
-  if menu.options.referer and settings.REFERER_INJECTION == None:
-    request.add_header(settings.REFERER, menu.options.referer)
+  if menu.options.referer and not settings.REFERER_INJECTION:
+    request.add_header(settings.REFERER, checks.remove_tags(menu.options.referer))
 
   # Check if defined any Host HTTP header.
-  if menu.options.host and settings.HOST_INJECTION == None:
-    request.add_header(settings.HOST, menu.options.host)
+  if menu.options.host and not settings.HOST_INJECTION:
+    request.add_header(settings.HOST, checks.remove_tags(menu.options.host))
 
   if not checks.get_header(request.headers, settings.ACCEPT):
     request.add_header(settings.ACCEPT, settings.ACCEPT_VALUE)
@@ -312,7 +357,7 @@ def do_check(request):
   if menu.options.auth_cred and menu.options.auth_type:
     if menu.options.auth_type.lower() not in (settings.AUTH_TYPE.BASIC, settings.AUTH_TYPE.DIGEST, settings.AUTH_TYPE.BEARER):
       err_msg = "HTTP authentication type value must be Basic, Digest or Bearer."
-      print(settings.print_critical_msg(err_msg))
+      settings.print_data_to_stdout(settings.print_critical_msg(err_msg))
       raise SystemExit()
     if menu.options.auth_type.lower() == settings.AUTH_TYPE.BEARER:
       request.add_header(settings.AUTHORIZATION, "Bearer " + menu.options.auth_cred.strip())
@@ -324,7 +369,7 @@ def do_check(request):
         url = menu.options.url
         try:
           response = _urllib.request.urlopen(url, timeout=settings.TIMEOUT)
-        except _urllib.error.HTTPError as e:
+        except (_urllib.error.HTTPError, _urllib.error.URLError) as e:
           try:
             authline = e.headers.get('www-authenticate', '')
             authobj = re.match(r'''(\w*)\s+realm=(.*),''',authline).groups()
@@ -339,7 +384,7 @@ def do_check(request):
             result = _urllib.request.urlopen(url, timeout=settings.TIMEOUT)
           except AttributeError:
             pass
-      except _urllib.error.HTTPError as e:
+      except (_urllib.error.HTTPError, _urllib.error.URLError) as e:
         pass
 
   else:
@@ -397,19 +442,38 @@ def do_check(request):
           if not settings.CUSTOM_HEADER_INJECTION:
             if settings.CUSTOM_INJECTION_MARKER_CHAR in http_header_value:
               settings.CUSTOM_INJECTION_MARKER = True
+              settings.CUSTOM_HEADER_CHECK = http_header_name
               
-            if http_header_name in settings.TEST_PARAMETER or settings.INJECT_TAG in http_header_value or settings.ASTERISK_MARKER in http_header_value:
+            if settings.CUSTOM_INJECTION_MARKER_CHAR in http_header_value or \
+               http_header_name in settings.TESTABLE_PARAMETERS_LIST or \
+               settings.INJECT_TAG in http_header_value or \
+               settings.ASTERISK_MARKER in http_header_value:
+
               settings.INJECTION_MARKER_LOCATION.CUSTOM_HTTP_HEADERS = True
               settings.CUSTOM_HEADER_CHECK = http_header_name
               if len(http_header_name) != 0 and \
                 http_header_name + ": " + http_header_value not in [settings.ACCEPT, settings.HOST, settings.USER_AGENT, settings.REFERER, settings.COOKIE] and \
                 http_header_name + ": " + http_header_value not in settings.CUSTOM_HEADERS_NAMES:
+                settings.CUSTOM_INJECTION_MARKER_PARAMETERS_LIST.append(http_header_name) if http_header_name not in settings.CUSTOM_INJECTION_MARKER_PARAMETERS_LIST else settings.CUSTOM_INJECTION_MARKER_PARAMETERS_LIST
                 settings.CUSTOM_HEADERS_NAMES.append(http_header_name + ": " + http_header_value)
-              http_header_value = http_header_value.replace(settings.INJECT_TAG,"").replace(settings.CUSTOM_INJECTION_MARKER_CHAR,"")
+              http_header_value = checks.remove_tags(http_header_value)
               request.add_header(http_header_name, http_header_value)
+              
+        # Normalize for comparison
+        excluded_headers = [
+          settings.HOST,
+          settings.USER_AGENT,
+          settings.REFERER,
+          settings.COOKIE,
+          settings.CUSTOM_HEADER_NAME
+        ]
+        excluded_headers = [h.lower() for h in excluded_headers if h]
+        
+        # Check and apply Title-Case for final header name
+        if http_header_name.lower() not in excluded_headers:
+          normalized_name = '-'.join([part.capitalize() for part in http_header_name.split('-')])
+          request.add_header(normalized_name, http_header_value)
 
-        if http_header_name not in [settings.HOST, settings.USER_AGENT, settings.REFERER, settings.COOKIE, settings.CUSTOM_HEADER_NAME]:
-          request.add_header(http_header_name, http_header_value)
       except:
         pass
 

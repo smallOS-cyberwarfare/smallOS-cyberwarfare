@@ -3,7 +3,7 @@
 
 """
 This file is part of Commix Project (https://commixproject.com).
-Copyright (c) 2014-2024 Anastasios Stasinopoulos (@ancst).
+Copyright (c) 2014-2025 Anastasios Stasinopoulos (@ancst).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,6 +25,28 @@ from datetime import datetime
 from src.core.compat import xrange
 from src.thirdparty.six.moves import urllib as _urllib
 from src.thirdparty.six.moves import reload_module as _reload_module
+
+# argv checks
+def sys_argv_checks():
+  tamper_index = None
+  for i in xrange(len(sys.argv)):
+    # Disable coloring
+    if sys.argv[i] == "--disable-coloring":
+      from src.utils import colors
+      colors.ENABLE_COLORING = False
+    """
+    Dirty hack from sqlmap [1], regarding merging of tamper script arguments (e.g. --tamper A --tamper B -> --tamper=A,B)
+    [1] https://github.com/sqlmapproject/sqlmap/commit/f4a0820dcb5fded8bc4d0363c91276eb9a3445ae
+    """
+    if sys.argv[i].startswith("--tamper"):
+      if tamper_index is None:
+        tamper_index = i if '=' in sys.argv[i] else (i + 1 if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith('-') else None)
+      else:
+        sys.argv[tamper_index] = "%s,%s" % (sys.argv[tamper_index], sys.argv[i].split('=')[1] if '=' in sys.argv[i] else (sys.argv[i + 1] if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith('-') else ""))
+        sys.argv[i] = ""
+
+# argv checks
+sys_argv_checks()
 from src.thirdparty.colorama import Fore, Back, Style, init
 
 class HTTPMETHOD(object):
@@ -64,7 +86,7 @@ TRAFFIC_SIGN = HTTP_CONTENT_SIGN = ""
 ABORTION_SIGN = ERROR_SIGN
 DEBUG_SIGN = "[" + Back.BLUE + Fore.WHITE + "debug" + Style.RESET_ALL + "] "
 DEBUG_BOLD_SIGN = "[" + Back.BLUE + Style.BRIGHT + Fore.WHITE + "debug" + Style.RESET_ALL + "] " + Style.BRIGHT
-CHECK_SIGN = DEBUG_SIGN + "Checking pair of HTTP authentication credentials: "
+CHECK_SIGN = DEBUG_SIGN + "Checking for a valid pair of authentication credentials: "
 OS_SHELL_TITLE = Style.BRIGHT + "Pseudo-Terminal Shell (type '?' for available options)" + Style.RESET_ALL
 OS_SHELL = """commix(""" + Style.BRIGHT + Fore.RED + """os_shell""" + Style.RESET_ALL + """) > """
 REVERSE_TCP_SHELL = """commix(""" + Style.BRIGHT + Fore.RED + """reverse_tcp""" + Style.RESET_ALL + """) > """
@@ -168,7 +190,7 @@ def print_http_response_content(content):
 
 # Print checking message (verbose mode)
 def print_checking_msg(payload):
-  result = CHECK_SIGN + str(payload) + Style.RESET_ALL
+  result = print_time() + CHECK_SIGN + str(payload) + Style.RESET_ALL
   return result
 
 # Print question message
@@ -191,26 +213,18 @@ def command_execution_output(shell):
   result = Fore.GREEN + Style.BRIGHT + shell + Style.RESET_ALL
   return result
 
-# argv checks
-def sys_argv_checks():
-  tamper_index = None
-  for i in xrange(len(sys.argv)):
-    # Disable coloring
-    if sys.argv[i] == "--disable-coloring":
-      from src.utils import colors
-      colors.ENABLE_COLORING = False
-    """
-    Dirty hack from sqlmap [1], regarding merging of tamper script arguments (e.g. --tamper A --tamper B -> --tamper=A,B)
-    [1] https://github.com/sqlmapproject/sqlmap/commit/f4a0820dcb5fded8bc4d0363c91276eb9a3445ae
-    """
-    if sys.argv[i].startswith("--tamper"):
-      if tamper_index is None:
-        tamper_index = i if '=' in sys.argv[i] else (i + 1 if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith('-') else None)
-      else:
-        sys.argv[tamper_index] = "%s,%s" % (sys.argv[tamper_index], sys.argv[i].split('=')[1] if '=' in sys.argv[i] else (sys.argv[i + 1] if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith('-') else ""))
-        sys.argv[i] = ""
+"""
+Print data to stdout
+"""
+def print_data_to_stdout(data):
+  if END_LINE.CR not in data and data != "." and data != " (done)":
+    data = data + END_LINE.LF
+  sys.stdout.write(data)
+  sys.stdout.flush()
 
-# argv input errors
+"""
+argv input errors
+"""
 def sys_argv_errors():
   _reload_module(sys)
   try:
@@ -222,17 +236,17 @@ def sys_argv_errors():
     # Check for illegal (non-console) quote characters.
     if len(sys.argv[i]) > 1 and all(ord(_) in xrange(0x2018, 0x2020) for _ in ((sys.argv[i].split('=', 1)[-1].strip() or ' ')[0], sys.argv[i][-1])):
         err_msg = "Illegal (non-console) quote characters ('" + sys.argv[i] + "')."
-        print(print_critical_msg(err_msg))
+        print_data_to_stdout(print_critical_msg(err_msg))
         raise SystemExit()
     # Check for illegal (non-console) comma characters.
     elif len(sys.argv[i]) > 1 and u"\uff0c" in sys.argv[i].split('=', 1)[-1]:
         err_msg = "Illegal (non-console) comma character ('" + sys.argv[i] + "')."
-        print(print_critical_msg(err_msg))
+        print_data_to_stdout(print_critical_msg(err_msg))
         raise SystemExit()
     # Check for potentially miswritten (illegal '=') short option.
     elif re.search(r"\A-\w=.+", sys.argv[i]):
         err_msg = "Potentially miswritten (illegal '=') short option detected ('" + sys.argv[i] + "')."
-        print(print_critical_msg(err_msg))
+        print_data_to_stdout(print_critical_msg(err_msg))
         raise SystemExit()
 
 # argv checks
@@ -246,18 +260,18 @@ APPLICATION = "commix"
 DESCRIPTION_FULL = "Automated All-in-One OS Command Injection Exploitation Tool"
 DESCRIPTION = "The command injection exploiter"
 AUTHOR  = "Anastasios Stasinopoulos"
-VERSION_NUM = "4.0"
-REVISION = "74"
+VERSION_NUM = "4.1"
+REVISION = "91"
 STABLE_RELEASE = False
 VERSION = "v"
 if STABLE_RELEASE:
-  VERSION = VERSION + VERSION_NUM + "-stable"
+  VERSION = VERSION + VERSION_NUM
   COLOR_VERSION = Style.BRIGHT + Style.UNDERLINE + Fore.WHITE + VERSION + Style.RESET_ALL
 else:
-  VERSION = VERSION + VERSION_NUM + "-dev#" + REVISION
+  VERSION = VERSION + VERSION_NUM + ".dev" + REVISION
   COLOR_VERSION = Style.UNDERLINE + Fore.WHITE + VERSION + Style.RESET_ALL
 
-YEAR = "2014-2024"
+YEAR = "2014-2025"
 AUTHOR_X_ACCOUNT = "@ancst"
 APPLICATION_URL = "https://commixproject.com"
 APPLICATION_X_ACCOUNT = "@commixproject"
@@ -272,14 +286,19 @@ LEGAL_DISCLAIMER_MSG = "Usage of " + APPLICATION + " for attacking targets witho
 
 # Random string generator
 RANDOM_STRING_GENERATOR = ''.join(random.choice(string.ascii_uppercase + string.digits + string.ascii_lowercase) for _ in range(10))
+# Random variable name
+RANDOM_VAR_GENERATOR = ''.join(random.choice(string.ascii_uppercase) for _ in range(3))
 
 START_TIME = time.time()
+
+# Maximum number of lines to save in history file
+MAX_HISTORY_LENGTH = 1000
 
 # Readline
 READLINE_ERROR = False
 
-# User-supplied operating system command
-USER_SUPPLIED_CMD = ""
+# User-applied operating system command
+USER_APPLIED_CMD = ""
 
 # Random Tag
 RANDOM_TAG = ""
@@ -311,6 +330,9 @@ USER_DEFINED_PYTHON_INTERPRETER = False
 
 CMD_NUL = ""
 
+CMD_SUB_PREFIX = "$("
+CMD_SUB_SUFFIX = ")"
+
 # Maybe a WAF/IPS protection.
 WAF_CHECK_PAYLOAD = "cat /etc/passwd|uname&&ping -c3 localhost;ls ../"
 WAF_ENABLED = False
@@ -322,14 +344,16 @@ class HEURISTIC_TEST(object):
 RAND_A = random.randint(1,10000)
 RAND_B = random.randint(1,10000)
 CALC_STRING = str(RAND_A) + " %2B " + str(RAND_B)
-BASIC_STRING = "(" + CALC_STRING + ")"
-BASIC_COMMAND_INJECTION_PAYLOADS = [";echo $(" + BASIC_STRING + ")%26echo $(" + BASIC_STRING + ")|echo $(" + BASIC_STRING + ")" + RANDOM_STRING_GENERATOR ,
-                                   "|set /a " + BASIC_STRING + "%26set /a " + BASIC_STRING
-                                   ]
+BASIC_STRING = ""
+BASIC_COMMAND_INJECTION_PAYLOADS = []
 ALTER_SHELL_BASIC_STRING = " -c \"print(int(" + CALC_STRING + "))\""
-ALTER_SHELL_BASIC_COMMAND_INJECTION_PAYLOADS = [";echo $(" + LINUX_PYTHON_INTERPRETER + ALTER_SHELL_BASIC_STRING + ")%26echo $(" + LINUX_PYTHON_INTERPRETER + ALTER_SHELL_BASIC_STRING + ")|echo $(" + LINUX_PYTHON_INTERPRETER + ALTER_SHELL_BASIC_STRING + ")",
-                                   "|for /f \"tokens=*\" %i in ('cmd /c " + WIN_PYTHON_INTERPRETER + ALTER_SHELL_BASIC_STRING + "') do @set /p=%i" + CMD_NUL + " &for /f \"tokens=*\" %i in ('cmd /c " + WIN_PYTHON_INTERPRETER + ALTER_SHELL_BASIC_STRING + "') do @set /p=%i" + CMD_NUL
-                                   ]
+ALTER_SHELL_BASIC_COMMAND_INJECTION_PAYLOADS = [";echo " + CMD_SUB_PREFIX + LINUX_PYTHON_INTERPRETER + ALTER_SHELL_BASIC_STRING + CMD_SUB_SUFFIX + 
+                                                "%26echo " + CMD_SUB_PREFIX + LINUX_PYTHON_INTERPRETER + ALTER_SHELL_BASIC_STRING + CMD_SUB_SUFFIX + 
+                                                "|echo " + CMD_SUB_PREFIX + LINUX_PYTHON_INTERPRETER + ALTER_SHELL_BASIC_STRING + CMD_SUB_SUFFIX + 
+                                                RANDOM_STRING_GENERATOR,
+                                                "|for /f \"tokens=*\" %i in ('cmd /c " + WIN_PYTHON_INTERPRETER + ALTER_SHELL_BASIC_STRING + "') do @set /p=%i" + CMD_NUL + 
+                                                " &for /f \"tokens=*\" %i in ('cmd /c " + WIN_PYTHON_INTERPRETER + ALTER_SHELL_BASIC_STRING + "') do @set /p=%i" + CMD_NUL
+                                                ]
 BASIC_COMMAND_INJECTION_RESULT = str(RAND_A + RAND_B)
 IDENTIFIED_COMMAND_INJECTION = False
 
@@ -363,7 +387,7 @@ CODE_INJECTION_WARNINGS = ["eval()'d code", "runtime-created function", "usort()
 SKIP_CODE_INJECTIONS = False
 SKIP_COMMAND_INJECTIONS = False
 
-USER_DEFINED_URL_DATA = True
+USER_DEFINED_URL_DATA = False
 # User-defined stored POST data.
 USER_DEFINED_POST_DATA = ""
 # Ignore user-defined stored POST data.
@@ -373,8 +397,9 @@ IGNORE_USER_DEFINED_POST_DATA = False
 CUSTOM_INJECTION_MARKER_CHAR = "*"
 CUSTOM_INJECTION_MARKER = False
 ASTERISK_MARKER = "__ASTERISK__"
-CUSTOM_INJECTION_MARKER_DATA = []
+CUSTOM_INJECTION_MARKER_PARAMETERS_LIST = []
 PRE_CUSTOM_INJECTION_MARKER_CHAR = ""
+POST_CUSTOM_INJECTION_MARKER_CHAR = ""
 
 class INJECTION_MARKER_LOCATION(object):
   URL = False
@@ -383,11 +408,13 @@ class INJECTION_MARKER_LOCATION(object):
   HTTP_HEADERS = False
   CUSTOM_HTTP_HEADERS = False
 
-SKIP_NON_CUSTOM = None
+SKIP_NON_CUSTOM_PARAMS = None
 
-# Testable parameter(s) - comma separated.
-TEST_PARAMETER = ""
+TESTABLE_PARAMETERS_LIST = []
 TESTABLE_PARAMETERS = None
+NOT_TESTABLE_PARAMETERS = True
+TESTED_PARAMETERS_LIST = []
+METHODS_WITH_NON_LISTED_PARAMS = []
 
 # Skip testing for given parameter(s) - comma separated.
 SKIP_PARAMETER = ""
@@ -405,7 +432,7 @@ TARGET_OS = OS.UNIX
 IDENTIFIED_TARGET_OS = False
 IGNORE_IDENTIFIED_OS = None
 
-# Verbosity level: 0-1 (default 0)
+# Verbosity level (0-4, Default: 0)
 VERBOSITY_LEVEL = 0
 
 # Local HTTP server ip
@@ -422,13 +449,17 @@ WAF_DETECTION_PHASE = False
 DETECTION_PHASE = False
 EXPLOITATION_PHASE = False
 
+# Prevent the shell from interpreting the redirection operators.
+NO_OUTPUT = ">/dev/null 2>&1"
+
 # Exploitation techniques states
 CLASSIC_STATE = False
 EVAL_BASED_STATE = False
 TIME_BASED_STATE = False
 FILE_BASED_STATE = False
 TEMPFILE_BASED_STATE = False
-TIME_RELATIVE_ATTACK = False
+TIME_RELATED_ATTACK = False
+TIME_RELATED_ATTACK_WARNING = False
 
 # Stored applied techniques
 SESSION_APPLIED_TECHNIQUES = ""
@@ -469,6 +500,8 @@ MAX_CONNECTION_TOTAL_SIZE = 100 * 1024 * 1024
 # Slow target response.
 SLOW_TARGET_RESPONSE = 3
 
+RESPONSE_DELAYS = False
+
 # The testable parameter.
 TESTABLE_PARAMETER = ""
 
@@ -481,7 +514,7 @@ EXTRA_HTTP_HEADERS = False
 
 # The command injection separators.
 SEPARATORS = []
-DEFAULT_SEPARATORS = ["", ";", "%26", "|"]
+DEFAULT_SEPARATORS = [";", "%26", "|", ""]
 SPECIAL_SEPARATORS = ["%26%26", "||", "%0a", "%0d%0a", "%1a"]
 SEPARATORS_LVL1 = DEFAULT_SEPARATORS + SPECIAL_SEPARATORS
 SEPARATORS_LVL3 = SEPARATORS_LVL2 = SEPARATORS_LVL1
@@ -489,15 +522,14 @@ SEPARATORS_LVL3 = SEPARATORS_LVL2 = SEPARATORS_LVL1
 # The command injection prefixes.
 PREFIXES = []
 PREFIXES_LVL1 = [""]
-PREFIXES_LVL2 = SEPARATORS_LVL1
+PREFIXES_LVL2 = PREFIXES_LVL1 + SEPARATORS_LVL1
 PREFIXES_LVL3 = PREFIXES_LVL2 + ["'", "\""]
 
 # The command injection suffixes.
 SUFFIXES = []
 SUFFIXES_LVL1 = [""]
-SUFFIXES_LVL2 = SEPARATORS_LVL1
+SUFFIXES_LVL2 = SUFFIXES_LVL1 + SEPARATORS_LVL1
 SUFFIXES_LVL3 = SUFFIXES_LVL2 + ["'", "\"", " #", "//", "\\\\"]
-
 
 # Bad combination of prefix and separator
 JUNK_COMBINATION = [SEPARATORS_LVL1[i] + SEPARATORS_LVL1[j] for i in range(len(SEPARATORS_LVL1)) for j in range(len(SEPARATORS_LVL1))]
@@ -529,10 +561,11 @@ EVAL_SUFFIXES_LVL3 = EVAL_SUFFIXES_LVL2 + [".\"", "\\\\", "//", ")}", "#"]
 # Raw payload (without tampering)
 RAW_PAYLOAD = ""
 
-# The default (url-ecoded) white-space.
-WHITESPACES = ["%20"]
-
+# Single whitespace
 SINGLE_WHITESPACE = " "
+
+# The default (url-ecoded) white-space.
+WHITESPACES = [_urllib.parse.quote(SINGLE_WHITESPACE)]
 
 # Reference: http://www.w3.org/Protocols/HTTP/Object_Headers.html#uri
 URI_HTTP_HEADER = "URI"
@@ -540,18 +573,24 @@ URI_HTTP_HEADER = "URI"
 # Seconds to delay between each HTTP request.
 DELAY = 0
 
-# Seconds to delay the OS response. (Default 1)
-TIMESEC = 1
+# Seconds to delay the OS response.
+TIMESEC = 0
 
 # Seconds to delay between each HTTP retry.
 DELAY_RETRY = 1
 
-#Level (Default: 1)
 DEFAULT_INJECTION_LEVEL = 1
 COOKIE_INJECTION_LEVEL = 2
 HTTP_HEADER_INJECTION_LEVEL = 3
-USER_SUPPLIED_LEVEL = DEFAULT_INJECTION_LEVEL
+
+# Level of tests to perform.
+# The higher the value is, the higher the number of HTTP(s) requests are. (Default: 1)
+INJECTION_LEVEL = 0
+USER_APPLIED_LEVEL = False
 PERFORM_BASIC_SCANS = True
+
+# Start scanning state
+START_SCANNING = None
 
 # Default Temp Directory
 TMP_PATH = ""
@@ -560,6 +599,7 @@ TMP_PATH = ""
 WEB_ROOT = ""
 DEFAULT_WEB_ROOT = ""
 CUSTOM_WEB_ROOT = False
+CUSTOM_FILENAME = ""
 
 # Counting the total of HTTP(S) requests
 TOTAL_OF_REQUESTS = 0
@@ -637,16 +677,16 @@ WIN_REPLACE_WHITESPACE = r"-replace('\s+',' '))"
 CHOICE_YES = ['YES','YE','Y','yes','ye','y']
 
 # Accepts 'NO','N','no','n'
-CHOICE_NO = ['NO','N','no','n']
+CHOICE_NO = ['NO','no','N','n']
 
 # Accepts 'QUIT','Q','quit','q'
-CHOICE_QUIT = ['QUIT','Q','quit','q']
+CHOICE_QUIT = ['QUIT','quit','Q','q']
 
 # Accepts 'W','w','U','u','Q','q'
 CHOICE_OS = ['W','w','U','u','Q','q','N','n']
 
-# Accepts 'C','c','S','s','Q','q','a','A','n','N'
-CHOICE_PROCEED = ['C','c','S','s','Q','q','a','A','n','N']
+# Accepts 'C','c','S','s','Q','q','A','a'
+CHOICE_PROCEED = ['C','c','S','s','Q','q','A','a']
 
 # Available alternative shells
 AVAILABLE_SHELLS = ["python"]
@@ -669,7 +709,7 @@ class INJECTION_TECHNIQUE(object):
   FILE_BASED = "file-based command injection technique"
   TEMP_FILE_BASED = "tempfile-based injection technique"
 
-USER_SUPPLIED_TECHNIQUE = False
+USER_APPLIED_TECHNIQUE = False
 SKIP_TECHNIQUES = False
 
 # User Agent List
@@ -772,14 +812,17 @@ SET_OPTIONS = [
         "URIPATH",
 ]
 
-# Cookie delimiter
-COOKIE_DELIMITER = ";"
+# Delimiter used to separate individual cookies in the Cookie HTTP header
+COOKIE_PARAM_DELIMITER = ";"
 
 # Split parameter value
 PARAMETER_SPLITTING_REGEX = ","
 
-# Cookie delimiter
-PARAMETER_DELIMITER = "&"
+# Delimiter used to separate parameters in POST request body
+POST_DATA_PARAM_DELIMITER = "&"
+
+# Delimiter used to separate query parameters in a URL
+URL_PARAM_DELIMITER = "&"
 
 DEFAULT_CODEC = "utf8"
 
@@ -973,6 +1016,7 @@ XML_RECOGNITION_REGEX = r'(?s)\A\s*<[^>]+>(.+>)?\s*\Z'
 
 # JSON Data
 IS_JSON = False
+IS_VALID_JSON = False
 
 # Infixes used for automatic recognition of parameters carrying anti-CSRF tokens
 CSRF_TOKEN_PARAMETER_INFIXES = ("csrf", "xsrf", "token")
@@ -1013,7 +1057,7 @@ WIN_DEL = "powershell.exe Remove-Item "
 DEL = "rm "
 
 # Time-based Variables
-FOUND_HOW_LONG = ""
+FOUND_EXEC_TIME = ""
 FOUND_DIFF = ""
 
 # Check for PowerShell
@@ -1036,12 +1080,9 @@ SRVPORT = 8080
 SESSION_FILE = ""
 LOAD_SESSION = None
 
-# Retest all techniques
-RETEST = False
-
 # Define the default credentials files
-USERNAMES_TXT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'txt')) + "/" + "usernames.txt"
-PASSWORDS_TXT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'txt')) + "/" + "passwords_john.txt"
+USERNAMES_TXT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'txt')) + "/" + "default_usernames.txt"
+PASSWORDS_TXT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'txt')) + "/" + "default_passwords.txt"
 
 REQUIRED_AUTHENTICATION = False
 
@@ -1051,8 +1092,11 @@ INJECTION_CHECKER = False
 # List of pages / scripts potentially vulnerable to Shellshock
 CGI_SCRIPTS = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'txt')) + "/" + "shocker-cgi_list.txt"
 
+INSTALL_DIR = "/usr/share/"
+WRAPPER_PATH = "/usr/bin/"
+
 # Metasploit Framework Path
-METASPLOIT_PATH = "/usr/share/metasploit-framework/"
+METASPLOIT_PATH = INSTALL_DIR + "/metasploit-framework/"
 
 # Supported HTTP Authentication types
 class AUTH_TYPE(object):
@@ -1062,7 +1106,10 @@ class AUTH_TYPE(object):
 
 RAW_HTTP_HEADERS = ""
 
-USER_SUPPLIED_TAMPER = ""
+USER_APPLIED_TAMPER = ""
+
+# Tamper payload modification letters
+TAMPER_MODIFICATION_LETTERS = r'([e-zE-Z])'
 
 # Tamper scripts dict
 TAMPER_SCRIPTS = {
@@ -1084,9 +1131,10 @@ TAMPER_SCRIPTS = {
                   "dollaratsigns": False,
                   "printf2echo": False,
                   "uninitializedvariable": False,
-                  "slash2env":False,
-                  "backticks":False,
-                  "rev":False
+                  "slash2env": False,
+                  "backticks": False,
+                  "randomcase": False,
+                  "rev": False
                  }
 
 UNIX_NOT_SUPPORTED_TAMPER_SCRIPTS = [
@@ -1105,6 +1153,7 @@ WIN_NOT_SUPPORTED_TAMPER_SCRIPTS = [
                   "printf2echo",
                   "space2ifs",
                   "uninitializedvariable",
+                  "randomcase",
                   "rev"
 ]
 
@@ -1120,15 +1169,23 @@ EVAL_NOT_SUPPORTED_TAMPER_SCRIPTS = [
                   "uninitializedvariable"
 ]
 
+TIME_RELATED_TAMPER_SCRIPTS = [
+                  "sleep2usleep",
+                  "sleep2timeout"
+]
+
 IGNORE_TAMPER_TRANSFORMATION = [
                   "IFS",
                   "if",
                   "then",
                   "else",
                   "fi",
-                  "str",
                   "cmd",
-                  "char"
+                  "%0d",
+                  "PATH%%u*",
+                  RANDOM_VAR_GENERATOR,
+                  RANDOM_VAR_GENERATOR + "1",
+                  RANDOM_VAR_GENERATOR + "2"
 ]
 
 # HTTP Errors
@@ -1159,7 +1216,13 @@ HTTP_ERROR_CODES = [  BAD_REQUEST,
 HTTP_ERROR_CODES_SUM = []
 
 # End line
-END_LINE = ["\r", "\n", "\r\n"]
+class END_LINE:
+  CR = "\r"
+  LF = "\n"
+  CRLF = "\r\n"
+
+# List of end lines
+END_LINES_LIST = [attr for attr in dir(END_LINE) if not callable(getattr(END_LINE, attr)) and not attr.startswith("__")]
 
 # Check for updates on start up.
 CHECK_FOR_UPDATES_ON_START = True
@@ -1238,8 +1301,27 @@ NAGGING_DAYS = 31
 
 TARGET_URL = ""
 DOC_ROOT_TARGET_MARK = "%TARGET%"
-WINDOWS_DEFAULT_DOC_ROOTS = ["C:\\\\Inetpub\\wwwroot\\", "C:\\\\Inetpub\\wwwroot\\", "C:\\\\xampp\\htdocs\\", "C:\\\\wamp\\www\\"]
-LINUX_DEFAULT_DOC_ROOTS = ["/var/www/" + DOC_ROOT_TARGET_MARK + "/public_html/", "/var/www/" + DOC_ROOT_TARGET_MARK + "/", "/usr/local/apache2/htdocs/", "/usr/local/www/data/", "/usr/share/nginx/", "/var/apache2/htdocs/", "/var/www/nginx-default/", "/srv/www/htdocs/"]  # Reference: https://wiki.apache.org/httpd/DistrosDefaultLayout
+
+# Windows common document roots
+WINDOWS_DEFAULT_DOC_ROOTS = [
+                  "C:\\Inetpub\\wwwroot\\",    # IIS default
+                  "C:\\xampp\\htdocs\\",       # XAMPP default
+                  "C:\\wamp\\www\\",           # WAMP default
+                  "C:\\laragon\\www\\",        # Laragon default
+                  "D:\\Inetpub\\wwwroot\\",    # IIS on D: drive (less common)
+]
+# Linux common document roots
+LINUX_DEFAULT_DOC_ROOTS = [
+                  "/var/www/html/",                                      # Debian/Ubuntu Apache default
+                  "/var/www/" + DOC_ROOT_TARGET_MARK + "/public_html/",  # Older Debian/Ubuntu with custom doc root
+                  "/var/www/" + DOC_ROOT_TARGET_MARK + "/",              # Alternative Debian/Ubuntu
+                  "/usr/share/nginx/html/",                              # Nginx default
+                  "/usr/local/apache2/htdocs/",                          # Apache default (source build)
+                  "/usr/local/www/data/",                                # BSD-style
+                  "/var/apache2/htdocs/",                                # Older Apache distros
+                  "/var/www/nginx-default/",                             # Nginx variation
+                  "/srv/www/htdocs/"                                     # SUSE/Fedora style
+]
 
 DEFINED_WEBROOT = RECHECK_FILE_FOR_EXTRACTION = False
 
@@ -1286,6 +1368,8 @@ SHELLSHOCK_HTTP_HEADERS =[ COOKIE, USER_AGENT, REFERER ]
 # Regular expression used for ignoring some special chars
 IGNORE_SPECIAL_CHAR_REGEX = "[^/()A-Za-z0-9.:,_+]"
 IGNORE_JSON_CHAR_REGEX = r"[{}\"\[\]]"
+
+FLATTEN_JSON_SEPARATOR = ''.join(random.choice("{}") for _ in range(10)) + "_"
 
 PERFORM_CRACKING = False
 
@@ -1339,5 +1423,6 @@ ALERT = False
 
 USE_PCRE_E_MODIFIER = None
 PCRE_MODIFIER = "/e"
+
 
 # eof
