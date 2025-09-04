@@ -1,0 +1,54 @@
+Object.defineProperty(exports, '__esModule', { value: true });
+
+const instrumentationGenericPool = require('@opentelemetry/instrumentation-generic-pool');
+const core = require('@sentry/core');
+const instrument = require('../../otel/instrument.js');
+
+const INTEGRATION_NAME = 'GenericPool';
+
+const instrumentGenericPool = instrument.generateInstrumentOnce(INTEGRATION_NAME, () => new instrumentationGenericPool.GenericPoolInstrumentation({}));
+
+const _genericPoolIntegration = (() => {
+  return {
+    name: INTEGRATION_NAME,
+    setupOnce() {
+      instrumentGenericPool();
+    },
+
+    setup(client) {
+      client.on('spanStart', span => {
+        const spanJSON = core.spanToJSON(span);
+
+        const spanDescription = spanJSON.description;
+
+        // typo in emitted span for version <= 0.38.0 of @opentelemetry/instrumentation-generic-pool
+        const isGenericPoolSpan =
+          spanDescription === 'generic-pool.aquire' || spanDescription === 'generic-pool.acquire';
+
+        if (isGenericPoolSpan) {
+          span.setAttribute(core.SEMANTIC_ATTRIBUTE_SENTRY_ORIGIN, 'auto.db.otel.generic_pool');
+        }
+      });
+    },
+  };
+}) ;
+
+/**
+ * Adds Sentry tracing instrumentation for the [generic-pool](https://www.npmjs.com/package/generic-pool) library.
+ *
+ * For more information, see the [`genericPoolIntegration` documentation](https://docs.sentry.io/platforms/javascript/guides/node/configuration/integrations/genericpool/).
+ *
+ * @example
+ * ```javascript
+ * const Sentry = require('@sentry/node');
+ *
+ * Sentry.init({
+ *  integrations: [Sentry.genericPoolIntegration()],
+ * });
+ * ```
+ */
+const genericPoolIntegration = core.defineIntegration(_genericPoolIntegration);
+
+exports.genericPoolIntegration = genericPoolIntegration;
+exports.instrumentGenericPool = instrumentGenericPool;
+//# sourceMappingURL=genericPool.js.map

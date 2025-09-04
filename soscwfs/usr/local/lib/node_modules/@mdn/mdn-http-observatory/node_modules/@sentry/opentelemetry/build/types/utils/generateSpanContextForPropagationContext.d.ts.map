@@ -1,0 +1,1 @@
+{"version":3,"file":"generateSpanContextForPropagationContext.d.ts","sourceRoot":"","sources":["../../../src/utils/generateSpanContextForPropagationContext.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,oBAAoB,CAAC;AAEtD,OAAO,KAAK,EAAE,kBAAkB,EAAE,MAAM,cAAc,CAAC;AAGvD;;;;;GAKG;AACH,wBAAgB,wCAAwC,CAAC,kBAAkB,EAAE,kBAAkB,GAAG,WAAW,CAiB5G"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"commonjs.js","sources":["../../../src/utils/commonjs.ts"],"sourcesContent":["/** Detect CommonJS. */\nexport function isCjs(): boolean {\n  return typeof require !== 'undefined';\n}\n"],"names":[],"mappings":"AAAA;AACO,SAAS,KAAK,GAAY;AACjC,EAAE,OAAO,OAAO,OAAQ,KAAI,WAAW;AACvC;;;;"}

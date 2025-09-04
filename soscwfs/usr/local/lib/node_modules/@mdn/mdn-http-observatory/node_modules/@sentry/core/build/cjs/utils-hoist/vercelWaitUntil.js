@@ -1,0 +1,26 @@
+Object.defineProperty(exports, '__esModule', { value: true });
+
+const worldwide = require('./worldwide.js');
+
+/**
+ * Function that delays closing of a Vercel lambda until the provided promise is resolved.
+ *
+ * Vendored from https://www.npmjs.com/package/@vercel/functions
+ */
+function vercelWaitUntil(task) {
+  const vercelRequestContextGlobal =
+    // @ts-expect-error This is not typed
+    worldwide.GLOBAL_OBJ[Symbol.for('@vercel/request-context')];
+
+  const ctx =
+    vercelRequestContextGlobal && vercelRequestContextGlobal.get && vercelRequestContextGlobal.get()
+      ? vercelRequestContextGlobal.get()
+      : {};
+
+  if (ctx && ctx.waitUntil) {
+    ctx.waitUntil(task);
+  }
+}
+
+exports.vercelWaitUntil = vercelWaitUntil;
+//# sourceMappingURL=vercelWaitUntil.js.map

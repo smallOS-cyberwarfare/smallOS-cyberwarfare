@@ -1,0 +1,48 @@
+Object.defineProperty(exports, '__esModule', { value: true });
+
+const dsn = require('./utils-hoist/dsn.js');
+const envelope = require('./utils-hoist/envelope.js');
+const object = require('./utils-hoist/object.js');
+
+/**
+ * Create envelope from check in item.
+ */
+function createCheckInEnvelope(
+  checkIn,
+  dynamicSamplingContext,
+  metadata,
+  tunnel,
+  dsn$1,
+) {
+  const headers = {
+    sent_at: new Date().toISOString(),
+  };
+
+  if (metadata && metadata.sdk) {
+    headers.sdk = {
+      name: metadata.sdk.name,
+      version: metadata.sdk.version,
+    };
+  }
+
+  if (!!tunnel && !!dsn$1) {
+    headers.dsn = dsn.dsnToString(dsn$1);
+  }
+
+  if (dynamicSamplingContext) {
+    headers.trace = object.dropUndefinedKeys(dynamicSamplingContext) ;
+  }
+
+  const item = createCheckInEnvelopeItem(checkIn);
+  return envelope.createEnvelope(headers, [item]);
+}
+
+function createCheckInEnvelopeItem(checkIn) {
+  const checkInHeaders = {
+    type: 'check_in',
+  };
+  return [checkInHeaders, checkIn];
+}
+
+exports.createCheckInEnvelope = createCheckInEnvelope;
+//# sourceMappingURL=checkin.js.map
