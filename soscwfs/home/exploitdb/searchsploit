@@ -241,18 +241,21 @@ function updategit() {
   git checkout -- . 2>/dev/null \
     || sudo git checkout -- .
 
+  # Get origin branch name
+  origin_branch=$(git branch -l master main | sed 's/^* //')
+
   # Update from git
   echo -e "\n[i] Git pull'ing"
-  git pull -v upstream master 2>/dev/null \
-    || sudo git pull -v upstream master
+  git pull -v upstream $origin_branch 2>/dev/null \
+    || sudo git pull -v upstream $origin_branch
 
   # If conflicts, clean and try again
   if [[ "$?" -ne 0 ]]; then
     echo -e "\n[-] Git conflict"
     git clean -d -fx "" \
       || sudo git clean -d -fx ""
-    git pull -v upstream master \
-      || sudo git pull -v upstream master
+    git pull -v upstream $origin_branch \
+      || sudo git pull -v upstream $origin_branch
   fi
 
   echo -e "\n[*] Git update finished"
