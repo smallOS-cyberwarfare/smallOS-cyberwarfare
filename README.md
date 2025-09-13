@@ -1,7 +1,10 @@
 # SOSCW
 
 smallOS-cyberwarfare (soscw) is a userland Linux distro made to attack organizations in cyber warfare scennarios.  
-This is the aarch64 version patched to run with proot-distro under termux. No root needed.  
+  
+This is the aarch64 version patched to run with proot-distro under termux. [Here the armv7-8](https://github.com/smallOS-cyberwarfare/soscwArmv7).  
+  
+No root needed. 
 
 ##### List of Commands  
 ### Attack
