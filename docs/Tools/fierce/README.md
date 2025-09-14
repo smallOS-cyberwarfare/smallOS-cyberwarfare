@@ -2,7 +2,7 @@
 A DNS reconnaissance tool for locating non-contiguous IP space.
 
 ### Download
-https://github.com/mschwager/fierce via git clone https://github.com/mschwager/fierce.git && cd pierce && python3 setup.py install
+https://github.com/mschwager/fierce via git clone https://github.com/mschwager/fierce.git && cd fierce && python3 setup.py install
 
 ### Usage  
 > pierce [args]
